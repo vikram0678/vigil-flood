@@ -1,0 +1,24 @@
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Node modules
+node_modules/
+
+# Environment Variables (Keep template committed)
+.env
+!.env.example
+
+# OS Generated Files
+.DS_Store
+Thumbs.db
+*.log

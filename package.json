@@ -1,0 +1,30 @@
+{
+  "name": "sih-26192-flash-flood-early-warning",
+  "version": "1.0.0",
+  "description": "SIH 26192 - Flash Flood Prediction System for Hilly Regions using Multi-Source Data",
+  "main": "frontend/index.html",
+  "scripts": {
+    "start:backend": "python backend/app/main.py",
+    "start:frontend": "npx serve frontend -p 3000",
+    "train:models": "python backend/train_models.py",
+    "start": "python run.py"
+  },
+  "keywords": [
+    "sih2024",
+    "sih26192",
+    "flash-flood",
+    "early-warning",
+    "machine-learning",
+    "iot",
+    "gis"
+  ],
+  "author": "SIH Team",
+  "license": "MIT",
+  "dependencies": {
+    "leaflet": "^1.9.4",
+    "chart.js": "^4.4.2"
+  },
+  "devDependencies": {
+    "serve": "^14.2.4"
+  }
+}

@@ -1,0 +1,476 @@
+[
+  {
+    "id": "VIL-01",
+    "name": "Pandoh",
+    "ward": "Ward 2 (Lower Catchment)",
+    "district": "Mandi",
+    "state": "Himachal Pradesh",
+    "lat": 31.6702,
+    "lng": 77.0394,
+    "elevation_m": 880,
+    "slope_deg": 32.5,
+    "soil_type": "Loamy Sand / Gravel",
+    "distance_to_stream_m": 45,
+    "historical_landslide_count": 5,
+    "historical_flood_count": 4,
+    "population": 1450,
+    "vulnerable_households": 85,
+    "hazard_zones": {
+      "red_inundation_polygon": [
+        [31.6660, 77.0340],
+        [31.6730, 77.0370],
+        [31.6750, 77.0420],
+        [31.6680, 77.0440]
+      ],
+      "orange_slope_polygon": [
+        [31.6630, 77.0300],
+        [31.6760, 77.0340],
+        [31.6780, 77.0450],
+        [31.6650, 77.0480]
+      ],
+      "green_safe_polygon": [
+        [31.6730, 77.0330],
+        [31.6780, 77.0350],
+        [31.6770, 77.0390],
+        [31.6720, 77.0370]
+      ]
+    },
+    "river_stream": [
+      [31.6600, 77.0310],
+      [31.6670, 77.0360],
+      [31.6702, 77.0394],
+      [31.6760, 77.0430],
+      [31.6820, 77.0480]
+    ],
+    "safe_shelters": [
+      {
+        "name": "Govt Senior Secondary School (Upper Ridge)",
+        "lat": 31.6745,
+        "lng": 77.0360,
+        "capacity": 400,
+        "elevation_m": 990
+      },
+      {
+        "name": "Community Hall Pandoh West",
+        "lat": 31.6680,
+        "lng": 77.0320,
+        "capacity": 250,
+        "elevation_m": 950
+      }
+    ],
+    "evacuation_routes": [
+      {
+        "name": "Route A (Upper Hill Road via SH-13)",
+        "status": "CLEAR",
+        "safety_score": 95,
+        "path": [
+          [31.6702, 77.0394],
+          [31.6720, 77.0375],
+          [31.6745, 77.0360]
+        ]
+      },
+      {
+        "name": "Route B (Riverside Embankment Road)",
+        "status": "AVOID - FLOOD PRONE",
+        "safety_score": 20,
+        "path": [
+          [31.6702, 77.0394],
+          [31.6680, 77.0410],
+          [31.6650, 77.0430]
+        ]
+      }
+    ],
+    "sensors": {
+      "rain_gauge_id": "SENS-PND-RAIN-01",
+      "soil_moisture_id": "SENS-PND-SOIL-01",
+      "water_level_id": "SENS-PND-WTR-01",
+      "tilt_sensor_id": "SENS-PND-TLT-01"
+    },
+    "sensor_locations": [
+      {"id": "SENS-PND-RAIN-01", "type": "Rain Gauge", "lat": 31.6710, "lng": 77.0380},
+      {"id": "SENS-PND-SOIL-01", "type": "Soil Moisture", "lat": 31.6690, "lng": 77.0370},
+      {"id": "SENS-PND-WTR-01", "type": "River Gauge", "lat": 31.6702, "lng": 77.0394},
+      {"id": "SENS-PND-TLT-01", "type": "Slope Tilt", "lat": 31.6730, "lng": 77.0350}
+    ]
+  },
+  {
+    "id": "VIL-02",
+    "name": "Aut",
+    "ward": "Ward 1 (Gorge Area)",
+    "district": "Mandi",
+    "state": "Himachal Pradesh",
+    "lat": 31.7485,
+    "lng": 77.2065,
+    "elevation_m": 920,
+    "slope_deg": 36.8,
+    "soil_type": "Clayey Silt / Fractured Rock",
+    "distance_to_stream_m": 30,
+    "historical_landslide_count": 8,
+    "historical_flood_count": 6,
+    "population": 1200,
+    "vulnerable_households": 110,
+    "hazard_zones": {
+      "red_inundation_polygon": [
+        [31.7440, 77.2020],
+        [31.7510, 77.2050],
+        [31.7530, 77.2100],
+        [31.7460, 77.2110]
+      ],
+      "orange_slope_polygon": [
+        [31.7410, 77.1980],
+        [31.7540, 77.2020],
+        [31.7560, 77.2140],
+        [31.7430, 77.2150]
+      ],
+      "green_safe_polygon": [
+        [31.7510, 77.2000],
+        [31.7540, 77.2010],
+        [31.7530, 77.2040],
+        [31.7500, 77.2030]
+      ]
+    },
+    "river_stream": [
+      [31.7380, 77.1980],
+      [31.7440, 77.2020],
+      [31.7485, 77.2065],
+      [31.7550, 77.2120]
+    ],
+    "safe_shelters": [
+      {
+        "name": "Aut High Altitude Relief Camp",
+        "lat": 31.7520,
+        "lng": 77.2020,
+        "capacity": 350,
+        "elevation_m": 1050
+      }
+    ],
+    "evacuation_routes": [
+      {
+        "name": "Route 1 (North Escape Ridge)",
+        "status": "CLEAR",
+        "safety_score": 90,
+        "path": [
+          [31.7485, 77.2065],
+          [31.7505, 77.2040],
+          [31.7520, 77.2020]
+        ]
+      }
+    ],
+    "sensors": {
+      "rain_gauge_id": "SENS-AUT-RAIN-01",
+      "soil_moisture_id": "SENS-AUT-SOIL-01",
+      "water_level_id": "SENS-AUT-WTR-01",
+      "tilt_sensor_id": "SENS-AUT-TLT-01"
+    },
+    "sensor_locations": [
+      {"id": "SENS-AUT-RAIN-01", "type": "Rain Gauge", "lat": 31.7490, "lng": 77.2050},
+      {"id": "SENS-AUT-SOIL-01", "type": "Soil Moisture", "lat": 31.7470, "lng": 77.2040},
+      {"id": "SENS-AUT-WTR-01", "type": "River Gauge", "lat": 31.7485, "lng": 77.2065},
+      {"id": "SENS-AUT-TLT-01", "type": "Slope Tilt", "lat": 31.7510, "lng": 77.2030}
+    ]
+  },
+  {
+    "id": "VIL-03",
+    "name": "Thalot",
+    "ward": "Ward 3 (Tributary Confluence)",
+    "district": "Mandi",
+    "state": "Himachal Pradesh",
+    "lat": 31.7145,
+    "lng": 77.1350,
+    "elevation_m": 905,
+    "slope_deg": 34.0,
+    "soil_type": "Sandy Clay Loam",
+    "distance_to_stream_m": 50,
+    "historical_landslide_count": 6,
+    "historical_flood_count": 5,
+    "population": 980,
+    "vulnerable_households": 72,
+    "hazard_zones": {
+      "red_inundation_polygon": [
+        [31.7100, 77.1310],
+        [31.7170, 77.1330],
+        [31.7190, 77.1380],
+        [31.7120, 77.1390]
+      ],
+      "orange_slope_polygon": [
+        [31.7070, 77.1270],
+        [31.7200, 77.1300],
+        [31.7220, 77.1420],
+        [31.7090, 77.1430]
+      ],
+      "green_safe_polygon": [
+        [31.7160, 77.1290],
+        [31.7200, 77.1300],
+        [31.7190, 77.1330],
+        [31.7150, 77.1320]
+      ]
+    },
+    "river_stream": [
+      [31.7050, 77.1280],
+      [31.7110, 77.1320],
+      [31.7145, 77.1350],
+      [31.7210, 77.1410]
+    ],
+    "safe_shelters": [
+      {
+        "name": "Thalot Panchayat Bhawan",
+        "lat": 31.7180,
+        "lng": 77.1310,
+        "capacity": 300,
+        "elevation_m": 1010
+      }
+    ],
+    "evacuation_routes": [
+      {
+        "name": "Tributary bypass path",
+        "status": "CLEAR",
+        "safety_score": 88,
+        "path": [
+          [31.7145, 77.1350],
+          [31.7165, 77.1330],
+          [31.7180, 77.1310]
+        ]
+      }
+    ],
+    "sensors": {
+      "rain_gauge_id": "SENS-TLT-RAIN-01",
+      "soil_moisture_id": "SENS-TLT-SOIL-01",
+      "water_level_id": "SENS-TLT-WTR-01",
+      "tilt_sensor_id": "SENS-TLT-TLT-01"
+    },
+    "sensor_locations": [
+      {"id": "SENS-TLT-RAIN-01", "type": "Rain Gauge", "lat": 31.7150, "lng": 77.1340},
+      {"id": "SENS-TLT-SOIL-01", "type": "Soil Moisture", "lat": 31.7130, "lng": 77.1330},
+      {"id": "SENS-TLT-WTR-01", "type": "River Gauge", "lat": 31.7145, "lng": 77.1350},
+      {"id": "SENS-TLT-TLT-01", "type": "Slope Tilt", "lat": 31.7170, "lng": 77.1320}
+    ]
+  },
+  {
+    "id": "VIL-04",
+    "name": "Nagwain",
+    "ward": "Ward 2 (Agricultural Terrace)",
+    "district": "Mandi",
+    "state": "Himachal Pradesh",
+    "lat": 31.7820,
+    "lng": 77.1750,
+    "elevation_m": 950,
+    "slope_deg": 18.2,
+    "soil_type": "Alluvial Loam",
+    "distance_to_stream_m": 180,
+    "historical_landslide_count": 1,
+    "historical_flood_count": 2,
+    "population": 2100,
+    "vulnerable_households": 35,
+    "hazard_zones": {
+      "red_inundation_polygon": [
+        [31.7780, 77.1710],
+        [31.7840, 77.1730],
+        [31.7860, 77.1780],
+        [31.7800, 77.1790]
+      ],
+      "orange_slope_polygon": [
+        [31.7750, 77.1670],
+        [31.7870, 77.1700],
+        [31.7890, 77.1820],
+        [31.7770, 77.1830]
+      ],
+      "green_safe_polygon": [
+        [31.7830, 77.1700],
+        [31.7870, 77.1710],
+        [31.7860, 77.1740],
+        [31.7820, 77.1730]
+      ]
+    },
+    "river_stream": [
+      [31.7720, 77.1680],
+      [31.7790, 77.1720],
+      [31.7820, 77.1750],
+      [31.7890, 77.1800]
+    ],
+    "safe_shelters": [
+      {
+        "name": "Nagwain Sports Complex & Hall",
+        "lat": 31.7850,
+        "lng": 77.1720,
+        "capacity": 600,
+        "elevation_m": 1020
+      }
+    ],
+    "evacuation_routes": [
+      {
+        "name": "Central Village Highway Link",
+        "status": "CLEAR",
+        "safety_score": 96,
+        "path": [
+          [31.7820, 77.1750],
+          [31.7835, 77.1735],
+          [31.7850, 77.1720]
+        ]
+      }
+    ],
+    "sensors": {
+      "rain_gauge_id": "SENS-NGW-RAIN-01",
+      "soil_moisture_id": "SENS-NGW-SOIL-01",
+      "water_level_id": "SENS-NGW-WTR-01",
+      "tilt_sensor_id": "SENS-NGW-TLT-01"
+    },
+    "sensor_locations": [
+      {"id": "SENS-NGW-RAIN-01", "type": "Rain Gauge", "lat": 31.7830, "lng": 77.1740},
+      {"id": "SENS-NGW-SOIL-01", "type": "Soil Moisture", "lat": 31.7810, "lng": 77.1730},
+      {"id": "SENS-NGW-WTR-01", "type": "River Gauge", "lat": 31.7820, "lng": 77.1750},
+      {"id": "SENS-NGW-TLT-01", "type": "Slope Tilt", "lat": 31.7845, "lng": 77.1725}
+    ]
+  },
+  {
+    "id": "VIL-05",
+    "name": "Jhatingri",
+    "ward": "Ward 1 (Upper Ridge)",
+    "district": "Mandi",
+    "state": "Himachal Pradesh",
+    "lat": 31.9540,
+    "lng": 76.9850,
+    "elevation_m": 1950,
+    "slope_deg": 28.0,
+    "soil_type": "Forest Soil / Decomposed Granite",
+    "distance_to_stream_m": 450,
+    "historical_landslide_count": 3,
+    "historical_flood_count": 0,
+    "population": 820,
+    "vulnerable_households": 20,
+    "hazard_zones": {
+      "red_inundation_polygon": [
+        [31.9500, 76.9810],
+        [31.9560, 76.9830],
+        [31.9580, 76.9880],
+        [31.9520, 76.9890]
+      ],
+      "orange_slope_polygon": [
+        [31.9470, 76.9770],
+        [31.9590, 76.9800],
+        [31.9610, 76.9920],
+        [31.9490, 76.9930]
+      ],
+      "green_safe_polygon": [
+        [31.9550, 76.9800],
+        [31.9590, 76.9810],
+        [31.9580, 76.9840],
+        [31.9540, 76.9830]
+      ]
+    },
+    "river_stream": [
+      [31.9450, 76.9790],
+      [31.9510, 76.9820],
+      [31.9540, 76.9850],
+      [31.9600, 76.9900]
+    ],
+    "safe_shelters": [
+      {
+        "name": "Jhatingri Forest Rest House",
+        "lat": 31.9570,
+        "lng": 76.9820,
+        "capacity": 200,
+        "elevation_m": 2010
+      }
+    ],
+    "evacuation_routes": [
+      {
+        "name": "Ridge Top Trail",
+        "status": "CLEAR",
+        "safety_score": 98,
+        "path": [
+          [31.9540, 76.9850],
+          [31.9555, 76.9835],
+          [31.9570, 76.9820]
+        ]
+      }
+    ],
+    "sensors": {
+      "rain_gauge_id": "SENS-JHT-RAIN-01",
+      "soil_moisture_id": "SENS-JHT-SOIL-01",
+      "water_level_id": "SENS-JHT-WTR-01",
+      "tilt_sensor_id": "SENS-JHT-TLT-01"
+    },
+    "sensor_locations": [
+      {"id": "SENS-JHT-RAIN-01", "type": "Rain Gauge", "lat": 31.9550, "lng": 76.9840},
+      {"id": "SENS-JHT-SOIL-01", "type": "Soil Moisture", "lat": 31.9530, "lng": 76.9830},
+      {"id": "SENS-JHT-WTR-01", "type": "River Gauge", "lat": 31.9540, "lng": 76.9850},
+      {"id": "SENS-JHT-TLT-01", "type": "Slope Tilt", "lat": 31.9565, "lng": 76.9825}
+    ]
+  },
+  {
+    "id": "VIL-06",
+    "name": "Bajaura",
+    "ward": "Ward 4 (Valley Entrance)",
+    "district": "Kullu/Mandi Border",
+    "state": "Himachal Pradesh",
+    "lat": 31.8500,
+    "lng": 77.1600,
+    "elevation_m": 1090,
+    "slope_deg": 14.5,
+    "soil_type": "Riverine Gravel & Loam",
+    "distance_to_stream_m": 120,
+    "historical_landslide_count": 2,
+    "historical_flood_count": 3,
+    "population": 3100,
+    "vulnerable_households": 65,
+    "hazard_zones": {
+      "red_inundation_polygon": [
+        [31.8450, 77.1550],
+        [31.8530, 77.1570],
+        [31.8550, 77.1640],
+        [31.8480, 77.1650]
+      ],
+      "orange_slope_polygon": [
+        [31.8420, 77.1500],
+        [31.8560, 77.1530],
+        [31.8580, 77.1680],
+        [31.8440, 77.1690]
+      ],
+      "green_safe_polygon": [
+        [31.8510, 77.1530],
+        [31.8550, 77.1540],
+        [31.8540, 77.1570],
+        [31.8500, 77.1560]
+      ]
+    },
+    "river_stream": [
+      [31.8400, 77.1520],
+      [31.8460, 77.1560],
+      [31.8500, 77.1600],
+      [31.8580, 77.1660]
+    ],
+    "safe_shelters": [
+      {
+        "name": "Bajaura Multipurpose Cyclone/Flood Shelter",
+        "lat": 31.8530,
+        "lng": 77.1550,
+        "capacity": 800,
+        "elevation_m": 1140
+      }
+    ],
+    "evacuation_routes": [
+      {
+        "name": "Bajaura-Kullu Elevated Highway",
+        "status": "CLEAR",
+        "safety_score": 92,
+        "path": [
+          [31.8500, 77.1600],
+          [31.8515, 77.1575],
+          [31.8530, 77.1550]
+        ]
+      }
+    ],
+    "sensors": {
+      "rain_gauge_id": "SENS-BJR-RAIN-01",
+      "soil_moisture_id": "SENS-BJR-SOIL-01",
+      "water_level_id": "SENS-BJR-WTR-01",
+      "tilt_sensor_id": "SENS-BJR-TLT-01"
+    },
+    "sensor_locations": [
+      {"id": "SENS-BJR-RAIN-01", "type": "Rain Gauge", "lat": 31.8510, "lng": 77.1590},
+      {"id": "SENS-BJR-SOIL-01", "type": "Soil Moisture", "lat": 31.8490, "lng": 77.1580},
+      {"id": "SENS-BJR-WTR-01", "type": "River Gauge", "lat": 31.8500, "lng": 77.1600},
+      {"id": "SENS-BJR-TLT-01", "type": "Slope Tilt", "lat": 31.8525, "lng": 77.1560}
+    ]
+  }
+]

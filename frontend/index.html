@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VIGIL-FLOOD — Flash Flood Early Warning System (SIH 26192)</title>
+  
+  <!-- Modern Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet GIS Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  
+  <!-- MapLibre GL JS (100% Free 3D Mountain Terrain Mesh) -->
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" />
+  
+  <!-- Application CSS -->
+  <link rel="stylesheet" href="/static/src/css/style.css">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <nav class="navbar">
+    <div class="brand-wrapper">
+      <div class="logo-badge">🌊</div>
+      <div>
+        <div class="brand-title">VIGIL-FLOOD <span style="font-size:0.8rem; opacity:0.8; font-weight:500;">| SIH 26192</span></div>
+        <div class="brand-subtitle">Hyper-Local Flash Flood Early Warning System • Pilot: Beas Basin, Mandi (HP)</div>
+      </div>
+    </div>
+
+    <div class="nav-actions">
+      <button id="btn-open-methodology" class="nav-action-btn">
+        <span>ℹ️</span> Scientific Methodology
+      </button>
+
+      <div class="status-pill">
+        <span class="pulse-dot"></span>
+        <span id="system-status-text">LIVE SENSOR TELEMETRY</span>
+      </div>
+
+      <div class="role-switcher">
+        <button class="role-btn active" data-role="authority">Disaster Authority</button>
+        <button class="role-btn" data-role="citizen">Citizen View</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Authority Dashboard View -->
+  <main id="authority-view" class="dashboard-container">
+    
+    <!-- Left Column: Overview & Villages -->
+    <aside class="panel">
+      <div class="panel-header">
+        <div class="panel-title">📍 Pilot Catchment</div>
+        <span style="font-size:0.75rem; color:var(--text-muted);">6 Wards</span>
+      </div>
+      <div class="panel-body">
+        <!-- Threat Index -->
+        <div class="threat-meter-card">
+          <div class="threat-header">
+            <span>District Hazard Index</span>
+            <span id="threat-meter-val" style="font-weight:700; color:#38bdf8;">--%</span>
+          </div>
+          <div class="threat-bar-container">
+            <div id="threat-bar-fill" class="threat-bar-fill"></div>
+          </div>
+          <div style="font-size:0.72rem; color:var(--text-muted); display:flex; justify-content:space-between;">
+            <span>🟢 Baseline</span>
+            <span>🟡 Moderate</span>
+            <span>🔴 Critical</span>
+          </div>
+        </div>
+
+        <div class="village-list-header">MONITORED VILLAGES / WARDS</div>
+        <div id="village-list-container" style="display:flex; flex-direction:column; gap:8px;">
+          <!-- Dynamically populated village cards -->
+        </div>
+      </div>
+    </aside>
+
+    <!-- Center Column: GIS Map & What-If Sandbox -->
+    <section class="center-panel">
+      <div class="map-wrapper">
+        <!-- 2D Leaflet Tactical Map -->
+        <div id="gis-map"></div>
+
+        <!-- 3D WebGL Mountain Terrain Mesh Map -->
+        <div id="gis-map-3d" style="display:none;"></div>
+        
+        <!-- Interactive Basemap Switcher & Layer Filter Controls -->
+        <div class="map-controls-panel">
+          <!-- 2D / 3D Dimension Switcher -->
+          <div class="view-mode-bar">
+            <button class="view-mode-btn active" data-view="2d">🗺️ 2D Tactical</button>
+            <button class="view-mode-btn" data-view="3d">🏔️ 3D Mountain Mesh</button>
+          </div>
+
+          <div id="basemap-section-2d">
+            <div class="map-control-title">
+              <span>🗺️ Base Map (2D)</span>
+              <span style="font-size:0.65rem; color:var(--text-muted);">STYLE</span>
+            </div>
+            
+            <div class="basemap-toggle-grid">
+              <button class="basemap-btn active" data-basemap="google_terrain">⛰️ G-Terrain</button>
+              <button class="basemap-btn" data-basemap="google_satellite">🛰️ G-Satellite</button>
+              <button class="basemap-btn" data-basemap="google_dark">🌑 Dark Mode</button>
+              <button class="basemap-btn" data-basemap="topo">🗺️ Topo Contours</button>
+            </div>
+          </div>
+
+          <div id="basemap-section-3d" style="display:none;">
+            <div class="map-control-title">
+              <span>🏔️ 3D Controls</span>
+              <span style="font-size:0.65rem; color:var(--accent-cyan);">1.5x DEM</span>
+            </div>
+            <div style="font-size:0.72rem; color:var(--text-secondary); line-height:1.4; margin:4px 0;">
+              • <b>Right-Click + Drag:</b> Tilt 3D Horizon<br>
+              • <b>Ctrl + Drag:</b> 360° Rotate Mountain Gorge
+            </div>
+          </div>
+
+          <div class="map-control-title" style="margin-top:4px;">
+            <span>🛡️ Hazard Overlays</span>
+          </div>
+
+          <div class="layer-filters-list">
+            <label class="layer-checkbox-label">
+              <input type="checkbox" id="filter-hazard-zones" checked>
+              <span><span class="legend-dot" style="background:#ef4444;"></span> Inundation Zones (Red/Orange/Green)</span>
+            </label>
+            <label class="layer-checkbox-label">
+              <input type="checkbox" id="filter-shelters" checked>
+              <span>⛺ Safe Relief Shelters</span>
+            </label>
+            <label class="layer-checkbox-label">
+              <input type="checkbox" id="filter-routes" checked>
+              <span>🛣️ Evacuation Paths</span>
+            </label>
+            <label class="layer-checkbox-label">
+              <input type="checkbox" id="filter-sensors" checked>
+              <span>📡 Real-Time IoT Nodes</span>
+            </label>
+            <label class="layer-checkbox-label">
+              <input type="checkbox" id="filter-streams" checked>
+              <span>🌊 River Drainage Streams</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive What-If Simulation Sandbox -->
+      <div class="sandbox-card">
+        <div class="sandbox-header">
+          <div class="sandbox-title">⚡ Interactive "What-If" Simulation Sandbox</div>
+          <div class="preset-buttons">
+            <button class="preset-btn active" data-scenario="BASELINE_NORMAL">🟢 Normal Baseline</button>
+            <button class="preset-btn" data-scenario="HEAVY_MONSOON">🟡 Heavy Monsoon</button>
+            <button class="preset-btn" data-scenario="CLOUDBURST_CRITICAL">🔴 Cloudburst Emergency</button>
+            <button class="preset-btn" data-scenario="SENSOR_FAILURE_DEMO">🛡️ Test Fallback Model</button>
+          </div>
+        </div>
+
+        <div class="sandbox-sliders-grid">
+          <div class="slider-group">
+            <div class="slider-label-row">
+              <span>🌧️ Rainfall Intensity</span>
+              <span id="val-rain" class="slider-val">18 mm/h</span>
+            </div>
+            <input type="range" id="slider-rain" min="0" max="160" step="2" value="18">
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-label-row">
+              <span>🌱 Soil Moisture Saturation</span>
+              <span id="val-soil" class="slider-val">48%</span>
+            </div>
+            <input type="range" id="slider-soil" min="15" max="98" step="1" value="48">
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-label-row">
+              <span>🌊 River Surge Level</span>
+              <span id="val-water" class="slider-val">1.2 m</span>
+            </div>
+            <input type="range" id="slider-water" min="0.5" max="6.0" step="0.1" value="1.2">
+          </div>
+
+          <div class="slider-group" style="justify-content:center;">
+            <button id="btn-toggle-water-sensor" class="preset-btn" style="background:#334155; height:100%;" data-state="online">
+              🔌 Toggle Water Sensor Outage
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right Column: Telemetry, AI Risk, XAI, and Action Engine -->
+    <aside class="panel">
+      <div class="panel-header">
+        <div class="panel-title">🧠 Decision Support & Telemetry</div>
+        <span id="health-pct-badge" class="risk-badge badge-low">92% Data Health</span>
+      </div>
+      <div class="panel-body">
+        
+        <!-- Selected Village Header -->
+        <div>
+          <h3 id="detail-village-name" style="font-size:1.15rem; font-weight:700;">Loading...</h3>
+          <p id="detail-village-meta" style="font-size:0.75rem; color:var(--text-secondary);">Elevation: -- | Slope: --</p>
+        </div>
+
+        <!-- Risk Banner -->
+        <div id="risk-banner" class="banner-risk LOW">
+          <div>
+            <div style="font-size:0.75rem; color:var(--text-secondary); text-transform:uppercase;">Compound Threat Index</div>
+            <div id="risk-pct-large" class="risk-large-number">12%</div>
+            <div id="risk-level-large" style="font-weight:700; margin-top:2px;">🟢 LOW</div>
+            <div id="risk-model-badge" style="font-size:0.68rem; color:var(--text-muted); margin-top:2px;">Model: FULL_ML_MODEL (92% Conf)</div>
+          </div>
+          <div class="lead-time-box">
+            <div style="font-size:0.68rem; color:var(--text-muted); text-transform:uppercase;">Actionable Lead Time</div>
+            <div id="lead-time-large" class="lead-time-val">> 2 Hours</div>
+            <div style="font-size:0.65rem; color:var(--text-secondary);">Safe Evacuation Window</div>
+          </div>
+        </div>
+
+        <!-- Dual-Hazard Breakdown Card (Inundation vs Debris Flow) -->
+        <div class="dual-hazard-card">
+          <div class="dual-hazard-header">
+            <span>⚡ COMPOUND HAZARD SPLIT</span>
+            <span style="font-size:0.65rem; color:var(--accent-cyan);">PHYSICS FUSION</span>
+          </div>
+          <div class="hazard-split-row">
+            <div class="hazard-split-label">
+              <span>🌊 Flash Flood Inundation Index</span>
+              <span id="val-flood-pct" style="font-weight:700; color:#38bdf8;">14%</span>
+            </div>
+            <div class="hazard-split-track">
+              <div id="bar-flood-pct" class="hazard-split-fill flood-fill" style="width:14%;"></div>
+            </div>
+          </div>
+          <div class="hazard-split-row">
+            <div class="hazard-split-label">
+              <span>⛰️ Slope Failure / Debris Flow Risk</span>
+              <span id="val-slope-pct" style="font-weight:700; color:#f59e0b;">10%</span>
+            </div>
+            <div class="hazard-split-track">
+              <div id="bar-slope-pct" class="hazard-split-fill slope-fill" style="width:10%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Multi-Source Telemetry Gauges -->
+        <div class="telemetry-grid">
+          <div class="telemetry-card">
+            <div class="telemetry-label">Rainfall (1h)</div>
+            <div id="tel-rain" class="telemetry-value">-- mm/h</div>
+          </div>
+          <div class="telemetry-card">
+            <div class="telemetry-label">Soil Moisture</div>
+            <div id="tel-soil" class="telemetry-value">-- %</div>
+          </div>
+          <div class="telemetry-card">
+            <div class="telemetry-label">Stream Water Level</div>
+            <div id="tel-water" class="telemetry-value">-- m</div>
+          </div>
+          <div class="telemetry-card">
+            <div class="telemetry-label">Slope Tilt</div>
+            <div id="tel-tilt" class="telemetry-value">-- °</div>
+          </div>
+        </div>
+
+        <!-- Explainable AI (XAI) Feature Attribution -->
+        <div class="xai-section">
+          <div class="xai-title">
+            <span>🔍 Explainable AI (XAI Attribution)</span>
+            <span style="font-size:0.7rem; font-weight:400; color:var(--text-muted);">SHAP Contribution</span>
+          </div>
+          <div id="xai-container">
+            <!-- Dynamic XAI Bars -->
+          </div>
+        </div>
+
+        <!-- Sensor Health Matrix -->
+        <div class="sensor-matrix-card">
+          <div style="font-size:0.78rem; font-weight:700; color:var(--text-secondary);">📡 Real-Time IoT Telemetry Nodes</div>
+          <div id="sensor-matrix-container" class="sensor-grid">
+            <!-- Dynamic Sensor Status items -->
+          </div>
+        </div>
+
+        <!-- Action & Evacuation Directives -->
+        <div class="action-box">
+          <div id="action-plan-container">
+            <!-- Dynamic Action Items -->
+          </div>
+          <div style="font-size:0.72rem; color:var(--text-muted); margin-top:8px;">CAP / SMS GEO-TARGETED BROADCAST:</div>
+          <div id="sms-preview" class="sms-preview-card">
+            [ALERT] Routine monitoring active.
+          </div>
+        </div>
+
+      </div>
+    </aside>
+  </main>
+
+  <!-- Citizen Public View (Hidden by default, activated via top switcher) -->
+  <div id="citizen-view" class="citizen-container">
+    <div id="citizen-header" class="citizen-alert-header banner-risk LOW">
+      <h2 style="font-size:1.6rem; font-weight:800; margin-bottom:6px;">EMERGENCY CITIZEN PORTAL</h2>
+      <p style="font-size:1rem;">Your Current Location: <strong id="cit-village">Pandoh</strong></p>
+      <div style="font-size:1.8rem; font-weight:800; margin:12px 0;" id="cit-status">🟢 NORMAL CONDITIONS</div>
+      <p style="font-size:0.9rem;">Available Action Window: <strong id="cit-time">&gt; 2 Hours</strong></p>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;">
+      <div class="panel" style="padding:18px;">
+        <h4 style="color:#10b981; margin-bottom:10px;">⛺ Designated Safe Relief Shelter</h4>
+        <div id="cit-shelter" style="font-size:1.1rem; font-weight:700;">Govt Senior Secondary School (Upper Ridge)</div>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-top:6px;">Located on high elevation ground (990m) above maximum flood inundation line.</p>
+      </div>
+
+      <div class="panel" style="padding:18px;">
+        <h4 style="color:#38bdf8; margin-bottom:10px;">🛣️ Recommended Safe Evacuation Route</h4>
+        <div id="cit-route" style="font-size:1.1rem; font-weight:700;">Route A (Upper Hill Road via SH-13)</div>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-top:6px;">All riverside lower roads and tunnel approaches are restricted.</p>
+      </div>
+    </div>
+
+    <div class="panel" style="padding:18px;">
+      <h4 style="margin-bottom:8px;">📞 Emergency Disaster Helpline Numbers</h4>
+      <div style="display:flex; gap:20px; font-size:0.95rem; font-weight:600; color:var(--accent-cyan);">
+        <span>🚨 National Emergency: 112</span>
+        <span>🌊 State Disaster Helpline (SDMA): 1070</span>
+        <span>🏥 District Emergency Operation Center (Mandi): 1077</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaflet GIS JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  
+  <!-- MapLibre GL JS (100% Free 3D Mountain WebGL Mesh) -->
+  <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+
+  <!-- Application JS -->
+  <!-- ======================================================= -->
+  <!-- SCIENTIFIC METHODOLOGY & NDRF ALIGNMENT MODAL           -->
+  <!-- ======================================================= -->
+  <div id="methodology-modal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>🏛️ Scientific Methodology & NDRF Disaster Framework</span>
+          <span class="modal-tag">SIH 26192 BENCHMARK</span>
+        </div>
+        <button id="btn-close-methodology" class="modal-close-btn">&times;</button>
+      </div>
+
+      <!-- Modal Tabs -->
+      <div class="modal-tabs-nav">
+        <button class="modal-tab-btn active" data-tab="tab-ndrf">📑 NDRF Alignment Matrix</button>
+        <button class="modal-tab-btn" data-tab="tab-physics">🌊 Himalayan Debris Physics</button>
+        <button class="modal-tab-btn" data-tab="tab-piarc">📊 PIARC 6-Step Standard</button>
+        <button class="modal-tab-btn" data-tab="tab-benchmarks">🌐 Global Benchmarks & USPs</button>
+      </div>
+
+      <div class="modal-body-content">
+        <!-- Tab 1: NDRF Alignment Table -->
+        <div id="tab-ndrf" class="modal-tab-pane active">
+          <h3 class="tab-section-title">Master Problem Statement Resolution Matrix</h3>
+          <p class="tab-desc">Direct compliance mapping between the Ministry of Home Affairs (MHA/NDRF) requirements and VIGIL-FLOOD implementations:</p>
+          
+          <table class="methodology-table">
+            <thead>
+              <tr>
+                <th>NDRF Problem Requirement</th>
+                <th>Hazard Mechanism</th>
+                <th>VIGIL-FLOOD Technical Implementation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><b>"Hilly states vulnerable to landslides and flash floods..."</b></td>
+                <td><span class="badge-red">Cascading Disaster</span> Short warning times, high-velocity slurry (20–40 km/h).</td>
+                <td><b>Dynamic Lead-Time Engine:</b> Calculates exact 10–30 min evacuation window using slope runoff velocity ($dH/dt$).</td>
+              </tr>
+              <tr>
+                <td><b>"Integrates rainfall, soil moisture & slope stability..."</b></td>
+                <td><span class="badge-amber">Geotechnical Failure</span> Saturation exceeding 85% causes shear strength drop ($F_s < 1.0$).</td>
+                <td><b>Dual ML Regressor & Classifier:</b> Fuses 13 parameters (Rainfall + Soil Moisture % + DEM Slope $\theta$ + Runoff Index).</td>
+              </tr>
+              <tr>
+                <td><b>"Historical landslide inventories & IoT inputs..."</b></td>
+                <td><span class="badge-blue">Geological Faults</span> Known slip zones reactivate under heavy multi-hour rain.</td>
+                <td><b>GSI/ISRO Historical Risk Weighting:</b> Biases risk scoring for historically vulnerable wards.</td>
+              </tr>
+              <tr>
+                <td><b>"Actionable lead time & evacuation preparedness..."</b></td>
+                <td><span class="badge-green">Last-Mile Action</span> Low riverbanks submerge while high ridges remain safe.</td>
+                <td><b>Action & Routing Engine:</b> Auto-assigns nearest high-ridge shelter ($>950\text{m}$) and dispatches CAP SMS.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Tab 2: Himalayan Debris Physics -->
+        <div id="tab-physics" class="modal-tab-pane">
+          <h3 class="tab-section-title">The 4-Phase Himalayan Flash Flood Cycle (Why It Is NOT Just Water)</h3>
+          <p class="tab-desc">In steep mountain terrain, flash floods are hyper-dense debris flows rather than slow flat-land inundation:</p>
+
+          <div class="physics-grid">
+            <div class="physics-card">
+              <div class="phase-num">PHASE 1</div>
+              <h4>🌧️ Saturation Trigger</h4>
+              <p>Cloudburst rainfall (>50 mm/h) saturates soil moisture past 85–90%. Pore-water pressure spikes and soil friction vanishes.</p>
+            </div>
+            <div class="physics-card">
+              <div class="phase-num">PHASE 2</div>
+              <h4>⛰️ Slope Failure</h4>
+              <p>Factor of Safety drops below 1.0. Thousands of tons of soil, boulders, and trees collapse into mountain streams.</p>
+            </div>
+            <div class="physics-card">
+              <div class="phase-num">PHASE 3</div>
+              <h4>🚧 Temporary Damming</h4>
+              <p>Landslide mass chokes narrow V-shaped gorge. Millions of liters of water accumulate rapidly behind the debris dam.</p>
+            </div>
+            <div class="physics-card">
+              <div class="phase-num">PHASE 4</div>
+              <h4>🌊 Catastrophic Surge</h4>
+              <p>Dam breaches under hydraulic pressure. A 20–40 km/h hyper-dense slurry ($1.8\text{--}2.2\text{ g/cm}^3$) rushes downstream!</p>
+            </div>
+          </div>
+
+          <div class="formula-box">
+            <div style="font-weight:700; color:var(--accent-cyan); margin-bottom:4px;">🔬 Geomorphic Kinetic Impact Equation:</div>
+            <code>E_k = ½ · m · v²  |  Density: ρ_debris ≈ 2.0 g/cm³ (2x heavier than water, destroying bridges & roads)</code>
+          </div>
+        </div>
+
+        <!-- Tab 3: PIARC / MLIT Standard -->
+        <div id="tab-piarc" class="modal-tab-pane">
+          <h3 class="tab-section-title">International 6-Tier Disaster Mapping Framework (PIARC / Japan MLIT)</h3>
+          <p class="tab-desc">Our software standardizes the 6-level international methodology for road and catchment risk management:</p>
+
+          <div class="piarc-steps-list">
+            <div class="piarc-step-item">
+              <div class="step-badge">STEP 1</div>
+              <div><b>Inventory Map:</b> Geological soil maps, 30m DEM elevation, historical landslide counts (Loaded in <code>pilot_villages.json</code>).</div>
+            </div>
+            <div class="piarc-step-item">
+              <div class="step-badge">STEP 2</div>
+              <div><b>Susceptibility Map:</b> Identifies terrain slope $>30^\circ$ and riverbed proximity $<50\text{m}$.</div>
+            </div>
+            <div class="piarc-step-item">
+              <div class="step-badge">STEP 3</div>
+              <div><b>Hazard Impact Map:</b> Delineates 🔴 Red Inundation Zone and 🟠 Orange Slope Debris Flow buffers on Leaflet GIS.</div>
+            </div>
+            <div class="piarc-step-item">
+              <div class="step-badge">STEP 4</div>
+              <div><b>Fragility / Probability Map:</b> Dual XGBoost ML models computing exact $0\text{--}100\%$ compound failure probability.</div>
+            </div>
+            <div class="piarc-step-item">
+              <div class="step-badge" style="background:#3b82f6;">STEP 5</div>
+              <div><b>Real-Time Hazard Map:</b> Live 3-second WebSocket telemetry streaming live rain, soil, and river gauge data.</div>
+            </div>
+            <div class="piarc-step-item">
+              <div class="step-badge" style="background:#10b981;">STEP 6</div>
+              <div><b>Socio-Economic Risk Map:</b> Population metrics, vulnerable households, safe shelter routing, and CAP emergency broadcasts.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 4: Global Benchmarks & USPs -->
+        <div id="tab-benchmarks" class="modal-tab-pane">
+          <h3 class="tab-section-title">Global Benchmarking & Our 5 Breakthrough Innovations</h3>
+          <p class="tab-desc">How VIGIL-FLOOD synthesizes global best practices into a unified disaster platform for the Indian Himalayas:</p>
+
+          <div class="usps-grid">
+            <div class="usp-card">
+              <h4>1. 🧩 Unified Multi-Source Fusion</h4>
+              <p>Eliminates silos between IMD (rain), CWC (rivers), and GSI (landslides) into a single real-time synchronous ML pipeline.</p>
+            </div>
+            <div class="usp-card">
+              <h4>2. ⏱️ Dynamic Lead-Time Engine</h4>
+              <p>Calculates exact evacuation windows in minutes ($10\text{--}30\text{ min}$) using $dH/dt$ rate of rise instead of broad 24-hr forecasts.</p>
+            </div>
+            <div class="usp-card">
+              <h4>3. 🛡️ Autonomous Sensor Fault-Tolerance</h4>
+              <p>When physical sensors are destroyed by boulders, the system auto-switches to the <b>Fallback ML Model (74% Confidence)</b> with zero downtime!</p>
+            </div>
+            <div class="usp-card">
+              <h4>4. 🔍 Explainable AI (SHAP) Attribution</h4>
+              <p>Transparent feature importance percentages ($34\%\text{ Rain}, 26\%\text{ Soil}, 21\%\text{ Slope}$) so disaster officers trust the AI.</p>
+            </div>
+            <div class="usp-card">
+              <h4>5. 📱 Prediction-to-Action Pipeline</h4>
+              <p>Bridges the last-mile gap by assigning high-ridge safe shelters, calculating safe escape routes, and dispatching CAP SMS alerts.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/src/js/app.js"></script>
+</body>
+</html>

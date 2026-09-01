@@ -1,0 +1,1095 @@
+// SIH 26192 - Flash Flood Early Warning Dashboard Application Logic
+let map = null;
+let map3d = null;
+let is3DMode = false;
+let currentBaseLayer = null;
+let villageMarkers = {};
+let villageMarkers3D = [];
+let shelterLayerGroup = null;
+let routeLayerGroup = null;
+let hazardZoneLayerGroup = null;
+let streamLayerGroup = null;
+let sensorLayerGroup = null;
+
+let currentVillageId = "VIL-01";
+let allVillages = [];
+let ws = null;
+let isAudioEnabled = false;
+
+// Color mapping constants
+const RISK_COLORS = {
+  LOW: "#10b981",
+  MODERATE: "#f59e0b",
+  HIGH: "#f97316",
+  CRITICAL: "#ef4444"
+};
+
+// Basemap Tile Configurations (Google Maps & Topo Layers)
+const BASEMAP_TILES = {
+  google_terrain: {
+    url: "https://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}",
+    options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Google Maps' },
+    isDarkFilter: false // Real Google Mountain Elevation Shading & Contours
+  },
+  google_satellite: {
+    url: "https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+    options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Google Maps' },
+    isDarkFilter: false // High-Res Google Satellite with Village Labels & Roads
+  },
+  google_dark: {
+    url: "https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",
+    options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Google Maps' },
+    isDarkFilter: true // Google Roads in Dark Command Mode
+  },
+  topo: {
+    url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+    options: { maxZoom: 17, attribution: 'Map data: &copy; OpenStreetMap contributors, SRTM' },
+    isDarkFilter: false
+  }
+};
+
+// Initialize Application
+document.addEventListener("DOMContentLoaded", () => {
+  initMap();
+  fetchInitialData(true);
+  initWebSocket();
+  setupEventListeners();
+});
+
+// 1. Initialize Leaflet GIS Map
+function initMap() {
+  const mandiCoords = [31.74, 77.10];
+  map = L.map("gis-map", {
+    zoomControl: true,
+    attributionControl: false
+  }).setView(mandiCoords, 11);
+
+  // Initialize Layer Groups
+  shelterLayerGroup = L.layerGroup().addTo(map);
+  routeLayerGroup = L.layerGroup().addTo(map);
+  hazardZoneLayerGroup = L.layerGroup().addTo(map);
+  streamLayerGroup = L.layerGroup().addTo(map);
+  sensorLayerGroup = L.layerGroup().addTo(map);
+
+  // Set default basemap to Google Mountain Terrain
+  setBasemap("google_terrain");
+
+  // Add scale control
+  L.control.scale({ position: "bottomleft" }).addTo(map);
+
+  // Click-to-Get Real-Time DEM Elevation from Open-Meteo API
+  map.on("click", async (e) => {
+    const { lat, lng } = e.latlng;
+    
+    // Create instant loading popup with close button enabled
+    const popup = L.popup({
+      closeButton: false, // We use our custom styled close button in the header
+      autoClose: true,
+      closeOnClick: false,
+      className: "custom-elevation-popup"
+    })
+      .setLatLng([lat, lng])
+      .setContent(`
+        <div class="elevation-popup-card">
+          <div class="elev-popup-header">
+            <div class="elev-popup-title">📡 Querying 30m DEM...</div>
+            <button onclick="map.closePopup();" class="elev-close-btn" title="Close">&times;</button>
+          </div>
+          <div style="font-size:0.75rem; color:var(--text-muted); padding:4px 0;">📍 ${lat.toFixed(4)}°N, ${lng.toFixed(4)}°E</div>
+        </div>
+      `)
+      .openOn(map);
+
+    try {
+      // Call backend elevation proxy (which calls Open-Meteo API)
+      const res = await fetch(`/api/terrain/elevation?lat=${lat}&lng=${lng}`);
+      const data = await res.json();
+      
+      popup.setContent(`
+        <div class="elevation-popup-card">
+          <div class="elev-popup-header">
+            <div class="elev-popup-title">⛰️ Topographic Spot Analysis</div>
+            <button onclick="map.closePopup();" class="elev-close-btn" title="Close">&times;</button>
+          </div>
+          <div class="elev-popup-grid">
+            <div>
+              <div class="elev-popup-label">ELEVATION (DEM)</div>
+              <div class="elev-popup-val">${data.elevation_m} m</div>
+            </div>
+            <div>
+              <div class="elev-popup-label">TERRAIN ZONE</div>
+              <div style="font-size:0.75rem; font-weight:700; color:${data.zone_color};">${data.terrain_zone}</div>
+            </div>
+          </div>
+          <div class="elev-popup-coords">📍 ${lat.toFixed(4)}°N, ${lng.toFixed(4)}°E</div>
+          <div style="font-size:0.65rem; color:var(--text-muted); margin-top:4px;">Source: ${data.source}</div>
+        </div>
+      `);
+    } catch (err) {
+      console.error("Elevation fetch error:", err);
+    }
+  });
+}
+
+// 1B. Initialize MapLibre GL JS 3D Mountain Terrain Mesh with Real Place Names & Labels
+function init3DMap() {
+  if (map3d) return;
+
+  try {
+    map3d = new maplibregl.Map({
+      container: "gis-map-3d",
+      style: {
+        version: 8,
+        sources: {
+          // 1. High-Resolution Google Hybrid Satellite with Village Names, Roads & Places
+          "google-hybrid-imagery": {
+            type: "raster",
+            tiles: [
+              "https://mt0.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+              "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+              "https://mt2.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+              "https://mt3.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
+            ],
+            tileSize: 256,
+            attribution: "&copy; Google Maps"
+          },
+          // 2. Free Global 3D DEM Terrarium Elevation Mesh
+          "terrain-dem": {
+            type: "raster-dem",
+            tiles: [
+              "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"
+            ],
+            encoding: "terrarium",
+            tileSize: 256,
+            maxzoom: 15
+          }
+        },
+        layers: [
+          {
+            id: "hybrid-satellite-layer",
+            type: "raster",
+            source: "google-hybrid-imagery"
+          }
+        ],
+        terrain: {
+          source: "terrain-dem",
+          exaggeration: 1.6 // Enhanced 1.6x Himalayan Mountain Relief
+        }
+      },
+      center: [77.0394, 31.6702], // Pandoh
+      zoom: 13,
+      pitch: 65, // 3D Camera Tilt
+      bearing: -25 // 3D Angle
+    });
+
+    // Add 3D Navigation & Tilt Controls
+    map3d.addControl(new maplibregl.NavigationControl({
+      visualizePitch: true
+    }), "top-left");
+
+    // Click-to-Get Real-Time 30m DEM Elevation in 3D Mode
+    let popup3d = null;
+    map3d.on("click", async (e) => {
+      const lng = e.lngLat.lng;
+      const lat = e.lngLat.lat;
+
+      if (popup3d) popup3d.remove();
+
+      popup3d = new maplibregl.Popup({
+        offset: 15,
+        closeButton: false,
+        className: "custom-elevation-popup-3d"
+      })
+        .setLngLat([lng, lat])
+        .setHTML(`
+          <div class="elevation-popup-card">
+            <div class="elev-popup-header">
+              <div class="elev-popup-title">📡 Querying 30m DEM...</div>
+              <button onclick="if(window.currentPopup3D) window.currentPopup3D.remove();" class="elev-close-btn" title="Close">&times;</button>
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted); padding:4px 0;">📍 ${lat.toFixed(4)}°N, ${lng.toFixed(4)}°E</div>
+          </div>
+        `)
+        .addTo(map3d);
+
+      window.currentPopup3D = popup3d;
+
+      try {
+        const res = await fetch(`/api/terrain/elevation?lat=${lat}&lng=${lng}`);
+        const data = await res.json();
+
+        popup3d.setHTML(`
+          <div class="elevation-popup-card">
+            <div class="elev-popup-header">
+              <div class="elev-popup-title">⛰️ Topographic Spot Analysis</div>
+              <button onclick="if(window.currentPopup3D) window.currentPopup3D.remove();" class="elev-close-btn" title="Close">&times;</button>
+            </div>
+            <div class="elev-popup-grid">
+              <div>
+                <div class="elev-popup-label">ELEVATION (DEM)</div>
+                <div class="elev-popup-val">${data.elevation_m} m</div>
+              </div>
+              <div>
+                <div class="elev-popup-label">TERRAIN ZONE</div>
+                <div style="font-size:0.75rem; font-weight:700; color:${data.zone_color};">${data.terrain_zone}</div>
+              </div>
+            </div>
+            <div class="elev-popup-coords">📍 ${lat.toFixed(4)}°N, ${lng.toFixed(4)}°E</div>
+            <div style="font-size:0.65rem; color:var(--text-muted); margin-top:4px;">Source: ${data.source}</div>
+          </div>
+        `);
+      } catch (err) {
+        console.error("3D elevation fetch error:", err);
+      }
+    });
+
+    // Add 3D Inundation Water Surface & River Stream Layers when loaded
+    map3d.on("load", () => {
+      // 1. Dynamic 3D Flood Inundation Polygon Source
+      map3d.addSource("3d-flood-water-source", {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: []
+        }
+      });
+
+      // 2. Dynamic 3D River Stream Line Source
+      map3d.addSource("3d-stream-source", {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: []
+        }
+      });
+
+      // 3. 3D Flood Inundation Surface Fill (Glows & Expands on Terrain)
+      map3d.addLayer({
+        id: "3d-flood-water-fill",
+        type: "fill",
+        source: "3d-flood-water-source",
+        paint: {
+          "fill-color": [
+            "interpolate",
+            ["linear"],
+            ["get", "water_level"],
+            1.0, "rgba(2, 132, 199, 0.45)",
+            3.0, "rgba(6, 182, 212, 0.65)",
+            5.0, "rgba(239, 68, 68, 0.75)"
+          ],
+          "fill-opacity": 0.85
+        }
+      });
+
+      // 4. 3D Inundation Outline Stroke
+      map3d.addLayer({
+        id: "3d-flood-water-outline",
+        type: "line",
+        source: "3d-flood-water-source",
+        paint: {
+          "line-color": [
+            "interpolate",
+            ["linear"],
+            ["get", "water_level"],
+            1.0, "#38bdf8",
+            3.0, "#f59e0b",
+            5.0, "#ef4444"
+          ],
+          "line-width": 3
+        }
+      });
+
+      // 5. 3D Expanding River Stream Surge Line
+      map3d.addLayer({
+        id: "3d-stream-line-layer",
+        type: "line",
+        source: "3d-stream-source",
+        paint: {
+          "line-color": "#38bdf8",
+          "line-width": ["get", "stream_width"],
+          "line-opacity": 0.9
+        }
+      });
+
+      render3DMarkers(allVillages);
+      update3DFloodSimulation();
+    });
+  } catch (e) {
+    console.error("MapLibre 3D Init Error:", e);
+  }
+}
+
+// Update 3D Dynamic Rising Water Simulation Based on Sliders / Current Telemetry
+function update3DFloodSimulation() {
+  if (!map3d) return;
+
+  const curV = allVillages.find(v => v.id === currentVillageId);
+  if (!curV) return;
+
+  const waterSliderVal = parseFloat(document.getElementById("slider-water")?.value || 1.1);
+  const rainSliderVal = parseFloat(document.getElementById("slider-rain")?.value || 15);
+
+  // 1. Update 3D River Stream Line Width & Surge
+  if (map3d.getSource("3d-stream-source") && curV.river_stream) {
+    const streamGeoJson = curV.river_stream.map(pt => [pt[1], pt[0]]);
+    const streamWidth = Math.max(5, waterSliderVal * 4.5 + (rainSliderVal > 80 ? 6 : 0));
+
+    map3d.getSource("3d-stream-source").setData({
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          geometry: {
+            type: "LineString",
+            coordinates: streamGeoJson
+          },
+          properties: {
+            stream_width: streamWidth
+          }
+        }
+      ]
+    });
+  }
+
+  // 2. Update 3D Inundation Catchment Flood Polygon
+  if (map3d.getSource("3d-flood-water-source") && curV.hazard_zones) {
+    const polyCoords = curV.hazard_zones.red_inundation_polygon || [];
+    if (polyCoords.length > 0) {
+      const geoJsonRing = polyCoords.map(pt => [pt[1], pt[0]]);
+      geoJsonRing.push([polyCoords[0][1], polyCoords[0][0]]);
+
+      map3d.getSource("3d-flood-water-source").setData({
+        type: "FeatureCollection",
+        features: [
+          {
+            type: "Feature",
+            geometry: {
+              type: "Polygon",
+              coordinates: [geoJsonRing]
+            },
+            properties: {
+              water_level: waterSliderVal
+            }
+          }
+        ]
+      });
+    }
+  }
+}
+
+// Render 3D Markers & Floating Place Labels on MapLibre
+function render3DMarkers(villages) {
+  if (!map3d || !villages.length) return;
+
+  // Clear previous 3D markers
+  villageMarkers3D.forEach(m => m.remove());
+  villageMarkers3D = [];
+
+  villages.forEach(v => {
+    // A. Village 3D Floating Name Badge
+    const el = document.createElement("div");
+    el.className = "marker-3d-village-badge";
+    el.innerHTML = `
+      <div class="badge-3d-bubble">
+        <span class="badge-3d-dot"></span>
+        <span><b>${v.name}</b> (${v.elevation_m}m)</span>
+      </div>
+    `;
+    el.onclick = () => selectVillage(v.id);
+
+    const marker = new maplibregl.Marker({ element: el })
+      .setLngLat([v.lng, v.lat])
+      .setPopup(new maplibregl.Popup({ offset: 20 }).setHTML(`
+        <div style="font-family:sans-serif; padding:4px;">
+          <div style="font-weight:700; color:#0284c7;">🏔️ ${v.name} (${v.ward})</div>
+          <div style="font-size:11px;">Elevation: <b>${v.elevation_m}m</b> | Slope: <b>${v.slope_deg}°</b></div>
+          <div style="font-size:11px; color:#ef4444; font-weight:700; margin-top:2px;">Threat: ${v.risk_percentage}% (${v.risk_level})</div>
+        </div>
+      `))
+      .addTo(map3d);
+
+    villageMarkers3D.push(marker);
+
+    // B. Safe Ridge Shelter 3D Marker (High Ground)
+    const shelters = v.safe_shelters || [];
+    shelters.forEach(s => {
+      const shelterEl = document.createElement("div");
+      shelterEl.className = "marker-3d-shelter-badge";
+      shelterEl.innerHTML = `
+        <div class="shelter-3d-bubble">
+          ⛺ <b>${s.name}</b> (${s.elevation_m}m)
+        </div>
+      `;
+      const shelterMarker = new maplibregl.Marker({ element: shelterEl })
+        .setLngLat([s.lng, s.lat])
+        .addTo(map3d);
+
+      villageMarkers3D.push(shelterMarker);
+    });
+  });
+}
+
+// Switch between 2D Tactical and 3D Mountain Mesh Views
+function switchViewMode(mode) {
+  is3DMode = mode === "3d";
+
+  const map2DDiv = document.getElementById("gis-map");
+  const map3DDiv = document.getElementById("gis-map-3d");
+  const section2D = document.getElementById("basemap-section-2d");
+  const section3D = document.getElementById("basemap-section-3d");
+
+  document.querySelectorAll(".view-mode-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.view === mode);
+  });
+
+  if (is3DMode) {
+    map2DDiv.style.display = "none";
+    map3DDiv.style.display = "block";
+    section2D.style.display = "none";
+    section3D.style.display = "block";
+
+    init3DMap();
+    setTimeout(() => {
+      if (map3d) {
+        map3d.resize();
+        render3DMarkers(allVillages);
+        update3DFloodSimulation();
+        const curV = allVillages.find(v => v.id === currentVillageId);
+        if (curV) {
+          map3d.flyTo({ center: [curV.lng, curV.lat], zoom: 13.2, pitch: 65, bearing: -25 });
+        }
+      }
+    }, 150);
+  } else {
+    map2DDiv.style.display = "block";
+    map3DDiv.style.display = "none";
+    section2D.style.display = "block";
+    section3D.style.display = "none";
+
+    setTimeout(() => {
+      if (map) map.invalidateSize();
+    }, 100);
+  }
+}
+
+// 2. Basemap Switcher Handler
+function setBasemap(type) {
+  const cfg = BASEMAP_TILES[type] || BASEMAP_TILES.dark;
+  
+  if (currentBaseLayer) {
+    map.removeLayer(currentBaseLayer);
+  }
+
+  currentBaseLayer = L.tileLayer(cfg.url, cfg.options).addTo(map);
+
+  const mapContainer = document.getElementById("gis-map");
+  if (cfg.isDarkFilter) {
+    mapContainer.classList.add("map-dark-filter");
+  } else {
+    mapContainer.classList.remove("map-dark-filter");
+  }
+
+  // Update active button state
+  document.querySelectorAll(".basemap-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.basemap === type);
+  });
+}
+
+// 3. Fetch Initial Telemetry & Villages
+async function fetchInitialData(isFirstLoad = false) {
+  try {
+    const res = await fetch("/api/villages");
+    const data = await res.json();
+    allVillages = data.villages || [];
+    renderVillageList(allVillages);
+    updateMapMarkers(allVillages);
+    updateThreatIndex(allVillages);
+    
+    // Select first village ONLY on initial page load
+    if (isFirstLoad && allVillages.length > 0) {
+      selectVillage(allVillages[0].id, true);
+    }
+  } catch (err) {
+    console.error("Error fetching villages:", err);
+  }
+}
+
+// 4. Render Village List in Left Panel
+function renderVillageList(villages) {
+  const container = document.getElementById("village-list-container");
+  container.innerHTML = "";
+
+  villages.forEach(v => {
+    const card = document.createElement("div");
+    card.className = `village-card ${v.id === currentVillageId ? "selected" : ""}`;
+    card.id = `card-${v.id}`;
+    card.onclick = () => selectVillage(v.id, true);
+
+    const badgeClass = `badge-${v.risk_level.toLowerCase()}`;
+
+    card.innerHTML = `
+      <div class="village-info">
+        <h4>${v.name}</h4>
+        <div class="village-meta">Elev: ${v.elevation_m}m | Slope: ${v.slope_deg}°</div>
+      </div>
+      <div class="risk-badge ${badgeClass}">
+        ${v.risk_badge} ${v.risk_percentage}%
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+// 5. Update Leaflet Map Markers & Polygons
+function updateMapMarkers(villages) {
+  villages.forEach(v => {
+    const color = RISK_COLORS[v.risk_level] || "#10b981";
+    
+    // Custom Pulsating Circle Marker
+    if (!villageMarkers[v.id]) {
+      const circle = L.circleMarker([v.lat, v.lng], {
+        radius: 12,
+        fillColor: color,
+        color: "#ffffff",
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.8
+      }).addTo(map);
+
+      circle.bindTooltip(`<b>${v.name}</b><br>Risk: ${v.risk_percentage}% (${v.risk_level})`, {
+        permanent: false,
+        direction: "top"
+      });
+
+      circle.on("click", () => selectVillage(v.id, true));
+      villageMarkers[v.id] = circle;
+    } else {
+      villageMarkers[v.id].setStyle({
+        fillColor: color,
+        radius: v.risk_level === "CRITICAL" ? 16 : 12
+      });
+      villageMarkers[v.id].setTooltipContent(`<b>${v.name}</b><br>Risk: ${v.risk_percentage}% (${v.risk_level})`);
+    }
+  });
+}
+
+// 6. Select a Village & Load Deep-Dive Analysis
+async function selectVillage(villageId, flyCamera = true) {
+  currentVillageId = villageId;
+
+  // Highlight card in list
+  document.querySelectorAll(".village-card").forEach(c => c.classList.remove("selected"));
+  const selectedCard = document.getElementById(`card-${villageId}`);
+  if (selectedCard) selectedCard.classList.add("selected");
+
+  try {
+    const res = await fetch(`/api/villages/${villageId}`);
+    const data = await res.json();
+    renderVillageDetail(data);
+    renderMapGISOverlays(data);
+
+    // ONLY fly camera if explicitly requested (e.g. user clicked a different village)
+    if (flyCamera) {
+      if (is3DMode && map3d) {
+        map3d.flyTo({
+          center: [data.village.lng, data.village.lat],
+          zoom: 13.2,
+          pitch: 65,
+          bearing: -30,
+          essential: true
+        });
+      }
+    }
+
+    // Always update 3D flood polygon without resetting user's zoom/pan position
+    if (is3DMode) {
+      update3DFloodSimulation();
+    }
+  } catch (err) {
+    console.error("Error loading village details:", err);
+  }
+}
+
+// 7. Render Deep-Dive Telemetry, AI Risk, XAI, and Action Engine
+function renderVillageDetail(data) {
+  const v = data.village;
+  const tel = data.telemetry;
+  const risk = data.risk_analysis;
+  const lead = data.lead_time;
+  const health = data.sensor_health;
+  const action = data.action_plan;
+
+  // Header
+  document.getElementById("detail-village-name").innerText = `${v.name} (${v.ward})`;
+  document.getElementById("detail-village-meta").innerText = 
+    `Elevation: ${v.elevation_m}m | Slope: ${v.slope_deg}° | Stream Dist: ${v.distance_to_stream_m}m | Pop: ${v.population}`;
+
+  // Risk Banner
+  const banner = document.getElementById("risk-banner");
+  banner.className = `banner-risk ${risk.risk_level}`;
+  document.getElementById("risk-pct-large").innerText = `${risk.risk_percentage}%`;
+  document.getElementById("risk-level-large").innerText = `${risk.risk_badge} ${risk.risk_level}`;
+  document.getElementById("risk-model-badge").innerText = `Model: ${risk.model_type} (${Math.round(risk.confidence_score * 100)}% Conf)`;
+  document.getElementById("lead-time-large").innerText = lead.window_display;
+
+  // Dual-Hazard Breakdown (Inundation vs Debris Slope Failure)
+  const floodPct = Math.min(100, Math.round(risk.risk_percentage * 0.95 + (tel.water_level_m ? tel.water_level_m * 8 : 0)));
+  const slopePct = Math.min(100, Math.round(risk.risk_percentage * 0.85 + (v.slope_deg * 0.5) + (tel.soil_moisture * 0.2)));
+  
+  document.getElementById("val-flood-pct").innerText = `${floodPct}%`;
+  document.getElementById("bar-flood-pct").style.width = `${floodPct}%`;
+  document.getElementById("val-slope-pct").innerText = `${slopePct}%`;
+  document.getElementById("bar-slope-pct").style.width = `${slopePct}%`;
+
+  // Telemetry Gauges
+  document.getElementById("tel-rain").innerText = `${tel.rain_1h || 0} mm/h`;
+  document.getElementById("tel-soil").innerText = `${tel.soil_moisture || 0}%`;
+  document.getElementById("tel-water").innerText = tel.water_level_m !== null ? `${tel.water_level_m} m` : "OFFLINE ⚠️";
+  document.getElementById("tel-tilt").innerText = `${tel.tilt_deg || 0}°`;
+
+  // Explainable AI (XAI)
+  renderExplainability(risk.explainability);
+
+  // Sensor Health Status
+  renderSensorHealth(health.sensors, health.data_health_pct);
+
+  // Action & Evacuation Directives
+  renderActionPlan(action);
+
+  // Update What-If Sliders with current telemetry
+  document.getElementById("slider-rain").value = tel.rain_1h || 0;
+  document.getElementById("val-rain").innerText = `${tel.rain_1h || 0} mm/h`;
+  document.getElementById("slider-soil").value = tel.soil_moisture || 0;
+  document.getElementById("val-soil").innerText = `${tel.soil_moisture || 0}%`;
+  document.getElementById("slider-water").value = tel.water_level_m || 1.0;
+  document.getElementById("val-water").innerText = `${tel.water_level_m || 1.0} m`;
+
+  // Citizen view sync
+  renderCitizenView(v, risk, lead, action);
+}
+
+// 8. Render Explainable AI (XAI) Feature Attribution
+function renderExplainability(factors) {
+  const container = document.getElementById("xai-container");
+  container.innerHTML = "";
+
+  factors.forEach(f => {
+    const row = document.createElement("div");
+    row.className = "xai-bar-row";
+    row.innerHTML = `
+      <div class="xai-bar-label-row">
+        <span>${f.factor}</span>
+        <span style="font-weight:700; color: var(--accent-cyan);">${f.contribution_pct}%</span>
+      </div>
+      <div class="xai-bar-track">
+        <div class="xai-bar-fill" style="width: ${f.contribution_pct}%;"></div>
+      </div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+// 9. Render Sensor Health Matrix
+function renderSensorHealth(sensors, healthPct) {
+  const container = document.getElementById("sensor-matrix-container");
+  document.getElementById("health-pct-badge").innerText = `${healthPct}% Data Health`;
+  container.innerHTML = "";
+
+  sensors.forEach(s => {
+    const item = document.createElement("div");
+    item.className = "sensor-item";
+    item.innerHTML = `
+      <div>
+        <div style="font-weight:600;">${s.sensor_type.toUpperCase()}</div>
+        <div style="font-size:0.68rem; color:var(--text-muted);">${s.sensor_id}</div>
+      </div>
+      <div class="sensor-state-badge ${s.status}">
+        ${s.status}
+      </div>
+    `;
+    container.appendChild(item);
+  });
+}
+
+// 10. Render Action Plan & SMS Broadcast
+function renderActionPlan(action) {
+  const container = document.getElementById("action-plan-container");
+  container.innerHTML = `
+    <div class="action-title">📢 ${action.headline}</div>
+    <div style="font-size:0.75rem; color:var(--accent-cyan); margin-bottom:6px; font-weight:600;">
+      Tier: ${action.escalation_tier}
+    </div>
+  `;
+
+  action.recommended_actions.forEach(act => {
+    const item = document.createElement("div");
+    item.className = "action-item";
+    item.innerText = act;
+    container.appendChild(item);
+  });
+
+  document.getElementById("sms-preview").innerText = action.simulated_sms_broadcast;
+}
+
+// 11. Render All GIS Overlays (Hazard Zones, Shelters, Routes, Streams, Sensors)
+function renderMapGISOverlays(data) {
+  const v = data.village;
+  const isCritical = data.risk_analysis.risk_level === "CRITICAL";
+
+  // Clear previous layers
+  shelterLayerGroup.clearLayers();
+  routeLayerGroup.clearLayers();
+  hazardZoneLayerGroup.clearLayers();
+  streamLayerGroup.clearLayers();
+  sensorLayerGroup.clearLayers();
+
+  // A. Hazard Area Inundation & Slope Polygons (Red, Orange, Green Zones)
+  if (v.hazard_zones) {
+    const zones = v.hazard_zones;
+
+    // 🔴 Red Inundation Zone (Riverside Flash Flood Buffer)
+    if (zones.red_inundation_polygon) {
+      const redPoly = L.polygon(zones.red_inundation_polygon, {
+        color: "#ef4444",
+        fillColor: "#ef4444",
+        fillOpacity: isCritical ? 0.55 : 0.35,
+        weight: isCritical ? 3 : 2,
+        dashArray: isCritical ? "4, 6" : null
+      });
+      redPoly.bindTooltip("<b>🔴 Red Hazard Zone</b><br>High Flash Flood & Inundation Risk", { sticky: true });
+      hazardZoneLayerGroup.addLayer(redPoly);
+    }
+
+    // 🟠 Orange Slope Zone (Steep Landslide Runoff Zone)
+    if (zones.orange_slope_polygon) {
+      const orangePoly = L.polygon(zones.orange_slope_polygon, {
+        color: "#f97316",
+        fillColor: "#f97316",
+        fillOpacity: 0.25,
+        weight: 1.5
+      });
+      orangePoly.bindTooltip("<b>🟠 Orange Buffer Zone</b><br>Steep Slope & Debris Flow Risk", { sticky: true });
+      hazardZoneLayerGroup.addLayer(orangePoly);
+    }
+
+    // 🟢 Green Safe Ridge Zone (Relief Shelter Safe Area)
+    if (zones.green_safe_polygon) {
+      const greenPoly = L.polygon(zones.green_safe_polygon, {
+        color: "#10b981",
+        fillColor: "#10b981",
+        fillOpacity: 0.3,
+        weight: 2
+      });
+      greenPoly.bindTooltip("<b>🟢 Green Safe Zone</b><br>Elevated Ground / Safe Relief Area", { sticky: true });
+      hazardZoneLayerGroup.addLayer(greenPoly);
+    }
+  }
+
+  // B. River Drainage Streams (🌊)
+  if (v.river_stream) {
+    const streamLine = L.polyline(v.river_stream, {
+      color: "#38bdf8",
+      weight: 4,
+      opacity: 0.85
+    });
+    streamLine.bindTooltip("🌊 Tributary Stream Channel (Beas Basin Drainage)", { sticky: true });
+    streamLayerGroup.addLayer(streamLine);
+  }
+
+  // C. Safe Relief Shelters (⛺ Sleek Compact Pin)
+  const shelters = v.safe_shelters || [];
+  shelters.forEach(s => {
+    const shelterMarker = L.marker([s.lat, s.lng], {
+      icon: L.divIcon({
+        className: "custom-shelter-pin",
+        html: `<div class="shelter-pin-badge">⛺</div>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14]
+      })
+    });
+    shelterMarker.bindTooltip(`
+      <div style="font-family:sans-serif; padding:2px;">
+        <div style="font-weight:700; color:#10b981;">⛺ ${s.name}</div>
+        <div style="font-size:11px; color:#cbd5e1;">Capacity: <b>${s.capacity}</b> people | Elev: <b>${s.elevation_m}m</b></div>
+        <div style="font-size:10px; color:#34d399; margin-top:2px;">Status: DESIGNATED SAFE REFUGE</div>
+      </div>
+    `, { sticky: true, direction: "top" });
+    shelterLayerGroup.addLayer(shelterMarker);
+  });
+
+  // D. Evacuation Routes (🛣️)
+  const routes = v.evacuation_routes || [];
+  routes.forEach(r => {
+    const isSafe = r.safety_score > 50;
+    const pathCoords = r.path || [[v.lat, v.lng], [shelters[0]?.lat || v.lat, shelters[0]?.lng || v.lng]];
+    
+    const routeLine = L.polyline(pathCoords, {
+      color: isSafe ? "#10b981" : "#ef4444",
+      weight: 3.5,
+      dashArray: isSafe ? "6, 8" : "2, 6",
+      opacity: 0.9
+    });
+    routeLine.bindTooltip(`<b>${r.name}</b><br>Status: ${r.status}`, { sticky: true });
+    routeLayerGroup.addLayer(routeLine);
+  });
+
+  // E. Real-Time IoT Sensor Nodes (📡 Sleek Compact Sensor Pin)
+  const sensors = v.sensor_locations || [];
+  sensors.forEach(sens => {
+    const sensorMarker = L.marker([sens.lat, sens.lng], {
+      icon: L.divIcon({
+        className: "custom-sensor-pin",
+        html: `<div class="sensor-pin-badge">📡</div>`,
+        iconSize: [22, 22],
+        iconAnchor: [11, 11]
+      })
+    });
+    sensorMarker.bindTooltip(`
+      <div style="font-family:sans-serif; padding:2px;">
+        <div style="font-weight:700; color:#38bdf8;">📡 ${sens.type} Node</div>
+        <div style="font-size:11px; color:#cbd5e1;">ID: <code>${sens.id}</code></div>
+        <div style="font-size:10px; color:#10b981;">Status: LIVE TELEMETRY STREAMING</div>
+      </div>
+    `, { sticky: true, direction: "top" });
+    sensorLayerGroup.addLayer(sensorMarker);
+  });
+}
+
+// 12. Render Citizen Public View
+function renderCitizenView(v, risk, lead, action) {
+  const header = document.getElementById("citizen-header");
+  header.className = `citizen-alert-header banner-risk ${risk.risk_level}`;
+  document.getElementById("cit-village").innerText = v.name;
+  document.getElementById("cit-status").innerText = risk.risk_level;
+  document.getElementById("cit-time").innerText = lead.window_display;
+  document.getElementById("cit-shelter").innerText = action.primary_shelter ? action.primary_shelter.name : "High Ridge School";
+  document.getElementById("cit-route").innerText = action.recommended_route ? action.recommended_route.name : "Upper Highway";
+}
+
+// 13. Update Threat Index Meter
+function updateThreatIndex(villages) {
+  if (!villages.length) return;
+  const avgRisk = Math.round(villages.reduce((acc, v) => acc + v.risk_percentage, 0) / villages.length);
+  document.getElementById("threat-meter-val").innerText = `${avgRisk}%`;
+  document.getElementById("threat-bar-fill").style.width = `${avgRisk}%`;
+}
+
+// 14. Interactive Controls & Event Listeners
+function setupEventListeners() {
+  // A0. 2D / 3D View Switcher Buttons
+  document.querySelectorAll(".view-mode-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const mode = btn.dataset.view;
+      switchViewMode(mode);
+    });
+  });
+
+  // A. Basemap Switcher Buttons
+  document.querySelectorAll(".basemap-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const basemapType = btn.dataset.basemap;
+      setBasemap(basemapType);
+    });
+  });
+
+  // B. Layer Visibility Filter Checkboxes
+  document.getElementById("filter-hazard-zones").addEventListener("change", (e) => {
+    if (e.target.checked) map.addLayer(hazardZoneLayerGroup);
+    else map.removeLayer(hazardZoneLayerGroup);
+  });
+
+  document.getElementById("filter-shelters").addEventListener("change", (e) => {
+    if (e.target.checked) map.addLayer(shelterLayerGroup);
+    else map.removeLayer(shelterLayerGroup);
+  });
+
+  document.getElementById("filter-routes").addEventListener("change", (e) => {
+    if (e.target.checked) map.addLayer(routeLayerGroup);
+    else map.removeLayer(routeLayerGroup);
+  });
+
+  document.getElementById("filter-sensors").addEventListener("change", (e) => {
+    if (e.target.checked) map.addLayer(sensorLayerGroup);
+    else map.removeLayer(sensorLayerGroup);
+  });
+
+  document.getElementById("filter-streams").addEventListener("change", (e) => {
+    if (e.target.checked) map.addLayer(streamLayerGroup);
+    else map.removeLayer(streamLayerGroup);
+  });
+
+  // C. What-If Preset Buttons
+  document.querySelectorAll(".preset-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const scenario = btn.dataset.scenario;
+      await applyScenario(scenario);
+    });
+  });
+
+  // D. What-If Sliders
+  const rainSlider = document.getElementById("slider-rain");
+  const soilSlider = document.getElementById("slider-soil");
+  const waterSlider = document.getElementById("slider-water");
+
+  const sendCustomUpdate = async () => {
+    const rain = parseFloat(rainSlider.value);
+    const soil = parseFloat(soilSlider.value);
+    const water = parseFloat(waterSlider.value);
+
+    document.getElementById("val-rain").innerText = `${rain} mm/h`;
+    document.getElementById("val-soil").innerText = `${soil}%`;
+    document.getElementById("val-water").innerText = `${water} m`;
+
+    // Immediately update 3D rising flood simulation in real time!
+    if (is3DMode) {
+      update3DFloodSimulation();
+    }
+
+    try {
+      await fetch("/api/simulate/custom", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          village_id: currentVillageId,
+          rain_1h: rain,
+          soil_moisture: soil,
+          water_level_m: water,
+          water_level_rise_rate: (water - 1.0) * 0.4
+        })
+      });
+      selectVillage(currentVillageId, false);
+      fetchInitialData(false);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  rainSlider.addEventListener("input", sendCustomUpdate);
+  soilSlider.addEventListener("input", sendCustomUpdate);
+  waterSlider.addEventListener("input", sendCustomUpdate);
+
+  // E. Role Switcher
+  document.querySelectorAll(".role-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".role-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const role = btn.dataset.role;
+      if (role === "citizen") {
+        document.getElementById("authority-view").style.display = "none";
+        document.getElementById("citizen-view").style.display = "block";
+      } else {
+        document.getElementById("authority-view").style.display = "grid";
+        document.getElementById("citizen-view").style.display = "none";
+      }
+    });
+  });
+
+  // F. Sensor Outage Toggle Button
+  const toggleBtn = document.getElementById("btn-toggle-water-sensor");
+  if (toggleBtn) {
+    toggleBtn.addEventListener("click", async () => {
+      try {
+        const isOffline = toggleBtn.dataset.state === "offline";
+        const newStatus = isOffline ? "ONLINE" : "OFFLINE";
+        await fetch("/api/sensors/toggle", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sensor_id: `SENS-PND-WTR-01`,
+            status: newStatus
+          })
+        });
+        toggleBtn.dataset.state = newStatus.toLowerCase();
+        toggleBtn.innerText = isOffline ? "Disconnect Water Sensor" : "Reconnect Water Sensor";
+        selectVillage(currentVillageId);
+      } catch (e) {
+        console.error(e);
+      }
+    });
+  }
+
+  // G. Scientific Methodology Modal Controls
+  const modal = document.getElementById("methodology-modal");
+  const openModalBtn = document.getElementById("btn-open-methodology");
+  const closeModalBtn = document.getElementById("btn-close-methodology");
+
+  if (openModalBtn) {
+    openModalBtn.addEventListener("click", () => {
+      modal.classList.add("active");
+    });
+  }
+
+  if (closeModalBtn) {
+    closeModalBtn.addEventListener("click", () => {
+      modal.classList.remove("active");
+    });
+  }
+
+  // Close when clicking on backdrop
+  if (modal) {
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        modal.classList.remove("active");
+      }
+    });
+  }
+
+  // Modal Tab Switching
+  document.querySelectorAll(".modal-tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".modal-tab-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".modal-tab-pane").forEach(p => p.classList.remove("active"));
+
+      btn.classList.add("active");
+      const targetTab = btn.dataset.tab;
+      const targetPane = document.getElementById(targetTab);
+      if (targetPane) targetPane.classList.add("active");
+    });
+  });
+}
+
+// Apply Scenario Preset
+async function applyScenario(scenarioName) {
+  try {
+    await fetch("/api/simulate/scenario", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ scenario_name: scenarioName })
+    });
+    await fetchInitialData(false);
+    selectVillage(currentVillageId, false);
+
+    // Update 3D rising water simulation
+    if (is3DMode) {
+      setTimeout(update3DFloodSimulation, 200);
+    }
+  } catch (e) {
+    console.error("Error applying scenario:", e);
+  }
+}
+
+// 15. Initialize WebSocket Telemetry Stream
+function initWebSocket() {
+  const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+  const wsUrl = `${protocol}//${window.location.host}/ws/telemetry`;
+
+  ws = new WebSocket(wsUrl);
+
+  ws.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      if (data.type === "TELEMETRY_PULSE") {
+        updateMapMarkers(data.villages);
+        updateThreatIndex(data.villages);
+      }
+    } catch (e) {
+      console.error("WS error:", e);
+    }
+  };
+
+  ws.onclose = () => {
+    setTimeout(initWebSocket, 4000);
+  };
+}
