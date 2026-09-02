@@ -427,25 +427,45 @@ function render3DMarkers(villages) {
       villageMarkers3D.push(shelterMarker);
     });
 
-    // C. 3D Flow Direction Badges along River Canyon (🌊 NE ➔ SW)
+    // C. 3D Flow Direction Badges along River Canyon (🌊 NE ➔ SW Downhill Flow)
     if (v.river_stream && v.river_stream.length > 1) {
-      const midIdx = Math.floor(v.river_stream.length / 2);
-      const midPt = v.river_stream[midIdx];
-      const upperPt = v.river_stream[v.river_stream.length - 1];
+      const pts = v.river_stream;
+      const upperPt = pts[pts.length - 1]; // High mountain origin (NE)
+      const midIdx = Math.floor(pts.length / 2);
+      const midPt = pts[midIdx]; // Mid-gorge
+      const lowerPt = pts[0]; // Downstream basin (SW)
 
+      // 1. Central Floating Flow Banner
       const flowEl = document.createElement("div");
       flowEl.className = "marker-3d-flow-badge";
       flowEl.innerHTML = `
         <div class="badge-3d-flow-bubble">
-          <span>🌊 FLOW: NE ➔ SW (Downhill)</span>
+          <span>🌊 FLOOD FLOW: NE ➔ SW (Downhill)</span>
           <span class="flow-arrow-icon">➤➤➤</span>
         </div>
       `;
       const flowMarker = new maplibregl.Marker({ element: flowEl })
         .setLngLat([midPt[1], midPt[0]])
         .addTo(map3d);
-
       villageMarkers3D.push(flowMarker);
+
+      // 2. Upper Gorge Direction Arrow (Pointing Downhill)
+      const upperChevronEl = document.createElement("div");
+      upperChevronEl.className = "marker-3d-chevron-badge";
+      upperChevronEl.innerHTML = `<div class="badge-3d-chevron" title="Downhill Flow: North-East Origin">➤</div>`;
+      const upperChevronMarker = new maplibregl.Marker({ element: upperChevronEl })
+        .setLngLat([upperPt[1], upperPt[0]])
+        .addTo(map3d);
+      villageMarkers3D.push(upperChevronMarker);
+
+      // 3. Lower Basin Direction Arrow (Pointing to Valley Floor)
+      const lowerChevronEl = document.createElement("div");
+      lowerChevronEl.className = "marker-3d-chevron-badge";
+      lowerChevronEl.innerHTML = `<div class="badge-3d-chevron" title="Downhill Flow to 880m">➤</div>`;
+      const lowerChevronMarker = new maplibregl.Marker({ element: lowerChevronEl })
+        .setLngLat([lowerPt[1], lowerPt[0]])
+        .addTo(map3d);
+      villageMarkers3D.push(lowerChevronMarker);
     }
   });
 }
@@ -816,31 +836,46 @@ function renderMapGISOverlays(data) {
     streamLine.bindTooltip(`<b>🌊 River Drainage Channel</b><br>Flow Direction: <b>North-East ➔ South-West (Downhill to ${v.elevation_m}m)</b><br>Velocity: <b>25–35 km/h</b>`, { sticky: true });
     streamLayerGroup.addLayer(streamLine);
 
-    // 1. Flow Direction Pill Badge in 2D (Positioned near midpoint)
+    // 1. Flow Direction Pill Banner in 2D (Positioned near midpoint)
     const midIdx = Math.floor(v.river_stream.length / 2);
     const midCoord = v.river_stream[midIdx];
     const upperCoord = v.river_stream[v.river_stream.length - 1];
+    const lowerCoord = v.river_stream[0];
     
     const flowBadgeMarker = L.marker(midCoord, {
       icon: L.divIcon({
         className: "flow-badge-wrapper",
-        html: `<div class="flow-direction-2d-badge"><span>🌊 FLOW: NE ➔ SW</span><span class="flow-arrow-icon">➤➤➤</span></div>`,
-        iconSize: [160, 26],
-        iconAnchor: [80, 13]
-      })
+        html: `<div class="flow-direction-2d-badge"><span>🌊 FLOOD FLOW: NE ➔ SW</span><span class="flow-arrow-icon">➤➤➤</span></div>`,
+        iconSize: [200, 28],
+        iconAnchor: [100, 14]
+      }),
+      zIndexOffset: 1000
     });
     streamLayerGroup.addLayer(flowBadgeMarker);
 
-    // 2. Intermediate Flow Arrow Pointing Downstream
-    const arrowMarker = L.marker(upperCoord, {
+    // 2. Upper Mountain Origin Arrow (Pointing Downstream)
+    const upperArrowMarker = L.marker(upperCoord, {
       icon: L.divIcon({
         className: "flow-chevron-wrapper",
-        html: `<div class="flow-stream-chevron" title="Downhill Mountain Flow">➤</div>`,
-        iconSize: [24, 24],
-        iconAnchor: [12, 12]
-      })
+        html: `<div class="flow-stream-chevron" title="North-East Mountain Origin">➤</div>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14]
+      }),
+      zIndexOffset: 1000
     });
-    streamLayerGroup.addLayer(arrowMarker);
+    streamLayerGroup.addLayer(upperArrowMarker);
+
+    // 3. Lower Basin Exit Arrow (Pointing to Valley Floor)
+    const lowerArrowMarker = L.marker(lowerCoord, {
+      icon: L.divIcon({
+        className: "flow-chevron-wrapper",
+        html: `<div class="flow-stream-chevron" title="Downhill Inundation at 880m">➤</div>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14]
+      }),
+      zIndexOffset: 1000
+    });
+    streamLayerGroup.addLayer(lowerArrowMarker);
   }
 
   // C. Safe Relief Shelters (⛺ Sleek Compact Pin)
