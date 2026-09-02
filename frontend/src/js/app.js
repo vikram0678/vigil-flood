@@ -550,6 +550,12 @@ async function fetchInitialData(isFirstLoad = false) {
     if (isFirstLoad && allVillages.length > 0) {
       selectVillage(allVillages[0].id, true);
     }
+    
+    // Update 3D markers if in 3D mode
+    if (is3DMode && map3d) {
+      render3DMarkers(allVillages);
+      update3DFloodSimulation();
+    }
   } catch (err) {
     console.error("Error fetching villages:", err);
   }
@@ -642,8 +648,9 @@ async function selectVillage(villageId, flyCamera = true) {
       }
     }
 
-    // Always update 3D flood polygon without resetting user's zoom/pan position
-    if (is3DMode) {
+    // Always update 3D flood polygon and markers without resetting user's zoom/pan position
+    if (is3DMode && map3d) {
+      render3DMarkers(allVillages);
       update3DFloodSimulation();
     }
   } catch (err) {
