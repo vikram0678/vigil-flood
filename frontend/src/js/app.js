@@ -426,6 +426,27 @@ function render3DMarkers(villages) {
 
       villageMarkers3D.push(shelterMarker);
     });
+
+    // C. 3D Flow Direction Badges along River Canyon (🌊 NE ➔ SW)
+    if (v.river_stream && v.river_stream.length > 1) {
+      const midIdx = Math.floor(v.river_stream.length / 2);
+      const midPt = v.river_stream[midIdx];
+      const upperPt = v.river_stream[v.river_stream.length - 1];
+
+      const flowEl = document.createElement("div");
+      flowEl.className = "marker-3d-flow-badge";
+      flowEl.innerHTML = `
+        <div class="badge-3d-flow-bubble">
+          <span>🌊 FLOW: NE ➔ SW (Downhill)</span>
+          <span class="flow-arrow-icon">➤➤➤</span>
+        </div>
+      `;
+      const flowMarker = new maplibregl.Marker({ element: flowEl })
+        .setLngLat([midPt[1], midPt[0]])
+        .addTo(map3d);
+
+      villageMarkers3D.push(flowMarker);
+    }
   });
 }
 
@@ -785,15 +806,41 @@ function renderMapGISOverlays(data) {
     }
   }
 
-  // B. River Drainage Streams (🌊)
-  if (v.river_stream) {
+  // B. River Drainage Streams (🌊 With Flow Direction Indicators)
+  if (v.river_stream && v.river_stream.length > 1) {
     const streamLine = L.polyline(v.river_stream, {
       color: "#38bdf8",
-      weight: 4,
-      opacity: 0.85
+      weight: 5,
+      opacity: 0.9
     });
-    streamLine.bindTooltip("🌊 Tributary Stream Channel (Beas Basin Drainage)", { sticky: true });
+    streamLine.bindTooltip(`<b>🌊 River Drainage Channel</b><br>Flow Direction: <b>North-East ➔ South-West (Downhill to ${v.elevation_m}m)</b><br>Velocity: <b>25–35 km/h</b>`, { sticky: true });
     streamLayerGroup.addLayer(streamLine);
+
+    // 1. Flow Direction Pill Badge in 2D (Positioned near midpoint)
+    const midIdx = Math.floor(v.river_stream.length / 2);
+    const midCoord = v.river_stream[midIdx];
+    const upperCoord = v.river_stream[v.river_stream.length - 1];
+    
+    const flowBadgeMarker = L.marker(midCoord, {
+      icon: L.divIcon({
+        className: "flow-badge-wrapper",
+        html: `<div class="flow-direction-2d-badge"><span>🌊 FLOW: NE ➔ SW</span><span class="flow-arrow-icon">➤➤➤</span></div>`,
+        iconSize: [160, 26],
+        iconAnchor: [80, 13]
+      })
+    });
+    streamLayerGroup.addLayer(flowBadgeMarker);
+
+    // 2. Intermediate Flow Arrow Pointing Downstream
+    const arrowMarker = L.marker(upperCoord, {
+      icon: L.divIcon({
+        className: "flow-chevron-wrapper",
+        html: `<div class="flow-stream-chevron" title="Downhill Mountain Flow">➤</div>`,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+      })
+    });
+    streamLayerGroup.addLayer(arrowMarker);
   }
 
   // C. Safe Relief Shelters (⛺ Sleek Compact Pin)
