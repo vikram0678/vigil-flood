@@ -8,6 +8,7 @@ from backend.app.core.ml_engine import ml_engine
 from backend.app.core.lead_time_engine import lead_time_engine
 from backend.app.core.action_engine import action_engine
 from backend.app.core.sensor_health import sensor_health_manager
+from backend.app.core.sanitizers import sanitize_and_log_telemetry
 
 class SimulationEngine:
     def __init__(self):
@@ -128,21 +129,41 @@ class SimulationEngine:
         # 1. Check Sensor Health
         sensor_summary = sensor_health_manager.get_village_sensor_summary(village["sensors"], state)
         
-        # 2. Prepare ML Features
+        # 2. Sanitize & Log Telemetry with Security Audit Trail
+        sanitized_telemetry = sanitize_and_log_telemetry(
+            raw_data={
+                "rainfall_1h": state.get("rain_1h", 0.0),
+                "rainfall_3h": state.get("rain_3h", 0.0),
+                "rainfall_6h": state.get("rain_6h", 0.0),
+                "rainfall_24h": state.get("rain_24h", 0.0),
+                "forecast_rain_3h": state.get("forecast_rain_3h", 0.0),
+                "soil_moisture": state.get("soil_moisture", 40.0),
+                "water_level_m": state.get("water_level_m", 1.0),
+                "water_level_rise_rate": state.get("water_level_rise_rate", 0.0),
+                "slope_deg": village.get("slope_deg", 25.0),
+                "elevation_m": village.get("elevation_m", 900.0),
+                "distance_to_stream_m": village.get("distance_to_stream_m", 50.0),
+                "historical_flood_count": village.get("historical_flood_count", 2),
+                "historical_landslide_count": village.get("historical_landslide_count", 3)
+            },
+            source="SIMULATION_ENGINE",
+            village_id=village_id
+        )
+
         ml_input = {
-            "rain_1h": state.get("rain_1h", 0.0),
-            "rain_3h": state.get("rain_3h", 0.0),
-            "rain_6h": state.get("rain_6h", 0.0),
-            "rain_24h": state.get("rain_24h", 0.0),
-            "forecast_rain_3h": state.get("forecast_rain_3h", 0.0),
-            "soil_moisture": state.get("soil_moisture", 40.0),
-            "water_level_m": state.get("water_level_m"),
-            "water_level_rise_rate": state.get("water_level_rise_rate"),
-            "slope_deg": village.get("slope_deg", 25.0),
-            "elevation_m": village.get("elevation_m", 900.0),
-            "distance_to_stream_m": village.get("distance_to_stream_m", 50.0),
-            "historical_flood_count": village.get("historical_flood_count", 2),
-            "historical_landslide_count": village.get("historical_landslide_count", 3)
+            "rain_1h": sanitized_telemetry["rainfall_1h"],
+            "rain_3h": sanitized_telemetry["rainfall_3h"],
+            "rain_6h": sanitized_telemetry["rainfall_6h"],
+            "rain_24h": sanitized_telemetry["rainfall_24h"],
+            "forecast_rain_3h": sanitized_telemetry["forecast_rain_3h"],
+            "soil_moisture": sanitized_telemetry["soil_moisture"],
+            "water_level_m": sanitized_telemetry["water_level_m"],
+            "water_level_rise_rate": sanitized_telemetry["water_level_rise_rate"],
+            "slope_deg": sanitized_telemetry["slope_deg"],
+            "elevation_m": sanitized_telemetry["elevation_m"],
+            "distance_to_stream_m": sanitized_telemetry["distance_to_stream_m"],
+            "historical_flood_count": sanitized_telemetry["historical_flood_count"],
+            "historical_landslide_count": sanitized_telemetry["historical_landslide_count"]
         }
         
         # 3. Predict Multi-Source Risk (Adaptive Full vs Fallback)
