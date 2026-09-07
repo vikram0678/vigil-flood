@@ -126,3 +126,33 @@ def get_terrain_elevation(lat: float, lng: float):
             "zone_color": "#38bdf8",
             "source": "Local Topographic Gradient Engine"
         }
+
+@router.get("/external-apis")
+def get_external_api_registry():
+    """
+    Returns the centralized registry of all multi-source external APIs, 
+    their endpoints, rate limits, and configuration status.
+    """
+    from backend.app.core.external_connectors import external_api_client
+    return {
+        "status": "success",
+        "registry": external_api_client.get_api_registry()
+    }
+
+@router.get("/external-apis/live-fetch")
+def fetch_live_multi_source_data(lat: float = 31.6702, lng: float = 77.0394, village_id: str = "pandoh"):
+    """
+    Triggers live multi-source fetch (Rain, Forecast, Soil Moisture) from centralized connectors.
+    """
+    from backend.app.core.external_connectors import external_api_client
+    rain_data = external_api_client.fetch_live_rainfall(lat, lng, village_id=village_id)
+    soil_data = external_api_client.fetch_live_soil_moisture(lat, lng, village_id=village_id)
+    weather_data = external_api_client.fetch_openweather_current(lat, lng)
+
+    return {
+        "status": "success",
+        "coordinates": {"lat": lat, "lng": lng},
+        "rainfall_feed": rain_data,
+        "soil_moisture_feed": soil_data,
+        "openweather_feed": weather_data
+    }
