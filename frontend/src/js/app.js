@@ -299,24 +299,58 @@ function init3DMap() {
         }
       });
 
-      // 5. 3D Expanding River Stream Surge Line
+      // 5. 3D Base River Stream Surge Line
       map3d.addLayer({
         id: "3d-stream-line-layer",
         type: "line",
         source: "3d-stream-source",
         paint: {
-          "line-color": "#38bdf8",
+          "line-color": "#0284c7",
           "line-width": ["get", "stream_width"],
-          "line-opacity": 0.9
+          "line-opacity": 0.85
         }
       });
 
+      // 6. 3D Animated Downhill River Flow Pulse Layer
+      map3d.addLayer({
+        id: "3d-stream-pulse-layer",
+        type: "line",
+        source: "3d-stream-source",
+        paint: {
+          "line-color": "#ffffff",
+          "line-width": 3.5,
+          "line-opacity": 0.95,
+          "line-dasharray": [0, 4, 3]
+        }
+      });
+
+      start3DStreamFlowAnimation();
       render3DMarkers(allVillages);
       update3DFloodSimulation();
     });
   } catch (e) {
     console.error("MapLibre 3D Init Error:", e);
   }
+}
+
+// 3D River Stream Continuous Flow Animation Loop
+let streamAnimFrame = null;
+let streamDashStep = 0;
+function start3DStreamFlowAnimation() {
+  if (streamAnimFrame) cancelAnimationFrame(streamAnimFrame);
+  function animate() {
+    if (map3d && map3d.getLayer("3d-stream-pulse-layer")) {
+      streamDashStep = (streamDashStep + 0.08) % 8;
+      const d1 = streamDashStep;
+      const d2 = Math.max(0.1, 4 - d1);
+      const d3 = 4;
+      try {
+        map3d.setPaintProperty("3d-stream-pulse-layer", "line-dasharray", [d1, d2, d3]);
+      } catch (err) {}
+    }
+    streamAnimFrame = requestAnimationFrame(animate);
+  }
+  streamAnimFrame = requestAnimationFrame(animate);
 }
 
 // Update 3D Dynamic Rising Water Simulation Based on Sliders / Current Telemetry
@@ -329,10 +363,10 @@ function update3DFloodSimulation() {
   const waterSliderVal = parseFloat(document.getElementById("slider-water")?.value || 1.1);
   const rainSliderVal = parseFloat(document.getElementById("slider-rain")?.value || 15);
 
-  // 1. Update 3D River Stream Line Width & Surge
+  // 1. Update 3D River Stream Line Width & Surge (Ordered from Upstream NE -> Downstream SW)
   if (map3d.getSource("3d-stream-source") && curV.river_stream) {
-    const streamGeoJson = curV.river_stream.map(pt => [pt[1], pt[0]]);
-    const streamWidth = Math.max(5, waterSliderVal * 4.5 + (rainSliderVal > 80 ? 6 : 0));
+    const streamGeoJson = curV.river_stream.slice().reverse().map(pt => [pt[1], pt[0]]);
+    const streamWidth = Math.max(6, waterSliderVal * 4.5 + (rainSliderVal > 80 ? 6 : 0));
 
     map3d.getSource("3d-stream-source").setData({
       type: "FeatureCollection",
@@ -868,15 +902,24 @@ function renderMapGISOverlays(data) {
     }
   }
 
-  // B. River Drainage Streams (🌊 With Flow Direction Indicators)
+  // B. River Drainage Streams (🌊 Base Line + Animated Moving Downhill Pulses)
   if (v.river_stream && v.river_stream.length > 1) {
     const streamLine = L.polyline(v.river_stream, {
-      color: "#38bdf8",
-      weight: 5,
-      opacity: 0.9
+      color: "#0284c7",
+      weight: 7,
+      opacity: 0.85
     });
     streamLine.bindTooltip(`<b>🌊 River Drainage Channel</b><br>Flow Direction: <b>North-East ➔ South-West (Downhill to ${v.elevation_m}m)</b><br>Velocity: <b>25–35 km/h</b>`, { sticky: true });
     streamLayerGroup.addLayer(streamLine);
+
+    // Continuous Animated Flow Pulses on Top of Blue Channel (Streaming NE -> SW)
+    const pulseLine = L.polyline(v.river_stream.slice().reverse(), {
+      color: "#ffffff",
+      weight: 3.5,
+      opacity: 0.95,
+      className: "animated-stream-flow-pulse"
+    });
+    streamLayerGroup.addLayer(pulseLine);
 
     // 1. Flow Direction Pill Banner in 2D (Positioned near midpoint)
     const midIdx = Math.floor(v.river_stream.length / 2);

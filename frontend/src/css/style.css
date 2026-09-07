@@ -1154,6 +1154,21 @@ input[type="range"] {
   100% { transform: scale(0.95); }
 }
 
+/* Moving River Flow Pulses on Blue Stream Line */
+.animated-stream-flow-pulse {
+  stroke-dasharray: 8, 16 !important;
+  animation: streamFlowDownhill 1s linear infinite !important;
+}
+
+@keyframes streamFlowDownhill {
+  from {
+    stroke-dashoffset: 48;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
 /* ======================================================== */
 /* SCIENTIFIC METHODOLOGY MODAL STYLES                      */
 /* ======================================================== */
