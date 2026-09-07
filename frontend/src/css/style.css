@@ -301,28 +301,73 @@ body {
 }
 
 .village-card {
-  background: rgba(30, 41, 59, 0.5);
+  background: rgba(30, 41, 59, 0.6);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 12px 14px;
+  padding: 10px 12px;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
 }
 
 .village-card:hover {
   background: var(--bg-card-hover);
   border-color: var(--accent-cyan);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
 }
 
 .village-card.selected {
   border-color: var(--accent-cyan);
-  background: rgba(56, 189, 248, 0.08);
-  box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+  background: rgba(2, 132, 199, 0.18);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+}
+
+.village-card.critical-pulse-card {
+  border-color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.15) !important;
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+  animation: pulse-card-danger 2s infinite alternate;
+}
+
+@keyframes pulse-card-danger {
+  0% { border-color: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.3); }
+  100% { border-color: #fca5a5; box-shadow: 0 0 18px rgba(239, 68, 68, 0.7); }
+}
+
+.village-rank-badge {
+  background: #0f172a;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 3px 6px;
+  border-radius: 6px;
+  min-width: 26px;
+  text-align: center;
+}
+
+.critical-pulse-card .village-rank-badge {
+  background: #ef4444;
+  color: #ffffff;
+  border-color: #ffffff;
+}
+
+.village-meta-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.village-shelter-preview {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .village-info h4 {

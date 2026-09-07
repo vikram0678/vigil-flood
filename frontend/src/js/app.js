@@ -630,23 +630,39 @@ async function fetchInitialData(isFirstLoad = false) {
   }
 }
 
-// 4. Render Village List in Left Panel
+// 4. Render Threat-Ranked Disaster Triage List in Left Panel
 function renderVillageList(villages) {
   const container = document.getElementById("village-list-container");
+  if (!container) return;
   container.innerHTML = "";
 
-  villages.forEach(v => {
+  // Sort automatically by threat percentage descending (Highest Risk First)
+  const sortedVillages = [...villages].sort((a, b) => (b.risk_percentage || 0) - (a.risk_percentage || 0));
+
+  sortedVillages.forEach((v, index) => {
     const card = document.createElement("div");
-    card.className = `village-card ${v.id === currentVillageId ? "selected" : ""}`;
+    const isCritical = v.risk_level === "CRITICAL" || v.risk_percentage >= 85;
+    const isSelected = v.id === currentVillageId;
+    
+    card.className = `village-card ${isSelected ? "selected" : ""} ${isCritical ? "critical-pulse-card" : ""}`;
     card.id = `card-${v.id}`;
     card.onclick = () => selectVillage(v.id, true);
 
     const badgeClass = `badge-${v.risk_level.toLowerCase()}`;
+    const rankLabel = `#${index + 1}`;
 
     card.innerHTML = `
-      <div class="village-info">
-        <h4>${v.name}</h4>
-        <div class="village-meta">Elev: ${v.elevation_m}m | Slope: ${v.slope_deg}°</div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="village-rank-badge" title="Triage Threat Rank">${rankLabel}</span>
+        <div class="village-info">
+          <h4>${v.name}</h4>
+          <div class="village-meta">Elev: ${v.elevation_m}m | Slope: ${v.slope_deg}°</div>
+          <div class="village-shelter-preview">
+            <span>⏳ ${v.lead_time_display || "10-30 min"}</span>
+            <span>•</span>
+            <span>⛺ ${v.primary_shelter || "Safe Ridge"}</span>
+          </div>
+        </div>
       </div>
       <div class="risk-badge ${badgeClass}">
         ${v.risk_badge} ${v.risk_percentage}%
