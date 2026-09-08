@@ -47,6 +47,7 @@ export const GISMap2D: React.FC = () => {
     selectedVillageId, 
     selectedVillageData, 
     selectVillage, 
+    viewMode,
     basemap2D,
     layers 
   } = useFlood();
@@ -63,6 +64,28 @@ export const GISMap2D: React.FC = () => {
   const routeLayerRef = useRef<L.LayerGroup>(L.layerGroup());
   const sensorLayerRef = useRef<L.LayerGroup>(L.layerGroup());
   const markersRef = useRef<Record<string, L.CircleMarker>>({});
+
+  // Auto-invalidateSize whenever viewMode switches to 2D
+  useEffect(() => {
+    if (viewMode === '2d' && mapInstanceRef.current) {
+      const t1 = setTimeout(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+        }
+      }, 50);
+
+      const t2 = setTimeout(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+        }
+      }, 250);
+
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+      };
+    }
+  }, [viewMode]);
 
   // 1. Initialize Leaflet Map Instance ONCE
   useEffect(() => {

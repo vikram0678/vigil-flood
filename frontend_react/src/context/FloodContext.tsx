@@ -54,6 +54,7 @@ interface FloodContextType {
   applyScenario: (preset: string) => Promise<void>;
   toggleWaterSensor: () => Promise<void>;
   refreshData: () => Promise<void>;
+  updateVillagesFromTelemetry: (villages: Village[]) => void;
 }
 
 const FloodContext = createContext<FloodContextType | undefined>(undefined);
@@ -98,6 +99,33 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       }
     } catch (err) {
       console.error("Failed to fetch villages list:", err);
+    }
+  };
+
+  const updateVillagesFromTelemetry = (newVillages: Village[]) => {
+    if (newVillages && Array.isArray(newVillages)) {
+      setVillages(newVillages);
+      setSelectedVillageData(prev => {
+        if (!prev) return null;
+        const matching = newVillages.find(v => v.id === prev.village.id);
+        if (!matching) return prev;
+        return {
+          ...prev,
+          village: {
+            ...prev.village,
+            risk_percentage: matching.risk_percentage,
+            risk_level: matching.risk_level,
+            risk_badge: matching.risk_badge,
+            lead_time_display: matching.lead_time_display
+          },
+          risk_analysis: {
+            ...prev.risk_analysis,
+            risk_percentage: matching.risk_percentage,
+            risk_level: matching.risk_level,
+            risk_badge: matching.risk_badge
+          }
+        };
+      });
     }
   };
 
@@ -209,7 +237,8 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setSimulationValue,
         applyScenario,
         toggleWaterSensor,
-        refreshData
+        refreshData,
+        updateVillagesFromTelemetry
       }}
     >
       {children}

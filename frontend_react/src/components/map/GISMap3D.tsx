@@ -9,6 +9,7 @@ export const GISMap3D: React.FC = () => {
     selectedVillageId, 
     selectedVillageData, 
     selectVillage,
+    viewMode,
     basemap3D, 
     isDroneFlying, 
     toggleDroneFlying,
@@ -20,6 +21,28 @@ export const GISMap3D: React.FC = () => {
   const markers3DRef = useRef<maplibregl.Marker[]>([]);
   const droneTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const animFrameRef = useRef<number | null>(null);
+
+  // Auto-resize MapLibre GL whenever viewMode switches to 3D (Solves #8277 hidden container 400x300 issue)
+  useEffect(() => {
+    if (viewMode === '3d' && map3dInstanceRef.current) {
+      const t1 = setTimeout(() => {
+        if (map3dInstanceRef.current) {
+          map3dInstanceRef.current.resize();
+        }
+      }, 50);
+
+      const t2 = setTimeout(() => {
+        if (map3dInstanceRef.current) {
+          map3dInstanceRef.current.resize();
+        }
+      }, 250);
+
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+      };
+    }
+  }, [viewMode]);
 
   // 1. Initialize MapLibre GL 3D Map
   useEffect(() => {
