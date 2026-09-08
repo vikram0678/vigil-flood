@@ -474,25 +474,42 @@ function getBearing(lat1, lon1, lat2, lon2) {
   return (brng + 360) % 360;
 }
 
-const FLOW_ARROW_SVG = `
-  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#38bdf8" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
-    <line x1="12" y1="20" x2="12" y2="4"></line>
-    <polyline points="5 11 12 4 19 11"></polyline>
+const HYDRO_STREAM_ARROW_SVG = `
+  <svg viewBox="0 0 32 32" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg" class="hydro-vector-svg">
+    <path d="M16 28 L16 4" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M7 13 L16 3 L25 13" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M10 20 L16 13 L22 20" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
   </svg>
 `;
 
+// Generate evenly-spaced streamline sample points & bearings along the downhill river path
+function getDownhillFlowArrowPoints(streamCoords) {
+  if (!streamCoords || streamCoords.length < 2) return [];
+  // Ensure we traverse from highest elevation (NE upstream) to lowest elevation (SW downstream)
+  const downhillPts = streamCoords.slice().reverse();
+  const arrowPoints = [];
+
+  for (let i = 0; i < downhillPts.length - 1; i++) {
+    const p1 = downhillPts[i];
+    const p2 = downhillPts[i + 1];
+    const bearing = getBearing(p1[0], p1[1], p2[0], p2[1]);
+
+    // Add multiple spaced vector arrows along each segment (at 30% and 70%)
+    [0.30, 0.70].forEach(ratio => {
+      const lat = p1[0] + (p2[0] - p1[0]) * ratio;
+      const lng = p1[1] + (p2[1] - p1[1]) * ratio;
+      arrowPoints.push({ lat, lng, bearing, segIndex: i, ratio });
+    });
+  }
+  return arrowPoints;
+}
+
     // C. 3D Flow Direction Badges along River Canyon (🌊 Map-Aligned NE ➔ SW Downhill Flow)
     if (v.river_stream && v.river_stream.length > 1) {
+      const downhillStream = v.river_stream.slice().reverse();
       const pts = v.river_stream;
-      const upperIdx = pts.length - 1;
-      const upperPt = pts[upperIdx]; // High mountain origin (NE)
       const midIdx = Math.floor(pts.length / 2);
-      const midPt = pts[midIdx]; // Mid-gorge
-      const lowerPt = pts[0]; // Downstream basin (SW)
-
-      // Calculate Downhill Flow Bearings (from high upstream to low downstream)
-      const upperBearing = getBearing(pts[upperIdx][0], pts[upperIdx][1], pts[upperIdx - 1][0], pts[upperIdx - 1][1]);
-      const lowerBearing = getBearing(pts[1][0], pts[1][1], pts[0][0], pts[0][1]);
+      const midPt = pts[midIdx];
 
       // 1. Central Floating Flow Banner (Billboarded to Viewport)
       const flowEl = document.createElement("div");
@@ -508,33 +525,42 @@ const FLOW_ARROW_SVG = `
         .addTo(map3d);
       villageMarkers3D.push(flowMarker);
 
-      // 2. Upper Gorge Direction Arrow (Locked to River Map Bearing)
-      const upperChevronEl = document.createElement("div");
-      upperChevronEl.className = "marker-3d-chevron-badge";
-      upperChevronEl.innerHTML = `<div class="badge-3d-chevron" title="Downhill Flow: North-East Origin">${FLOW_ARROW_SVG}</div>`;
-      const upperChevronMarker = new maplibregl.Marker({
-        element: upperChevronEl,
-        rotationAlignment: 'map',
-        pitchAlignment: 'map',
-        rotation: upperBearing
-      })
+      // 2. Multiple Evenly-Spaced Downhill Direction Arrows Locked to 3D Terrain
+      const flowArrows = getDownhillFlowArrowPoints(v.river_stream);
+      flowArrows.forEach((pt, idx) => {
+        const chevronEl = document.createElement("div");
+        chevronEl.className = "marker-3d-chevron-badge";
+        chevronEl.innerHTML = `<div class="badge-3d-chevron" title="Downhill Flow #${idx + 1} (${Math.round(pt.bearing)}° Bearing)">${HYDRO_STREAM_ARROW_SVG}</div>`;
+        const chevronMarker = new maplibregl.Marker({
+          element: chevronEl,
+          rotationAlignment: 'map',
+          pitchAlignment: 'map',
+          rotation: pt.bearing
+        })
+          .setLngLat([pt.lng, pt.lat])
+          .addTo(map3d);
+        villageMarkers3D.push(chevronMarker);
+      });
+
+      // 3. Upstream & Downstream 3D Elevation Badges
+      const upperPt = downhillStream[0];
+      const lowerPt = downhillStream[downhillStream.length - 1];
+
+      const upEl = document.createElement("div");
+      upEl.className = "marker-3d-endpoint-badge";
+      upEl.innerHTML = `<div class="hydro-endpoint-3d-bubble upstream">🏔️ Upstream (~${v.elevation_m + 80}m) ➔</div>`;
+      const upMarker = new maplibregl.Marker({ element: upEl, rotationAlignment: 'viewport' })
         .setLngLat([upperPt[1], upperPt[0]])
         .addTo(map3d);
-      villageMarkers3D.push(upperChevronMarker);
+      villageMarkers3D.push(upMarker);
 
-      // 3. Lower Basin Direction Arrow (Locked to River Map Bearing)
-      const lowerChevronEl = document.createElement("div");
-      lowerChevronEl.className = "marker-3d-chevron-badge";
-      lowerChevronEl.innerHTML = `<div class="badge-3d-chevron" title="Downhill Flow to 880m">${FLOW_ARROW_SVG}</div>`;
-      const lowerChevronMarker = new maplibregl.Marker({
-        element: lowerChevronEl,
-        rotationAlignment: 'map',
-        pitchAlignment: 'map',
-        rotation: lowerBearing
-      })
+      const downEl = document.createElement("div");
+      downEl.className = "marker-3d-endpoint-badge";
+      downEl.innerHTML = `<div class="hydro-endpoint-3d-bubble downstream">🌊 Basin (${v.elevation_m}m) ➔</div>`;
+      const downMarker = new maplibregl.Marker({ element: downEl, rotationAlignment: 'viewport' })
         .setLngLat([lowerPt[1], lowerPt[0]])
         .addTo(map3d);
-      villageMarkers3D.push(lowerChevronMarker);
+      villageMarkers3D.push(downMarker);
     }
   });
 }
@@ -918,18 +944,29 @@ function renderMapGISOverlays(data) {
     }
   }
 
-  // B. River Drainage Streams (🌊 Base Line + Animated Moving Downhill Pulses)
+  // B. River Drainage Streams (🌊 Multi-layer Hydrodynamic Flow + Spaced Downhill Arrows)
   if (v.river_stream && v.river_stream.length > 1) {
-    const streamLine = L.polyline(v.river_stream, {
-      color: "#0284c7",
-      weight: 7,
+    const downhillStream = v.river_stream.slice().reverse();
+
+    // 1. Base Wide River Channel (Deep River Blue)
+    const baseStreamLine = L.polyline(v.river_stream, {
+      color: "#0369a1",
+      weight: 12,
       opacity: 0.85
     });
-    streamLine.bindTooltip(`<b>🌊 River Drainage Channel</b><br>Flow Direction: <b>North-East ➔ South-West (Downhill to ${v.elevation_m}m)</b><br>Velocity: <b>25–35 km/h</b>`, { sticky: true });
-    streamLayerGroup.addLayer(streamLine);
+    baseStreamLine.bindTooltip(`<b>🌊 River Drainage Channel</b><br>Flow Direction: <b>North-East ➔ South-West (Downhill to ${v.elevation_m}m)</b><br>Downstream Velocity: <b>25–35 km/h</b>`, { sticky: true });
+    streamLayerGroup.addLayer(baseStreamLine);
 
-    // Continuous Animated Flow Pulses on Top of Blue Channel (Streaming NE -> SW)
-    const pulseLine = L.polyline(v.river_stream.slice().reverse(), {
+    // 2. Inner Hydrodynamic Core Track (Vibrant Cyan)
+    const coreStreamLine = L.polyline(v.river_stream, {
+      color: "#06b6d4",
+      weight: 6,
+      opacity: 0.9
+    });
+    streamLayerGroup.addLayer(coreStreamLine);
+
+    // 3. Continuous Animated Downhill Pulse Line (White fluid particle stream)
+    const pulseLine = L.polyline(downhillStream, {
       color: "#ffffff",
       weight: 3.5,
       opacity: 0.95,
@@ -937,50 +974,60 @@ function renderMapGISOverlays(data) {
     });
     streamLayerGroup.addLayer(pulseLine);
 
-    // 1. Flow Direction Pill Banner in 2D (Positioned near midpoint)
-    const midIdx = Math.floor(v.river_stream.length / 2);
-    const upperIdx = v.river_stream.length - 1;
-    const midCoord = v.river_stream[midIdx];
-    const upperCoord = v.river_stream[upperIdx];
-    const lowerCoord = v.river_stream[0];
+    // 4. Multiple Evenly-Spaced Downhill Flow Direction Arrows along the River
+    const flowArrows = getDownhillFlowArrowPoints(v.river_stream);
+    flowArrows.forEach((pt, idx) => {
+      const arrowMarker = L.marker([pt.lat, pt.lng], {
+        icon: L.divIcon({
+          className: "hydro-arrow-marker-wrapper",
+          html: `<div class="flow-stream-chevron" style="transform: rotate(${pt.bearing}deg);" title="Downhill River Flow #${idx + 1} (${Math.round(pt.bearing)}° Bearing)">${HYDRO_STREAM_ARROW_SVG}</div>`,
+          iconSize: [28, 28],
+          iconAnchor: [14, 14]
+        }),
+        zIndexOffset: 900
+      });
+      streamLayerGroup.addLayer(arrowMarker);
+    });
 
-    const upperBearing = getBearing(v.river_stream[upperIdx][0], v.river_stream[upperIdx][1], v.river_stream[upperIdx - 1][0], v.river_stream[upperIdx - 1][1]);
-    const lowerBearing = getBearing(v.river_stream[1][0], v.river_stream[1][1], v.river_stream[0][0], v.river_stream[0][1]);
-    
+    // 5. Central Flow Direction Pill Banner in 2D
+    const midIdx = Math.floor(v.river_stream.length / 2);
+    const midCoord = v.river_stream[midIdx];
     const flowBadgeMarker = L.marker(midCoord, {
       icon: L.divIcon({
         className: "flow-badge-wrapper",
-        html: `<div class="flow-direction-2d-badge"><span>🌊 FLOOD FLOW: NE ➔ SW</span><span class="flow-arrow-icon">➤➤➤</span></div>`,
-        iconSize: [200, 28],
-        iconAnchor: [100, 14]
+        html: `<div class="flow-direction-2d-badge"><span>🌊 FLOOD FLOW: NE ➔ SW (Downhill)</span><span class="flow-arrow-icon">➤➤➤</span></div>`,
+        iconSize: [210, 30],
+        iconAnchor: [105, 15]
       }),
       zIndexOffset: 1000
     });
     streamLayerGroup.addLayer(flowBadgeMarker);
 
-    // 2. Upper Mountain Origin Arrow (Pointing Downstream)
-    const upperArrowMarker = L.marker(upperCoord, {
-      icon: L.divIcon({
-        className: "flow-chevron-wrapper",
-        html: `<div class="flow-stream-chevron" style="transform: rotate(${upperBearing}deg);" title="North-East Mountain Origin">${FLOW_ARROW_SVG}</div>`,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16]
-      }),
-      zIndexOffset: 1000
-    });
-    streamLayerGroup.addLayer(upperArrowMarker);
+    // 6. Upstream Inflow & Downstream Gorge Endpoint Badges
+    const upperPt = downhillStream[0];
+    const lowerPt = downhillStream[downhillStream.length - 1];
 
-    // 3. Lower Basin Exit Arrow (Pointing to Valley Floor)
-    const lowerArrowMarker = L.marker(lowerCoord, {
+    const upstreamBadge = L.marker(upperPt, {
       icon: L.divIcon({
-        className: "flow-chevron-wrapper",
-        html: `<div class="flow-stream-chevron" style="transform: rotate(${lowerBearing}deg);" title="Downhill Inundation to ${v.elevation_m}m">${FLOW_ARROW_SVG}</div>`,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16]
+        className: "endpoint-badge-wrapper",
+        html: `<div class="hydro-endpoint-badge upstream">🏔️ Upstream Inflow (~${v.elevation_m + 80}m) ➔</div>`,
+        iconSize: [180, 24],
+        iconAnchor: [90, 28]
       }),
-      zIndexOffset: 1000
+      zIndexOffset: 950
     });
-    streamLayerGroup.addLayer(lowerArrowMarker);
+    streamLayerGroup.addLayer(upstreamBadge);
+
+    const downstreamBadge = L.marker(lowerPt, {
+      icon: L.divIcon({
+        className: "endpoint-badge-wrapper",
+        html: `<div class="hydro-endpoint-badge downstream">🌊 Downhill Gorge (${v.elevation_m}m) ➔</div>`,
+        iconSize: [180, 24],
+        iconAnchor: [90, -8]
+      }),
+      zIndexOffset: 950
+    });
+    streamLayerGroup.addLayer(downstreamBadge);
   }
 
   // C. Safe Relief Shelters (⛺ Sleek Compact Pin)
