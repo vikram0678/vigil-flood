@@ -22,14 +22,16 @@ export const MapContainer: React.FC = () => {
 
   return (
     <div className="map-wrapper">
-      {/* 2D Leaflet Tactical Map */}
-      {viewMode === '2d' && <GISMap2D />}
+      {/* 2D Leaflet Tactical Map & Nullschool particles */}
+      <div style={{ width: '100%', height: '100%', display: viewMode === '2d' ? 'block' : 'none', position: 'absolute', top: 0, left: 0 }}>
+        <GISMap2D />
+        <NullschoolCanvas />
+      </div>
 
       {/* 3D WebGL Mountain Terrain Mesh Map */}
-      {viewMode === '3d' && <GISMap3D />}
-
-      {/* 60 FPS Earth Nullschool Particle Stream Canvas */}
-      {viewMode === '2d' && <NullschoolCanvas />}
+      <div style={{ width: '100%', height: '100%', display: viewMode === '3d' ? 'block' : 'none', position: 'absolute', top: 0, left: 0 }}>
+        <GISMap3D />
+      </div>
 
       {/* Google Flood Hub Floating View Options Card */}
       <GoogleFloodHubPanel />

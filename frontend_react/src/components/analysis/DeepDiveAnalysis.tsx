@@ -36,7 +36,7 @@ export const DeepDiveAnalysis: React.FC = () => {
       <div className="panel-body">
         {/* Village Title & Geomorphic Metrics */}
         <div>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>{v.name} ({v.ward})</h3>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>{v.name} • {v.ward}</h3>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
             Elev: {v.elevation_m}m | Slope: {v.slope_deg}° | Stream Dist: {v.distance_to_stream_m}m | Pop: {v.population}
           </div>
@@ -116,17 +116,21 @@ export const DeepDiveAnalysis: React.FC = () => {
           <div className="xai-title">
             <span>🧠 Explainable AI (TreeSHAP Drivers)</span>
           </div>
-          {risk.explainability.map((f, idx) => (
-            <div key={idx} className="xai-bar-row">
-              <div className="xai-bar-label-row">
-                <span>{f.display_name}</span>
-                <span style={{ fontWeight: 700 }}>{f.impact_percentage}%</span>
+          {(risk.explainability || []).map((f: any, idx: number) => {
+            const factorName = f.factor || f.display_name || 'Hydrometeorological Factor';
+            const pct = f.contribution_pct !== undefined ? f.contribution_pct : (f.impact_percentage !== undefined ? f.impact_percentage : 0);
+            return (
+              <div key={idx} className="xai-bar-row">
+                <div className="xai-bar-label-row">
+                  <span>{factorName}</span>
+                  <span style={{ fontWeight: 700 }}>{pct}%</span>
+                </div>
+                <div className="xai-bar-track">
+                  <div className="xai-bar-fill" style={{ width: `${pct}%` }}></div>
+                </div>
               </div>
-              <div className="xai-bar-track">
-                <div className="xai-bar-fill" style={{ width: `${f.impact_percentage}%` }}></div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Multi-Sensor Resilience & Fallback Matrix */}
