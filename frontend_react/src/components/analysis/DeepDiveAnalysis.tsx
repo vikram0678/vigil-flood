@@ -174,15 +174,21 @@ export const DeepDiveAnalysis: React.FC = () => {
           <div className="action-title">
             <span>🚨 NDRF Evacuation Directives</span>
           </div>
-          <div className="action-item">• <b>Tier:</b> {action.ndrf_response_tier}</div>
-          <div className="action-item">• <b>Primary Safe Shelter:</b> {action.primary_shelter}</div>
-          <div className="action-item">• <b>Evacuation Path:</b> {action.recommended_route}</div>
+          <div className="action-item">
+            • <b>Tier:</b> {action?.escalation_tier || action?.ndrf_response_tier || action?.alert_level || 'TIER 1 WATCH'}
+          </div>
+          <div className="action-item">
+            • <b>Primary Safe Shelter:</b> {typeof action?.primary_shelter === 'object' && action.primary_shelter !== null ? action.primary_shelter.name : (typeof action?.primary_shelter === 'string' ? action.primary_shelter : 'Govt Senior Secondary School (Upper Ridge)')}
+          </div>
+          <div className="action-item">
+            • <b>Evacuation Path:</b> {typeof action?.recommended_route === 'object' && action.recommended_route !== null ? action.recommended_route.name : (typeof action?.recommended_route === 'string' ? action.recommended_route : 'Route A (Upper Hill Road via SH-13)')}
+          </div>
 
           <div className="sms-preview-card">
             <div style={{ color: 'var(--accent-cyan)', marginBottom: '2px', fontWeight: 700 }}>
               📢 Citizen SMS Broadcast:
             </div>
-            "{action.public_broadcast}"
+            "{action?.simulated_sms_broadcast || action?.public_broadcast || 'Emergency weather advisory active for catchment zone.'}"
           </div>
         </div>
       </div>

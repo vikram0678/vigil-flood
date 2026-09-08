@@ -56,7 +56,7 @@ export const PilotCatchmentPanel: React.FC = () => {
                     <div className="village-shelter-preview">
                       <span>⏳ {v.lead_time_display || '10-30 min'}</span>
                       <span>•</span>
-                      <span>⛺ {v.primary_shelter || 'Safe Ridge'}</span>
+                      <span>⛺ {typeof v.primary_shelter === 'object' && v.primary_shelter !== null ? (v.primary_shelter as any).name : (v.primary_shelter || 'Safe Ridge')}</span>
                     </div>
                   </div>
                 </div>

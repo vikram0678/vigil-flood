@@ -10,6 +10,14 @@ export const CitizenView: React.FC = () => {
   const { village: v, risk_analysis: risk, lead_time: lead, action_plan: action } = selectedVillageData;
   const isCritical = risk.risk_level === 'CRITICAL' || risk.risk_level === 'EXTREME';
 
+  const shelterName: string = typeof action?.primary_shelter === 'object' && action?.primary_shelter !== null 
+    ? action.primary_shelter.name 
+    : (typeof action?.primary_shelter === 'string' ? action.primary_shelter : 'Designated Safe Ridge Shelter');
+
+  const routeName: string = typeof action?.recommended_route === 'object' && action?.recommended_route !== null 
+    ? action.recommended_route.name 
+    : (typeof action?.recommended_route === 'string' ? action.recommended_route : 'Recommended Safe Ridge Route');
+
   const handleAudioBroadcast = () => {
     if (!('speechSynthesis' in window)) {
       alert("Speech synthesis is not supported in this browser.");
@@ -23,7 +31,7 @@ export const CitizenView: React.FC = () => {
     }
 
     const text = isCritical
-      ? `Emergency Alert for ${v.name}. Severe Flash Flood Warning. Evacuate immediately to ${action.primary_shelter} via ${action.recommended_route}. You have ${lead.window_display} actionable lead time.`
+      ? `Emergency Alert for ${v.name}. Severe Flash Flood Warning. Evacuate immediately to ${shelterName} via ${routeName}. You have ${lead.window_display} actionable lead time.`
       : `Weather Advisory for ${v.name}. Current conditions are ${risk.risk_level}. Please stay tuned to local emergency announcements.`;
 
     const utterance = new SpeechSynthesisUtterance(text);
@@ -65,7 +73,7 @@ export const CitizenView: React.FC = () => {
             <span>⛺ Designated Safe Refuge</span>
           </div>
           <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#38bdf8', marginBottom: '4px' }}>
-            {action.primary_shelter}
+            {shelterName}
           </div>
           <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
             Elevated concrete shelter above peak flood stage contour.
@@ -78,7 +86,7 @@ export const CitizenView: React.FC = () => {
             <span>🛣️ Safe Evacuation Route</span>
           </div>
           <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#34d399', marginBottom: '4px' }}>
-            {action.recommended_route}
+            {routeName}
           </div>
           <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
             Ridge-line road verified free of inundation and debris blockage.

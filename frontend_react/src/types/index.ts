@@ -103,13 +103,34 @@ export interface SensorHealth {
   model_dispatched?: string;
 }
 
+export interface ShelterInfo {
+  name: string;
+  lat?: number;
+  lng?: number;
+  capacity?: number;
+  elevation_m?: number;
+}
+
+export interface RouteInfo {
+  name: string;
+  status?: string;
+  safety_score?: number;
+  path?: [number, number][];
+}
+
 export interface ActionPlan {
-  alert_level: string;
-  primary_shelter: string;
-  recommended_route: string;
-  ndrf_response_tier: string;
-  public_broadcast: string;
-  safety_directives: string[];
+  headline?: string;
+  status?: string;
+  escalation_tier?: string;
+  ndrf_response_tier?: string;
+  alert_level?: string;
+  recommended_actions?: string[];
+  safety_directives?: string[];
+  primary_shelter?: string | ShelterInfo;
+  recommended_route?: string | RouteInfo;
+  blocked_route?: string | RouteInfo;
+  public_broadcast?: string;
+  simulated_sms_broadcast?: string;
 }
 
 export interface VillageDetailResponse {
