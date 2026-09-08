@@ -15,6 +15,7 @@ let currentVillageId = "VIL-01";
 let allVillages = [];
 let ws = null;
 let isAudioEnabled = false;
+let active3DBasemap = "google_hybrid";
 
 // Color mapping constants
 const RISK_COLORS = {
@@ -24,36 +25,39 @@ const RISK_COLORS = {
   CRITICAL: "#ef4444"
 };
 
-// Basemap Tile Configurations (Google Maps & Topo Layers via High-Performance Cache Proxy)
+// Basemap Tile Configurations (Direct CDN with Browser Multi-threading & Native Cache)
 const BASEMAP_TILES = {
   google_terrain: {
-    url: "/api/tiles/google_terrain/{z}/{x}/{y}.png",
-    options: { maxZoom: 20, attribution: '&copy; Google Maps (Fast Tile Cache)' },
+    url: "https://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}",
+    options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Google Maps' },
     isDarkFilter: false // Real Google Mountain Elevation Shading & Contours
   },
   google_satellite: {
-    url: "/api/tiles/google_hybrid/{z}/{x}/{y}.png",
-    options: { maxZoom: 20, attribution: '&copy; Google Maps (Fast Tile Cache)' },
+    url: "https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+    options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Google Maps' },
     isDarkFilter: false // High-Res Google Satellite with Village Labels & Roads
   },
   google_dark: {
-    url: "/api/tiles/google_roads/{z}/{x}/{y}.png",
-    options: { maxZoom: 20, attribution: '&copy; Google Maps (Dark Tactical)' },
+    url: "https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",
+    options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Google Maps' },
     isDarkFilter: true // Google Roads in Dark Command Mode
   },
   topo: {
-    url: "/api/tiles/topo/{z}/{x}/{y}.png",
-    options: { maxZoom: 17, attribution: 'Map data: &copy; OpenStreetMap contributors, SRTM' },
+    url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+    options: { maxZoom: 17, subdomains: ['a', 'b', 'c'], attribution: 'Map data: &copy; OpenStreetMap contributors, SRTM' },
     isDarkFilter: false
   }
 };
 
-// 3D Mountain Mesh Tile Sources (CORS-Free & High-Performance Proxy)
+// 3D Mountain Mesh Tile Sources (Direct CDN + Subdomain Rotation)
 const BASEMAP_3D_SOURCES = {
   google_hybrid: {
     name: "Google Hybrid 3D",
     tiles: [
-      "/api/tiles/google_hybrid/{z}/{x}/{y}.png"
+      "https://mt0.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+      "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+      "https://mt2.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+      "https://mt3.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
     ],
     tileSize: 256,
     maxzoom: 20,
@@ -62,7 +66,7 @@ const BASEMAP_3D_SOURCES = {
   esri_satellite: {
     name: "High-Res 3D Satellite",
     tiles: [
-      "/api/tiles/esri_satellite/{z}/{x}/{y}.png"
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
     ],
     tileSize: 256,
     maxzoom: 19,
@@ -71,7 +75,9 @@ const BASEMAP_3D_SOURCES = {
   topo_3d: {
     name: "3D Topo Contours",
     tiles: [
-      "/api/tiles/topo/{z}/{x}/{y}.png"
+      "https://a.tile.opentopomap.org/{z}/{x}/{y}.png",
+      "https://b.tile.opentopomap.org/{z}/{x}/{y}.png",
+      "https://c.tile.opentopomap.org/{z}/{x}/{y}.png"
     ],
     tileSize: 256,
     maxzoom: 17,
@@ -80,7 +86,8 @@ const BASEMAP_3D_SOURCES = {
   dark_3d: {
     name: "3D Dark Tactical",
     tiles: [
-      "/api/tiles/carto_dark/{z}/{x}/{y}.png"
+      "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
+      "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png"
     ],
     tileSize: 512,
     maxzoom: 19,
@@ -181,7 +188,8 @@ function init3DMap() {
       container: "gis-map-3d",
       maxZoom: 18.5,
       minZoom: 2,
-      maxPitch: 80,
+      maxPitch: 65,
+      maxTileCacheSize: 250, // WebGL GPU in-memory tile cache to eliminate re-fetching
       style: {
         version: 8,
         sources: {
@@ -193,15 +201,15 @@ function init3DMap() {
             maxzoom: defaultBasemap.maxzoom || 20,
             attribution: defaultBasemap.attribution
           },
-          // 2. Free Global 3D DEM Terrarium Elevation Mesh (Cached Proxy)
+          // 2. Free Global 3D DEM Terrarium Elevation Mesh (Optimized Broad Mesh)
           "terrain-dem": {
             type: "raster-dem",
             tiles: [
-              "/api/tiles/terrain_dem/{z}/{x}/{y}.png"
+              "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"
             ],
             encoding: "terrarium",
             tileSize: 256,
-            maxzoom: 15
+            maxzoom: 12 // Coarse mesh uses 1/16th DEM tiles while maintaining identical 3D mountain relief
           }
         },
         layers: [
@@ -220,7 +228,7 @@ function init3DMap() {
       },
       center: [77.0560, 31.6702], // Pandoh (Real Beas Riverbed)
       zoom: 13,
-      pitch: 65, // 3D Camera Tilt
+      pitch: 58, // 3D Camera Tilt
       bearing: -25 // 3D Angle
     });
 
@@ -676,7 +684,10 @@ function setBasemap(type) {
 // 2B. 3D Mountain Mesh Basemap Switcher Handler
 function setBasemap3D(type) {
   if (!map3d) return;
-  const cfg = BASEMAP_3D_SOURCES[type] || BASEMAP_3D_SOURCES.esri_satellite;
+  if (active3DBasemap === type && map3d.getSource("hybrid-satellite-source")) return;
+  active3DBasemap = type;
+
+  const cfg = BASEMAP_3D_SOURCES[type] || BASEMAP_3D_SOURCES.google_hybrid;
 
   document.querySelectorAll(".basemap-3d-btn").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.basemap3d === type);
