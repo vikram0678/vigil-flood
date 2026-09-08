@@ -48,6 +48,12 @@ export const GISMap2D: React.FC = () => {
 
     L.control.scale({ position: 'bottomleft' }).addTo(map);
 
+    setTimeout(() => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.invalidateSize();
+      }
+    }, 150);
+
     // Click-to-Get DEM Elevation Spot Analysis Popup
     map.on('click', async (e: L.LeafletMouseEvent) => {
       const { lat, lng } = e.latlng;

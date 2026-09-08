@@ -23,17 +23,13 @@ export const MapContainer: React.FC = () => {
   return (
     <div className="map-wrapper">
       {/* 2D Leaflet Tactical Map */}
-      <div style={{ display: viewMode === '2d' ? 'block' : 'none', width: '100%', height: '100%' }}>
-        <GISMap2D />
-      </div>
+      {viewMode === '2d' && <GISMap2D />}
 
       {/* 3D WebGL Mountain Terrain Mesh Map */}
-      <div style={{ display: viewMode === '3d' ? 'block' : 'none', width: '100%', height: '100%' }}>
-        <GISMap3D />
-      </div>
+      {viewMode === '3d' && <GISMap3D />}
 
       {/* 60 FPS Earth Nullschool Particle Stream Canvas */}
-      <NullschoolCanvas />
+      {viewMode === '2d' && <NullschoolCanvas />}
 
       {/* Google Flood Hub Floating View Options Card */}
       <GoogleFloodHubPanel />

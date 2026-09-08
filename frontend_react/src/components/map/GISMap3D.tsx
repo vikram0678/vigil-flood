@@ -71,6 +71,12 @@ export const GISMap3D: React.FC = () => {
 
     map3dInstanceRef.current = map3d;
 
+    setTimeout(() => {
+      if (map3dInstanceRef.current) {
+        map3dInstanceRef.current.resize();
+      }
+    }, 150);
+
     map3d.on('load', () => {
       // 3D Flood water polygon source
       map3d.addSource('3d-flood-water-source', {

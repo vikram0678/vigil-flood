@@ -10,6 +10,45 @@ import { HydrographModal } from './components/modals/HydrographModal';
 import { MethodologyModal } from './components/modals/MethodologyModal';
 import { CitizenView } from './components/citizen/CitizenView';
 
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error("🚨 [VIGIL-FLOOD] React Component Error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: 40, color: '#f87171', background: '#090d16', fontFamily: 'monospace', minHeight: '100vh' }}>
+          <h2 style={{ color: '#ef4444', marginBottom: 12 }}>🚨 VIGIL-FLOOD UI Exception Detected</h2>
+          <div style={{ color: '#94a3b8', marginBottom: 16 }}>An error occurred during component rendering:</div>
+          <pre style={{ background: '#1e293b', padding: 20, borderRadius: 8, color: '#f8fafc', whiteSpace: 'pre-wrap', border: '1px solid #ef4444' }}>
+            {this.state.error?.stack || this.state.error?.message}
+          </pre>
+          <button 
+            style={{ marginTop: 16, padding: '8px 16px', background: '#0284c7', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer' }}
+            onClick={() => window.location.reload()}
+          >
+            🔄 Reload Dashboard
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 const DashboardContent: React.FC = () => {
   useWebSocket();
   const { role } = useFlood();
@@ -49,9 +88,11 @@ const DashboardContent: React.FC = () => {
 
 export const App: React.FC = () => {
   return (
-    <FloodProvider>
-      <DashboardContent />
-    </FloodProvider>
+    <ErrorBoundary>
+      <FloodProvider>
+        <DashboardContent />
+      </FloodProvider>
+    </ErrorBoundary>
   );
 };
 
