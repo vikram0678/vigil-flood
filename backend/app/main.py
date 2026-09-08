@@ -40,17 +40,29 @@ app.add_middleware(
 app.include_router(api_router)
 app.include_router(ws_router)
 
-# Mount Frontend Static Assets
+# Intelligent Dual-Engine Frontend Serving (React TSX Build with Seamless Vanilla Fallback)
+FRONTEND_REACT_DIST = PROJECT_ROOT / "frontend_react" / "dist"
 FRONTEND_DIR = PROJECT_ROOT / "frontend"
+
+if FRONTEND_REACT_DIST.exists() and (FRONTEND_REACT_DIST / "assets").exists():
+    app.mount("/assets", StaticFiles(directory=str(FRONTEND_REACT_DIST / "assets")), name="react-assets")
+
 if FRONTEND_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
 
 @app.get("/")
 def serve_index():
-    index_file = FRONTEND_DIR / "index.html"
-    if index_file.exists():
-        return FileResponse(str(index_file))
-    return {"message": f"{APP_NAME} Backend Running. Frontend not found at {index_file}"}
+    # 1. Prefer compiled React + TSX build if available
+    react_index = FRONTEND_REACT_DIST / "index.html"
+    if react_index.exists():
+        return FileResponse(str(react_index))
+
+    # 2. Seamlessly fall back to working Vanilla HTML if React build is not present
+    vanilla_index = FRONTEND_DIR / "index.html"
+    if vanilla_index.exists():
+        return FileResponse(str(vanilla_index))
+
+    return {"message": f"{APP_NAME} Backend Running. Frontend not found."}
 
 @app.on_event("startup")
 def startup_event():
