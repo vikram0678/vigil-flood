@@ -182,7 +182,7 @@ function init3DMap() {
   if (map3d) return;
 
   try {
-    const defaultBasemap = BASEMAP_3D_SOURCES.esri_satellite;
+    const defaultBasemap = BASEMAP_3D_SOURCES.google_hybrid;
     map3d = new maplibregl.Map({
       container: "gis-map-3d",
       maxZoom: 18.5,
@@ -191,12 +191,12 @@ function init3DMap() {
       style: {
         version: 8,
         sources: {
-          // 1. High-Resolution Satellite with 100% WebGL CORS Support & Zero Rate Limits
+          // 1. High-Resolution Google Hybrid Satellite with Village Names, Roads & Places
           "hybrid-satellite-source": {
             type: "raster",
             tiles: defaultBasemap.tiles,
             tileSize: defaultBasemap.tileSize || 256,
-            maxzoom: defaultBasemap.maxzoom || 19,
+            maxzoom: defaultBasemap.maxzoom || 20,
             attribution: defaultBasemap.attribution
           },
           // 2. Free Global 3D DEM Terrarium Elevation Mesh
