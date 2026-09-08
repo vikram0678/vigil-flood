@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useFlood } from '../../context/FloodContext';
 import { GISMap2D } from './GISMap2D';
 import { GISMap3D } from './GISMap3D';
@@ -20,6 +20,8 @@ export const MapContainer: React.FC = () => {
     toggleDroneFlying
   } = useFlood();
 
+  const [isControlsOpen, setIsControlsOpen] = useState<boolean>(true);
+
   return (
     <div className="map-wrapper">
       {/* 2D Leaflet Tactical Map & Nullschool particles */}
@@ -36,8 +38,32 @@ export const MapContainer: React.FC = () => {
       {/* Google Flood Hub Floating View Options Card */}
       <GoogleFloodHubPanel />
 
+      {/* Slide Floating Button when panel is closed/collapsed */}
+      {!isControlsOpen && (
+        <button 
+          className="map-slide-toggle-floating"
+          onClick={() => setIsControlsOpen(true)}
+          title="Open Map & Layer Controls"
+          aria-label="Open Map & Layer Controls"
+        >
+          <span>◀ 🗺️ Map Layers & 3D</span>
+        </button>
+      )}
+
       {/* Interactive Basemap Switcher & Layer Filter Controls */}
-      <div className="map-controls-panel">
+      <div className={`map-controls-panel ${isControlsOpen ? '' : 'collapsed'}`}>
+        {/* Panel Header with Slide / Close button */}
+        <div className="map-panel-header-row">
+          <span className="map-panel-header-title">🗺️ Map & Layers</span>
+          <button 
+            className="map-panel-slide-close-btn"
+            onClick={() => setIsControlsOpen(false)}
+            title="Slide & Close Panel"
+          >
+            <span>Slide</span> <span>▶</span>
+          </button>
+        </div>
+
         {/* 2D / 3D Dimension Switcher */}
         <div className="view-mode-bar">
           <button 
