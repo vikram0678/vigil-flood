@@ -126,7 +126,7 @@ function initMap() {
   // Click-to-Get Real-Time DEM Elevation from Open-Meteo API
   map.on("click", async (e) => {
     const { lat, lng } = e.latlng;
-    
+
     // Create instant loading popup with close button enabled
     const popup = L.popup({
       closeButton: false, // We use our custom styled close button in the header
@@ -150,7 +150,7 @@ function initMap() {
       // Call backend elevation proxy (which calls Open-Meteo API)
       const res = await fetch(`/api/terrain/elevation?lat=${lat}&lng=${lng}`);
       const data = await res.json();
-      
+
       popup.setContent(`
         <div class="elevation-popup-card">
           <div class="elev-popup-header">
@@ -186,7 +186,7 @@ function init3DMap() {
     map3d = new maplibregl.Map({
       container: "gis-map-3d",
       maxZoom: 18.5,
-      minZoom: 8,
+      minZoom: 2,
       maxPitch: 80,
       style: {
         version: 8,
@@ -224,7 +224,7 @@ function init3DMap() {
           exaggeration: 1.5 // Enhanced 1.5x Himalayan Mountain Relief
         }
       },
-      center: [77.0394, 31.6702], // Pandoh
+      center: [77.0560, 31.6702], // Pandoh (Real Beas Riverbed)
       zoom: 13,
       pitch: 65, // 3D Camera Tilt
       bearing: -25 // 3D Angle
@@ -394,7 +394,7 @@ function start3DStreamFlowAnimation() {
       const d3 = 4;
       try {
         map3d.setPaintProperty("3d-stream-pulse-layer", "line-dasharray", [d1, d2, d3]);
-      } catch (err) {}
+      } catch (err) { }
     }
     streamAnimFrame = requestAnimationFrame(animate);
   }
@@ -509,20 +509,20 @@ function render3DMarkers(villages) {
       villageMarkers3D.push(shelterMarker);
     });
 
-// Helper: Compute geographic bearing (0-360 deg) from (lat1, lon1) to (lat2, lon2)
-function getBearing(lat1, lon1, lat2, lon2) {
-  const toRad = deg => (deg * Math.PI) / 180;
-  const toDeg = rad => (rad * 180) / Math.PI;
-  const phi1 = toRad(lat1);
-  const phi2 = toRad(lat2);
-  const deltaLambda = toRad(lon2 - lon1);
-  const y = Math.sin(deltaLambda) * Math.cos(phi2);
-  const x = Math.cos(phi1) * Math.sin(phi2) - Math.sin(phi1) * Math.cos(phi2) * Math.cos(deltaLambda);
-  const brng = toDeg(Math.atan2(y, x));
-  return (brng + 360) % 360;
-}
+    // Helper: Compute geographic bearing (0-360 deg) from (lat1, lon1) to (lat2, lon2)
+    function getBearing(lat1, lon1, lat2, lon2) {
+      const toRad = deg => (deg * Math.PI) / 180;
+      const toDeg = rad => (rad * 180) / Math.PI;
+      const phi1 = toRad(lat1);
+      const phi2 = toRad(lat2);
+      const deltaLambda = toRad(lon2 - lon1);
+      const y = Math.sin(deltaLambda) * Math.cos(phi2);
+      const x = Math.cos(phi1) * Math.sin(phi2) - Math.sin(phi1) * Math.cos(phi2) * Math.cos(deltaLambda);
+      const brng = toDeg(Math.atan2(y, x));
+      return (brng + 360) % 360;
+    }
 
-const HYDRO_STREAM_ARROW_SVG = `
+    const HYDRO_STREAM_ARROW_SVG = `
   <svg viewBox="0 0 32 32" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg" class="hydro-vector-svg">
     <path d="M16 28 L16 4" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/>
     <path d="M7 13 L16 3 L25 13" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -530,27 +530,27 @@ const HYDRO_STREAM_ARROW_SVG = `
   </svg>
 `;
 
-// Generate evenly-spaced streamline sample points & bearings along the downhill river path
-function getDownhillFlowArrowPoints(streamCoords) {
-  if (!streamCoords || streamCoords.length < 2) return [];
-  // streamCoords in pilot_villages.json are already normalized from highest elevation to lowest elevation
-  const downhillPts = streamCoords;
-  const arrowPoints = [];
+    // Generate evenly-spaced streamline sample points & bearings along the downhill river path
+    function getDownhillFlowArrowPoints(streamCoords) {
+      if (!streamCoords || streamCoords.length < 2) return [];
+      // streamCoords in pilot_villages.json are already normalized from highest elevation to lowest elevation
+      const downhillPts = streamCoords;
+      const arrowPoints = [];
 
-  for (let i = 0; i < downhillPts.length - 1; i++) {
-    const p1 = downhillPts[i];
-    const p2 = downhillPts[i + 1];
-    const bearing = getBearing(p1[0], p1[1], p2[0], p2[1]);
+      for (let i = 0; i < downhillPts.length - 1; i++) {
+        const p1 = downhillPts[i];
+        const p2 = downhillPts[i + 1];
+        const bearing = getBearing(p1[0], p1[1], p2[0], p2[1]);
 
-    // Add multiple spaced vector arrows along each segment (at 30% and 70%)
-    [0.30, 0.70].forEach(ratio => {
-      const lat = p1[0] + (p2[0] - p1[0]) * ratio;
-      const lng = p1[1] + (p2[1] - p1[1]) * ratio;
-      arrowPoints.push({ lat, lng, bearing, segIndex: i, ratio });
-    });
-  }
-  return arrowPoints;
-}
+        // Add multiple spaced vector arrows along each segment (at 30% and 70%)
+        [0.30, 0.70].forEach(ratio => {
+          const lat = p1[0] + (p2[0] - p1[0]) * ratio;
+          const lng = p1[1] + (p2[1] - p1[1]) * ratio;
+          arrowPoints.push({ lat, lng, bearing, segIndex: i, ratio });
+        });
+      }
+      return arrowPoints;
+    }
 
     // C. 3D Flow Direction Badges along River Canyon (🌊 Downhill Flow)
     if (v.river_stream && v.river_stream.length > 1) {
@@ -659,7 +659,7 @@ function switchViewMode(mode) {
 // 2. Basemap Switcher Handler
 function setBasemap(type) {
   const cfg = BASEMAP_TILES[type] || BASEMAP_TILES.dark;
-  
+
   if (currentBaseLayer) {
     map.removeLayer(currentBaseLayer);
   }
@@ -726,12 +726,12 @@ async function fetchInitialData(isFirstLoad = false) {
     renderVillageList(allVillages);
     updateMapMarkers(allVillages);
     updateThreatIndex(allVillages);
-    
+
     // Select first village ONLY on initial page load
     if (isFirstLoad && allVillages.length > 0) {
       selectVillage(allVillages[0].id, true);
     }
-    
+
     // Update 3D markers if in 3D mode
     if (is3DMode && map3d) {
       render3DMarkers(allVillages);
@@ -755,7 +755,7 @@ function renderVillageList(villages) {
     const card = document.createElement("div");
     const isCritical = v.risk_level === "CRITICAL" || v.risk_percentage >= 85;
     const isSelected = v.id === currentVillageId;
-    
+
     card.className = `village-card ${isSelected ? "selected" : ""} ${isCritical ? "critical-pulse-card" : ""}`;
     card.id = `card-${v.id}`;
     card.onclick = () => selectVillage(v.id, true);
@@ -788,7 +788,7 @@ function renderVillageList(villages) {
 function updateMapMarkers(villages) {
   villages.forEach(v => {
     const color = RISK_COLORS[v.risk_level] || "#10b981";
-    
+
     // Custom Pulsating Circle Marker
     if (!villageMarkers[v.id]) {
       const circle = L.circleMarker([v.lat, v.lng], {
@@ -868,7 +868,7 @@ function renderVillageDetail(data) {
 
   // Header
   document.getElementById("detail-village-name").innerText = `${v.name} (${v.ward})`;
-  document.getElementById("detail-village-meta").innerText = 
+  document.getElementById("detail-village-meta").innerText =
     `Elevation: ${v.elevation_m}m | Slope: ${v.slope_deg}° | Stream Dist: ${v.distance_to_stream_m}m | Pop: ${v.population}`;
 
   // Risk Banner
@@ -882,7 +882,7 @@ function renderVillageDetail(data) {
   // Dual-Hazard Breakdown (Inundation vs Debris Slope Failure)
   const floodPct = Math.min(100, Math.round(risk.risk_percentage * 0.95 + (tel.water_level_m ? tel.water_level_m * 8 : 0)));
   const slopePct = Math.min(100, Math.round(risk.risk_percentage * 0.85 + (v.slope_deg * 0.5) + (tel.soil_moisture * 0.2)));
-  
+
   document.getElementById("val-flood-pct").innerText = `${floodPct}%`;
   document.getElementById("bar-flood-pct").style.width = `${floodPct}%`;
   document.getElementById("val-slope-pct").innerText = `${slopePct}%`;
@@ -1144,7 +1144,7 @@ function renderMapGISOverlays(data) {
   routes.forEach(r => {
     const isSafe = r.safety_score > 50;
     const pathCoords = r.path || [[v.lat, v.lng], [shelters[0]?.lat || v.lat, shelters[0]?.lng || v.lng]];
-    
+
     const routeLine = L.polyline(pathCoords, {
       color: isSafe ? "#10b981" : "#ef4444",
       weight: 3.5,
