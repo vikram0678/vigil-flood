@@ -38,9 +38,9 @@ const RISK_COLORS = {
 // Basemap Tile Configurations (Direct CDN with Browser Multi-threading & Native Cache)
 const BASEMAP_TILES = {
   google_floodhub: {
-    url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-    options: { maxZoom: 20, subdomains: ['a', 'b', 'c', 'd'], attribution: '&copy; Google Flood Hub Light • OpenStreetMap' },
-    isDarkFilter: false // Crisp Light Clean Map like Google Flood Hub
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+    options: { maxZoom: 19, attribution: '&copy; Google Flood Hub Style (ESRI Light Gray Base)' },
+    isDarkFilter: false // 100% Free, Zero API Key, Clean Light Disaster Map
   },
   google_terrain: {
     url: "https://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}",
@@ -101,12 +101,11 @@ const BASEMAP_3D_SOURCES = {
   dark_3d: {
     name: "3D Dark Tactical",
     tiles: [
-      "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
-      "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png"
+      "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
     ],
-    tileSize: 512,
+    tileSize: 256,
     maxzoom: 19,
-    attribution: "&copy; CARTO"
+    attribution: "&copy; Esri Dark Gray Base"
   }
 };
 
