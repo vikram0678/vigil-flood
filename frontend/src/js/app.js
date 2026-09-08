@@ -37,6 +37,11 @@ const RISK_COLORS = {
 
 // Basemap Tile Configurations (Direct CDN with Browser Multi-threading & Native Cache)
 const BASEMAP_TILES = {
+  google_floodhub: {
+    url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+    options: { maxZoom: 20, subdomains: ['a', 'b', 'c', 'd'], attribution: '&copy; Google Flood Hub Light • OpenStreetMap' },
+    isDarkFilter: false // Crisp Light Clean Map like Google Flood Hub
+  },
   google_terrain: {
     url: "https://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}",
     options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Google Maps' },
@@ -132,8 +137,8 @@ function initMap() {
   // Initialize Earth Nullschool Particle Canvas Layer
   initNullschoolParticleEngine();
 
-  // Set default basemap to Google Mountain Terrain
-  setBasemap("google_terrain");
+  // Set default basemap to Google Flood Hub Clean Light Map
+  setBasemap("google_floodhub");
 
   // Add scale control
   L.control.scale({ position: "bottomleft" }).addTo(map);
@@ -1809,9 +1814,8 @@ function nullschoolAnimationLoop() {
     const w = nullschoolCanvas.width;
     const h = nullschoolCanvas.height;
 
-    // Fading motion blur trail
-    nullschoolCtx.fillStyle = "rgba(10, 15, 29, 0.18)";
-    nullschoolCtx.fillRect(0, 0, w, h);
+    // Clear frame completely so map tiles and layers underneath are 100% visible
+    nullschoolCtx.clearRect(0, 0, w, h);
 
     if (map && !is3DMode) {
       hydroParticles.forEach(p => {
@@ -1823,17 +1827,30 @@ function nullschoolAnimationLoop() {
         const pt = map.latLngToContainerPoint([lat, lng]);
 
         if (pt.x >= 0 && pt.x <= w && pt.y >= 0 && pt.y <= h) {
-          // Draw luminous flowing particle
+          // Draw fluid tail
+          const prevProgress = Math.max(0, p.progress - 0.035);
+          const [prevLat, prevLng] = getPointAlongPolyline(p.stream, prevProgress);
+          const prevPt = map.latLngToContainerPoint([prevLat, prevLng]);
+
+          nullschoolCtx.beginPath();
+          nullschoolCtx.moveTo(prevPt.x, prevPt.y);
+          nullschoolCtx.lineTo(pt.x, pt.y);
+          nullschoolCtx.strokeStyle = `rgba(6, 182, 212, ${p.alpha * 0.7})`;
+          nullschoolCtx.lineWidth = p.size * 1.5;
+          nullschoolCtx.lineCap = "round";
+          nullschoolCtx.stroke();
+
+          // Luminous glowing head particle
           nullschoolCtx.beginPath();
           nullschoolCtx.arc(pt.x, pt.y, p.size, 0, Math.PI * 2);
           nullschoolCtx.fillStyle = `rgba(56, 189, 248, ${p.alpha})`;
-          nullschoolCtx.shadowColor = "#06b6d4";
-          nullschoolCtx.shadowBlur = 8;
+          nullschoolCtx.shadowColor = "#38bdf8";
+          nullschoolCtx.shadowBlur = 6;
           nullschoolCtx.fill();
 
-          // Inner white glow spark
+          // Spark core
           nullschoolCtx.beginPath();
-          nullschoolCtx.arc(pt.x, pt.y, p.size * 0.5, 0, Math.PI * 2);
+          nullschoolCtx.arc(pt.x, pt.y, p.size * 0.4, 0, Math.PI * 2);
           nullschoolCtx.fillStyle = "#ffffff";
           nullschoolCtx.fill();
         }
