@@ -156,3 +156,35 @@ def fetch_live_multi_source_data(lat: float = 31.6702, lng: float = 77.0394, vil
         "soil_moisture_feed": soil_data,
         "openweather_feed": weather_data
     }
+
+@router.get("/tiles/{provider}/{z}/{x}/{y}")
+def get_map_tile(provider: str, z: int, x: int, y: str):
+    """
+    Reverse Caching Tile Proxy (Redis + In-Memory/Disk Fallback).
+    Eliminates WebGL CORS errors, prevents rate limiting, and enables offline hackathon demo.
+    """
+    from fastapi.responses import Response
+    from backend.app.core.tile_cache import tile_cache_manager
+
+    # Clean extension if provided (e.g. 3228.png -> 3228)
+    clean_y = int(y.replace(".png", "").replace(".jpg", ""))
+    tile_bytes = tile_cache_manager.get_tile(provider, z, x, clean_y)
+    if not tile_bytes:
+        # Return 1x1 transparent PNG on miss/error so map never crashes
+        transparent_png = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4\x00\x00\x00\rIDATx\x9cc`\x00\x00\x00\x02\x00\x01H\xaf\xa4q\x00\x00\x00\x00IEND\xaeB`\x82'
+        return Response(
+            content=transparent_png,
+            media_type="image/png",
+            headers={"Access-Control-Allow-Origin": "*", "Cache-Control": "public, max-age=60"}
+        )
+
+    return Response(
+        content=tile_bytes,
+        media_type="image/png",
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Cache-Control": "public, max-age=604800, immutable",
+            "X-Tile-Cache": "HIT"
+        }
+    )
+

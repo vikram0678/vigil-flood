@@ -24,59 +24,54 @@ const RISK_COLORS = {
   CRITICAL: "#ef4444"
 };
 
-// Basemap Tile Configurations (Google Maps & Topo Layers)
+// Basemap Tile Configurations (Google Maps & Topo Layers via High-Performance Cache Proxy)
 const BASEMAP_TILES = {
   google_terrain: {
-    url: "https://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}",
-    options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Google Maps' },
+    url: "/api/tiles/google_terrain/{z}/{x}/{y}.png",
+    options: { maxZoom: 20, attribution: '&copy; Google Maps (Fast Tile Cache)' },
     isDarkFilter: false // Real Google Mountain Elevation Shading & Contours
   },
   google_satellite: {
-    url: "https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
-    options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Google Maps' },
+    url: "/api/tiles/google_hybrid/{z}/{x}/{y}.png",
+    options: { maxZoom: 20, attribution: '&copy; Google Maps (Fast Tile Cache)' },
     isDarkFilter: false // High-Res Google Satellite with Village Labels & Roads
   },
   google_dark: {
-    url: "https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",
-    options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Google Maps' },
+    url: "/api/tiles/google_roads/{z}/{x}/{y}.png",
+    options: { maxZoom: 20, attribution: '&copy; Google Maps (Dark Tactical)' },
     isDarkFilter: true // Google Roads in Dark Command Mode
   },
   topo: {
-    url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+    url: "/api/tiles/topo/{z}/{x}/{y}.png",
     options: { maxZoom: 17, attribution: 'Map data: &copy; OpenStreetMap contributors, SRTM' },
     isDarkFilter: false
   }
 };
 
-// 3D Mountain Mesh Tile Sources (CORS-Enabled & Multi-Provider Backup)
+// 3D Mountain Mesh Tile Sources (CORS-Free & High-Performance Proxy)
 const BASEMAP_3D_SOURCES = {
-  esri_satellite: {
-    name: "High-Res 3D Satellite",
-    tiles: [
-      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-    ],
-    tileSize: 256,
-    maxzoom: 19,
-    attribution: "&copy; Esri World Imagery"
-  },
   google_hybrid: {
     name: "Google Hybrid 3D",
     tiles: [
-      "https://mt0.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
-      "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
-      "https://mt2.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
-      "https://mt3.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
+      "/api/tiles/google_hybrid/{z}/{x}/{y}.png"
     ],
     tileSize: 256,
     maxzoom: 20,
     attribution: "&copy; Google Maps"
   },
+  esri_satellite: {
+    name: "High-Res 3D Satellite",
+    tiles: [
+      "/api/tiles/esri_satellite/{z}/{x}/{y}.png"
+    ],
+    tileSize: 256,
+    maxzoom: 19,
+    attribution: "&copy; Esri World Imagery"
+  },
   topo_3d: {
     name: "3D Topo Contours",
     tiles: [
-      "https://a.tile.opentopomap.org/{z}/{x}/{y}.png",
-      "https://b.tile.opentopomap.org/{z}/{x}/{y}.png",
-      "https://c.tile.opentopomap.org/{z}/{x}/{y}.png"
+      "/api/tiles/topo/{z}/{x}/{y}.png"
     ],
     tileSize: 256,
     maxzoom: 17,
@@ -85,8 +80,7 @@ const BASEMAP_3D_SOURCES = {
   dark_3d: {
     name: "3D Dark Tactical",
     tiles: [
-      "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
-      "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png"
+      "/api/tiles/carto_dark/{z}/{x}/{y}.png"
     ],
     tileSize: 512,
     maxzoom: 19,
@@ -199,11 +193,11 @@ function init3DMap() {
             maxzoom: defaultBasemap.maxzoom || 20,
             attribution: defaultBasemap.attribution
           },
-          // 2. Free Global 3D DEM Terrarium Elevation Mesh
+          // 2. Free Global 3D DEM Terrarium Elevation Mesh (Cached Proxy)
           "terrain-dem": {
             type: "raster-dem",
             tiles: [
-              "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"
+              "/api/tiles/terrain_dem/{z}/{x}/{y}.png"
             ],
             encoding: "terrarium",
             tileSize: 256,
