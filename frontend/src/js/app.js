@@ -363,9 +363,9 @@ function update3DFloodSimulation() {
   const waterSliderVal = parseFloat(document.getElementById("slider-water")?.value || 1.1);
   const rainSliderVal = parseFloat(document.getElementById("slider-rain")?.value || 15);
 
-  // 1. Update 3D River Stream Line Width & Surge (Ordered from Upstream NE -> Downstream SW)
+  // 1. Update 3D River Stream Line Width & Surge (Ordered from High Upstream -> Low Downstream)
   if (map3d.getSource("3d-stream-source") && curV.river_stream) {
-    const streamGeoJson = curV.river_stream.slice().reverse().map(pt => [pt[1], pt[0]]);
+    const streamGeoJson = curV.river_stream.map(pt => [pt[1], pt[0]]);
     const streamWidth = Math.max(6, waterSliderVal * 4.5 + (rainSliderVal > 80 ? 6 : 0));
 
     map3d.getSource("3d-stream-source").setData({
@@ -485,8 +485,8 @@ const HYDRO_STREAM_ARROW_SVG = `
 // Generate evenly-spaced streamline sample points & bearings along the downhill river path
 function getDownhillFlowArrowPoints(streamCoords) {
   if (!streamCoords || streamCoords.length < 2) return [];
-  // Ensure we traverse from highest elevation (NE upstream) to lowest elevation (SW downstream)
-  const downhillPts = streamCoords.slice().reverse();
+  // streamCoords in pilot_villages.json are already normalized from highest elevation to lowest elevation
+  const downhillPts = streamCoords;
   const arrowPoints = [];
 
   for (let i = 0; i < downhillPts.length - 1; i++) {
@@ -504,9 +504,9 @@ function getDownhillFlowArrowPoints(streamCoords) {
   return arrowPoints;
 }
 
-    // C. 3D Flow Direction Badges along River Canyon (🌊 Map-Aligned NE ➔ SW Downhill Flow)
+    // C. 3D Flow Direction Badges along River Canyon (🌊 Downhill Flow)
     if (v.river_stream && v.river_stream.length > 1) {
-      const downhillStream = v.river_stream.slice().reverse();
+      const downhillStream = v.river_stream;
       const pts = v.river_stream;
       const midIdx = Math.floor(pts.length / 2);
       const midPt = pts[midIdx];
@@ -516,7 +516,7 @@ function getDownhillFlowArrowPoints(streamCoords) {
       flowEl.className = "marker-3d-flow-badge";
       flowEl.innerHTML = `
         <div class="badge-3d-flow-bubble">
-          <span>🌊 FLOOD FLOW: NE ➔ SW (Downhill)</span>
+          <span>🌊 FLOOD FLOW: DOWNHILL GORGE</span>
           <span class="flow-arrow-icon">➤➤➤</span>
         </div>
       `;
@@ -548,7 +548,7 @@ function getDownhillFlowArrowPoints(streamCoords) {
 
       const upEl = document.createElement("div");
       upEl.className = "marker-3d-endpoint-badge";
-      upEl.innerHTML = `<div class="hydro-endpoint-3d-bubble upstream">🏔️ Upstream (~${v.elevation_m + 80}m) ➔</div>`;
+      upEl.innerHTML = `<div class="hydro-endpoint-3d-bubble upstream">🏔️ Upstream Ridge ➔</div>`;
       const upMarker = new maplibregl.Marker({ element: upEl, rotationAlignment: 'viewport' })
         .setLngLat([upperPt[1], upperPt[0]])
         .addTo(map3d);
@@ -556,7 +556,7 @@ function getDownhillFlowArrowPoints(streamCoords) {
 
       const downEl = document.createElement("div");
       downEl.className = "marker-3d-endpoint-badge";
-      downEl.innerHTML = `<div class="hydro-endpoint-3d-bubble downstream">🌊 Basin (${v.elevation_m}m) ➔</div>`;
+      downEl.innerHTML = `<div class="hydro-endpoint-3d-bubble downstream">🌊 Gorge Basin (${v.elevation_m}m) ➔</div>`;
       const downMarker = new maplibregl.Marker({ element: downEl, rotationAlignment: 'viewport' })
         .setLngLat([lowerPt[1], lowerPt[0]])
         .addTo(map3d);
@@ -946,7 +946,7 @@ function renderMapGISOverlays(data) {
 
   // B. River Drainage Streams (🌊 Multi-layer Hydrodynamic Flow + Spaced Downhill Arrows)
   if (v.river_stream && v.river_stream.length > 1) {
-    const downhillStream = v.river_stream.slice().reverse();
+    const downhillStream = v.river_stream;
 
     // 1. Base Wide River Channel (Deep River Blue)
     const baseStreamLine = L.polyline(v.river_stream, {
@@ -954,7 +954,7 @@ function renderMapGISOverlays(data) {
       weight: 12,
       opacity: 0.85
     });
-    baseStreamLine.bindTooltip(`<b>🌊 River Drainage Channel</b><br>Flow Direction: <b>North-East ➔ South-West (Downhill to ${v.elevation_m}m)</b><br>Downstream Velocity: <b>25–35 km/h</b>`, { sticky: true });
+    baseStreamLine.bindTooltip(`<b>🌊 River Drainage Channel</b><br>Flow Direction: <b>Downhill into Gorge (${v.elevation_m}m)</b><br>Downstream Velocity: <b>25–35 km/h</b>`, { sticky: true });
     streamLayerGroup.addLayer(baseStreamLine);
 
     // 2. Inner Hydrodynamic Core Track (Vibrant Cyan)
@@ -995,7 +995,7 @@ function renderMapGISOverlays(data) {
     const flowBadgeMarker = L.marker(midCoord, {
       icon: L.divIcon({
         className: "flow-badge-wrapper",
-        html: `<div class="flow-direction-2d-badge"><span>🌊 FLOOD FLOW: NE ➔ SW (Downhill)</span><span class="flow-arrow-icon">➤➤➤</span></div>`,
+        html: `<div class="flow-direction-2d-badge"><span>🌊 FLOOD FLOW: DOWNHILL GORGE</span><span class="flow-arrow-icon">➤➤➤</span></div>`,
         iconSize: [210, 30],
         iconAnchor: [105, 15]
       }),
@@ -1010,9 +1010,9 @@ function renderMapGISOverlays(data) {
     const upstreamBadge = L.marker(upperPt, {
       icon: L.divIcon({
         className: "endpoint-badge-wrapper",
-        html: `<div class="hydro-endpoint-badge upstream">🏔️ Upstream Inflow (~${v.elevation_m + 80}m) ➔</div>`,
-        iconSize: [180, 24],
-        iconAnchor: [90, 28]
+        html: `<div class="hydro-endpoint-badge upstream">🏔️ Upstream Ridge ➔</div>`,
+        iconSize: [160, 24],
+        iconAnchor: [80, 28]
       }),
       zIndexOffset: 950
     });
@@ -1021,8 +1021,8 @@ function renderMapGISOverlays(data) {
     const downstreamBadge = L.marker(lowerPt, {
       icon: L.divIcon({
         className: "endpoint-badge-wrapper",
-        html: `<div class="hydro-endpoint-badge downstream">🌊 Downhill Gorge (${v.elevation_m}m) ➔</div>`,
-        iconSize: [180, 24],
+        html: `<div class="hydro-endpoint-badge downstream">🌊 Gorge Basin (${v.elevation_m}m) ➔</div>`,
+        iconSize: [160, 24],
         iconAnchor: [90, -8]
       }),
       zIndexOffset: 950
