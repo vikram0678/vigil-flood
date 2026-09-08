@@ -90,6 +90,76 @@
         <!-- 3D WebGL Mountain Terrain Mesh Map -->
         <div id="gis-map-3d" style="display:none;"></div>
         
+        <!-- Google Flood Hub Official Style Floating "View options" Panel -->
+        <div id="google-floodhub-options-card" class="google-floodhub-card">
+          <div class="gfh-header">
+            <div class="gfh-title-group">
+              <span class="gfh-layers-icon">🗂️</span>
+              <span class="gfh-title">View options</span>
+              <span class="gfh-info-icon" title="Official Google Flood Hub Layer Controls">ℹ️</span>
+            </div>
+            <button id="gfh-toggle-btn" class="gfh-toggle-btn" title="Toggle Panel">▾</button>
+          </div>
+
+          <div id="gfh-body" class="gfh-body">
+            <!-- Map / Hybrid Pill Toggle (Google Flood Hub Style) -->
+            <div class="gfh-pill-switcher">
+              <button id="gfh-btn-map" class="gfh-pill-btn active">✓ Map</button>
+              <button id="gfh-btn-hybrid" class="gfh-pill-btn">Hybrid</button>
+            </div>
+
+            <!-- Flood Data / Coverage Map Tabs -->
+            <div class="gfh-tab-bar">
+              <button id="gfh-tab-flood" class="gfh-tab-btn active">Flood data</button>
+              <button id="gfh-tab-coverage" class="gfh-tab-btn">Coverage map</button>
+            </div>
+
+            <!-- Floods Master Switch -->
+            <div class="gfh-toggle-row master-toggle">
+              <div class="gfh-row-left">
+                <span class="gfh-icon-wave">🌊</span>
+                <span class="gfh-row-text">Floods (riverine and flash)</span>
+              </div>
+              <label class="gfh-switch">
+                <input type="checkbox" id="gfh-switch-floods" checked>
+                <span class="gfh-slider"></span>
+              </label>
+            </div>
+
+            <!-- Riverine Floods Expected Severity -->
+            <div class="gfh-section">
+              <div class="gfh-section-title">Riverine floods</div>
+              <div class="gfh-section-subtitle">Expected severity</div>
+
+              <div class="gfh-severity-list">
+                <div class="gfh-severity-item"><span class="gfh-dot dot-extreme"></span> Extreme</div>
+                <div class="gfh-severity-item"><span class="gfh-dot dot-danger"></span> Danger</div>
+                <div class="gfh-severity-item"><span class="gfh-dot dot-warning"></span> Warning</div>
+                <div class="gfh-severity-item"><span class="gfh-dot dot-nodata"></span> No data</div>
+                <div class="gfh-severity-item with-switch">
+                  <span><span class="gfh-dot dot-normal"></span> Normal</span>
+                  <label class="gfh-switch small">
+                    <input type="checkbox" id="gfh-switch-normal" checked>
+                    <span class="gfh-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Urban Flash Floods Beta Switch -->
+            <div class="gfh-toggle-row">
+              <div class="gfh-row-left">
+                <span class="gfh-row-text">Urban flash floods <span class="gfh-badge-beta">Beta</span></span>
+                <span class="gfh-info-icon" style="font-size:0.75rem;">ℹ️</span>
+              </div>
+              <label class="gfh-switch">
+                <input type="checkbox" id="gfh-switch-urban" checked>
+                <span class="gfh-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
         <!-- Interactive Basemap Switcher & Layer Filter Controls -->
         <div class="map-controls-panel">
           <!-- 2D / 3D Dimension Switcher -->
@@ -105,7 +175,7 @@
             </div>
             
             <div class="basemap-toggle-grid">
-              <button class="basemap-btn active" data-basemap="google_floodhub">🌐 Google Flood Hub</button>
+              <button class="basemap-btn active" data-basemap="google_floodhub">🌐 Google Roads</button>
               <button class="basemap-btn" data-basemap="google_terrain">⛰️ G-Terrain</button>
               <button class="basemap-btn" data-basemap="google_satellite">🛰️ G-Satellite</button>
               <button class="basemap-btn" data-basemap="google_dark">🌑 Dark Mode</button>

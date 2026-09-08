@@ -1,13 +1,35 @@
-# SIH 26192 - Flash Flood Prediction & Early Warning System Dependencies
+# ==============================================================================
+# SIH 26192 — VIGIL-FLOOD: Hyper-Local Flash Flood Early Warning System
+# Ministry of Home Affairs (MHA) / National Disaster Response Force (NDRF)
+# Comprehensive Python Dependencies
+# ==============================================================================
+
+# --- Core Web Framework, Server & API ---
 fastapi>=0.110.0
 uvicorn[standard]>=0.28.0
 pydantic>=2.6.0
-scikit-learn>=1.4.0
-xgboost>=2.0.0
-pandas>=2.2.0
-numpy>=1.26.0
-joblib>=1.3.0
-shap>=0.45.0
 websockets>=12.0
 python-multipart>=0.0.9
 requests>=2.31.0
+python-dotenv>=1.0.0
+watchfiles>=0.21.0
+
+# --- Machine Learning, Deep Learning & Explainable AI (XAI) ---
+scikit-learn>=1.4.0
+xgboost>=2.0.0
+torch>=2.2.0
+pandas>=2.2.0
+numpy>=1.26.0
+scipy>=1.12.0
+joblib>=1.3.0
+shap>=0.45.0
+
+# --- Geospatial & Climate NetCDF Telemetry Ingestion ---
+netCDF4>=1.6.5
+xarray>=2024.1.0
+
+# --- Automated Documentation & SIH Presentation Generators ---
+python-pptx>=0.6.23
+reportlab>=4.1.0
+pillow>=10.2.0
+xlsxwriter>=3.1.9

@@ -27,33 +27,41 @@ let isDroneFlying = false;
 let droneFlightTimer = null;
 let hydroParticles = [];
 
-// Color mapping constants
+// Google Maps Platform API Key (Provided & Authenticated)
+const GOOGLE_MAPS_API_KEY = "AIzaSyAPMWF9BlkHHfGbhX02kATKW2DkfDt3CDo";
+
+// Google Flood Hub 5-Tier Severity Color Constants
 const RISK_COLORS = {
-  LOW: "#10b981",
+  EXTREME: "#8b0000",
+  CRITICAL: "#8b0000",
+  DANGER: "#ef4444",
+  HIGH: "#ef4444",
+  WARNING: "#f59e0b",
   MODERATE: "#f59e0b",
-  HIGH: "#f97316",
-  CRITICAL: "#ef4444"
+  NORMAL: "#10b981",
+  LOW: "#10b981",
+  NO_DATA: "#94a3b8"
 };
 
-// Basemap Tile Configurations (Direct CDN with Browser Multi-threading & Native Cache)
+// Basemap Tile Configurations (Direct CDN with Multi-threading & API Key)
 const BASEMAP_TILES = {
   google_floodhub: {
-    url: "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
-    options: { maxZoom: 19, attribution: '&copy; Google Flood Hub Style (ESRI Light Gray Base)' },
-    isDarkFilter: false // 100% Free, Zero API Key, Clean Light Disaster Map
+    url: `https://{s}.google.com/vt/lyrs=m&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`,
+    options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Google Maps' },
+    isDarkFilter: false // Clean Google Roads & Street Names with English + Hindi place names
   },
   google_terrain: {
-    url: "https://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}",
+    url: `https://{s}.google.com/vt/lyrs=p&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`,
     options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Google Maps' },
     isDarkFilter: false // Real Google Mountain Elevation Shading & Contours
   },
   google_satellite: {
-    url: "https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+    url: `https://{s}.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`,
     options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Google Maps' },
     isDarkFilter: false // High-Res Google Satellite with Village Labels & Roads
   },
   google_dark: {
-    url: "https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",
+    url: `https://{s}.google.com/vt/lyrs=m&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`,
     options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Google Maps' },
     isDarkFilter: true // Google Roads in Dark Command Mode
   },
@@ -64,15 +72,15 @@ const BASEMAP_TILES = {
   }
 };
 
-// 3D Mountain Mesh Tile Sources (Direct CDN + Subdomain Rotation)
+// 3D Mountain Mesh Tile Sources (Direct CDN + Subdomain Rotation + API Key)
 const BASEMAP_3D_SOURCES = {
   google_hybrid: {
     name: "Google Hybrid 3D",
     tiles: [
-      "https://mt0.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
-      "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
-      "https://mt2.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
-      "https://mt3.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
+      `https://mt0.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`,
+      `https://mt1.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`,
+      `https://mt2.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`,
+      `https://mt3.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`
     ],
     tileSize: 256,
     maxzoom: 20,
@@ -678,7 +686,7 @@ function switchViewMode(mode) {
 
 // 2. Basemap Switcher Handler
 function setBasemap(type) {
-  const cfg = BASEMAP_TILES[type] || BASEMAP_TILES.dark;
+  const cfg = BASEMAP_TILES[type] || BASEMAP_TILES.google_floodhub;
 
   if (currentBaseLayer) {
     map.removeLayer(currentBaseLayer);
@@ -693,10 +701,27 @@ function setBasemap(type) {
     mapContainer.classList.remove("map-dark-filter");
   }
 
-  // Update active button state
+  // Update active button state in sidebar controls
   document.querySelectorAll(".basemap-btn").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.basemap === type);
   });
+
+  // Synchronize Google Flood Hub View Options pill buttons
+  const gfhMapBtn = document.getElementById("gfh-btn-map");
+  const gfhHybridBtn = document.getElementById("gfh-btn-hybrid");
+  if (gfhMapBtn && gfhHybridBtn) {
+    if (type === "google_satellite" || type === "esri_satellite") {
+      gfhHybridBtn.classList.add("active");
+      gfhMapBtn.classList.remove("active");
+      gfhHybridBtn.innerText = "✓ Hybrid";
+      gfhMapBtn.innerText = "Map";
+    } else {
+      gfhMapBtn.classList.add("active");
+      gfhHybridBtn.classList.remove("active");
+      gfhMapBtn.innerText = "✓ Map";
+      gfhHybridBtn.innerText = "Hybrid";
+    }
+  }
 }
 
 // 2B. 3D Mountain Mesh Basemap Switcher Handler
@@ -809,25 +834,36 @@ function renderVillageList(villages) {
   });
 }
 
-// 5. Update Leaflet Map Markers & Polygons
+// 5. Update Leaflet Map Markers & Polygons (Google Flood Hub 5-Tier Severity Pins)
 function updateMapMarkers(villages) {
   villages.forEach(v => {
-    const color = RISK_COLORS[v.risk_level] || "#10b981";
+    const color = RISK_COLORS[v.risk_level] || RISK_COLORS.LOW;
+    const isCritical = v.risk_level === "CRITICAL" || v.risk_level === "EXTREME";
+    const isDanger = v.risk_level === "HIGH" || v.risk_level === "DANGER";
+    const radius = isCritical ? 14 : (isDanger ? 12 : 10);
 
-    // Custom Pulsating Circle Marker
+    // Custom Google Flood Hub Circle Marker with Glowing Border
     if (!villageMarkers[v.id]) {
       const circle = L.circleMarker([v.lat, v.lng], {
-        radius: 12,
+        radius: radius,
         fillColor: color,
         color: "#ffffff",
-        weight: 2,
-        opacity: 0.9,
-        fillOpacity: 0.8
+        weight: 2.5,
+        opacity: 1.0,
+        fillOpacity: 0.95
       }).addTo(map);
 
-      circle.bindTooltip(`<b>${v.name}</b><br>Risk: ${v.risk_percentage}% (${v.risk_level})`, {
+      circle.bindTooltip(`
+        <div style="font-family:'Outfit',sans-serif; text-align:center; padding:2px 4px;">
+          <div style="font-weight:700; font-size:0.85rem; color:#f8fafc;">${v.name}</div>
+          <div style="font-size:0.75rem; color:${color}; font-weight:600; margin-top:2px;">
+            ${isCritical ? '🔴 Extreme Threat' : (isDanger ? '🟠 Danger Zone' : (v.risk_level === 'MODERATE' ? '🟡 Flood Warning' : '🟢 Normal Level'))} (${v.risk_percentage}%)
+          </div>
+        </div>
+      `, {
         permanent: false,
-        direction: "top"
+        direction: "top",
+        className: "custom-gfh-tooltip"
       });
 
       circle.on("click", () => selectVillage(v.id, true));
@@ -835,9 +871,17 @@ function updateMapMarkers(villages) {
     } else {
       villageMarkers[v.id].setStyle({
         fillColor: color,
-        radius: v.risk_level === "CRITICAL" ? 16 : 12
+        radius: radius,
+        weight: 2.5
       });
-      villageMarkers[v.id].setTooltipContent(`<b>${v.name}</b><br>Risk: ${v.risk_percentage}% (${v.risk_level})`);
+      villageMarkers[v.id].setTooltipContent(`
+        <div style="font-family:'Outfit',sans-serif; text-align:center; padding:2px 4px;">
+          <div style="font-weight:700; font-size:0.85rem; color:#f8fafc;">${v.name}</div>
+          <div style="font-size:0.75rem; color:${color}; font-weight:600; margin-top:2px;">
+            ${isCritical ? '🔴 Extreme Threat' : (isDanger ? '🟠 Danger Zone' : (v.risk_level === 'MODERATE' ? '🟡 Flood Warning' : '🟢 Normal Level'))} (${v.risk_percentage}%)
+          </div>
+        </div>
+      `);
     }
   });
 }
@@ -1301,7 +1345,93 @@ function setupEventListeners() {
     else map.removeLayer(streamLayerGroup);
   });
 
-  // B2. 3D Evacuation Drone Flythrough Button
+  // B2. Google Flood Hub "View Options" Floating Panel Controls
+  const gfhToggleBtn = document.getElementById("gfh-toggle-btn");
+  const gfhBody = document.getElementById("gfh-body");
+  if (gfhToggleBtn && gfhBody) {
+    gfhToggleBtn.addEventListener("click", () => {
+      gfhBody.classList.toggle("collapsed");
+      gfhToggleBtn.innerText = gfhBody.classList.contains("collapsed") ? "▸" : "▾";
+    });
+  }
+
+  const gfhMapBtn = document.getElementById("gfh-btn-map");
+  const gfhHybridBtn = document.getElementById("gfh-btn-hybrid");
+  if (gfhMapBtn) {
+    gfhMapBtn.addEventListener("click", () => {
+      setBasemap("google_floodhub");
+      if (is3DMode) setBasemap3D("google_hybrid");
+    });
+  }
+  if (gfhHybridBtn) {
+    gfhHybridBtn.addEventListener("click", () => {
+      setBasemap("google_satellite");
+      if (is3DMode) setBasemap3D("google_hybrid");
+    });
+  }
+
+  // Google Flood Hub Tab Switcher (Flood Data vs Coverage Map)
+  const gfhTabFlood = document.getElementById("gfh-tab-flood");
+  const gfhTabCoverage = document.getElementById("gfh-tab-coverage");
+  if (gfhTabFlood && gfhTabCoverage) {
+    gfhTabFlood.addEventListener("click", () => {
+      gfhTabFlood.classList.add("active");
+      gfhTabCoverage.classList.remove("active");
+      if (!map.hasLayer(hazardZoneLayerGroup)) map.addLayer(hazardZoneLayerGroup);
+    });
+    gfhTabCoverage.addEventListener("click", () => {
+      gfhTabCoverage.classList.add("active");
+      gfhTabFlood.classList.remove("active");
+      if (!map.hasLayer(hexGridLayerGroup)) map.addLayer(hexGridLayerGroup);
+    });
+  }
+
+  // Google Flood Hub Floods Master Switch
+  const gfhSwitchFloods = document.getElementById("gfh-switch-floods");
+  if (gfhSwitchFloods) {
+    gfhSwitchFloods.addEventListener("change", (e) => {
+      const isChecked = e.target.checked;
+      if (isChecked) {
+        if (!map.hasLayer(hazardZoneLayerGroup)) map.addLayer(hazardZoneLayerGroup);
+        if (!map.hasLayer(hexGridLayerGroup)) map.addLayer(hexGridLayerGroup);
+      } else {
+        if (map.hasLayer(hazardZoneLayerGroup)) map.removeLayer(hazardZoneLayerGroup);
+        if (map.hasLayer(hexGridLayerGroup)) map.removeLayer(hexGridLayerGroup);
+      }
+    });
+  }
+
+  // Google Flood Hub Normal River Severity Switch
+  const gfhSwitchNormal = document.getElementById("gfh-switch-normal");
+  if (gfhSwitchNormal) {
+    gfhSwitchNormal.addEventListener("change", (e) => {
+      const showNormal = e.target.checked;
+      allVillages.forEach(v => {
+        if (v.risk_level === "LOW" && villageMarkers[v.id]) {
+          if (showNormal) {
+            map.addLayer(villageMarkers[v.id]);
+          } else {
+            map.removeLayer(villageMarkers[v.id]);
+          }
+        }
+      });
+    });
+  }
+
+  // Google Flood Hub Urban Flash Floods Switch
+  const gfhSwitchUrban = document.getElementById("gfh-switch-urban");
+  if (gfhSwitchUrban) {
+    gfhSwitchUrban.addEventListener("change", (e) => {
+      isHexGridEnabled = e.target.checked;
+      if (e.target.checked) {
+        if (!map.hasLayer(hexGridLayerGroup)) map.addLayer(hexGridLayerGroup);
+      } else {
+        if (map.hasLayer(hexGridLayerGroup)) map.removeLayer(hexGridLayerGroup);
+      }
+    });
+  }
+
+  // B3. 3D Evacuation Drone Flythrough Button
   const droneBtn = document.getElementById("btn-drone-flythrough");
   if (droneBtn) {
     droneBtn.addEventListener("click", () => {
