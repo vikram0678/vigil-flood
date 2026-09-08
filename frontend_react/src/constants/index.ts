@@ -51,14 +51,11 @@ export const BASEMAP_3D_SOURCES = {
   google_hybrid: {
     name: "Google Hybrid 3D",
     tiles: [
-      `https://mt0.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`,
-      `https://mt1.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`,
-      `https://mt2.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`,
-      `https://mt3.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
     ],
     tileSize: 256,
-    maxzoom: 20,
-    attribution: "&copy; Google Maps"
+    maxzoom: 19,
+    attribution: "&copy; Esri, Maxar, Earthstar Geographics"
   },
   esri_satellite: {
     name: "ESRI Satellite",

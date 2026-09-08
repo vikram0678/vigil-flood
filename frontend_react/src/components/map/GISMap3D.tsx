@@ -116,6 +116,33 @@ export const GISMap3D: React.FC = () => {
       }
     }, 150);
 
+    // Logging MapLibre GL Lifecycle & WebGL Status
+    map3d.on('load', () => {
+      console.log("🏔️ [3D-MAP] MapLibre Style, Satellite Raster & 3D Terrain Loaded Successfully!");
+    });
+
+    map3d.on('error', (e) => {
+      console.error("🚨 [3D-MAP ERROR]:", e.error || e);
+    });
+
+    map3d.on('sourcedata', (e) => {
+      if (e.isSourceLoaded) {
+        console.log(`📡 [3D-MAP SOURCE] Source "${e.sourceId}" (dataType: ${e.sourceDataType}) loaded.`);
+      }
+    });
+
+    map3d.on('tileerror', (e: any) => {
+      console.warn("⚠️ [3D-MAP TILE ERROR]:", e.tile?.tileID?.canonical, e.error);
+    });
+
+    map3d.on('webglcontextlost', (e) => {
+      console.error("🚨 [3D-MAP WEBGL CONTEXT LOST]:", e);
+    });
+
+    map3d.on('webglcontextrestored', () => {
+      console.log("✅ [3D-MAP WEBGL CONTEXT RESTORED]");
+    });
+
     map3d.on('load', () => {
       // 3D Flood water polygon source
       map3d.addSource('3d-flood-water-source', {
