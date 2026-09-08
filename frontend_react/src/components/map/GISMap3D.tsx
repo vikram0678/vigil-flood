@@ -294,9 +294,18 @@ export const GISMap3D: React.FC = () => {
         }]
       });
     }
+  }, [selectedVillageData, selectedVillageId, simulation, villages]);
 
-    // Camera fly-to
-    if (v.lng && v.lat && !isDroneFlying) {
+  // 4b. Camera fly-to ONLY when selected village explicitly changes
+  const lastFlown3DVillageIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    const map3d = map3dInstanceRef.current;
+    if (!map3d || !selectedVillageId || isDroneFlying) return;
+    if (lastFlown3DVillageIdRef.current === selectedVillageId) return;
+
+    const v = selectedVillageData?.village || villages.find(x => x.id === selectedVillageId);
+    if (v && v.lng && v.lat) {
+      lastFlown3DVillageIdRef.current = selectedVillageId;
       map3d.flyTo({
         center: [v.lng, v.lat],
         zoom: 13.5,
@@ -305,7 +314,7 @@ export const GISMap3D: React.FC = () => {
         duration: 2000
       });
     }
-  }, [selectedVillageData, selectedVillageId, simulation, villages, isDroneFlying]);
+  }, [selectedVillageId, villages, selectedVillageData, isDroneFlying]);
 
   // 5. Drone Flythrough Sequence
   useEffect(() => {

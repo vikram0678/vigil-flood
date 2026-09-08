@@ -472,12 +472,20 @@ export const GISMap2D: React.FC = () => {
       }
       sensorLayerRef.current.addLayer(sensorMarker);
     });
+  }, [selectedVillageData]);
 
-    // Pan / Fly to selected village
-    if (mapInstanceRef.current && v.lat && v.lng) {
+  // Camera fly-to ONLY when selected village explicitly changes
+  const lastFlownVillageIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!mapInstanceRef.current || !selectedVillageId) return;
+    if (lastFlownVillageIdRef.current === selectedVillageId) return;
+
+    const v = selectedVillageData?.village || villages.find(x => x.id === selectedVillageId);
+    if (v && v.lat && v.lng) {
+      lastFlownVillageIdRef.current = selectedVillageId;
       mapInstanceRef.current.flyTo([v.lat, v.lng], 13, { duration: 1.2 });
     }
-  }, [selectedVillageData]);
+  }, [selectedVillageId, villages, selectedVillageData]);
 
   // 5. Layer visibility sync
   useEffect(() => {
