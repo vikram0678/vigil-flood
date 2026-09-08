@@ -8,42 +8,69 @@ export type Basemap2D = "google_floodhub" | "google_terrain" | "google_satellite
 
 export type Basemap3D = "google_hybrid" | "esri_satellite" | "topo_3d" | "dark_3d";
 
+export interface HazardZones {
+  red_inundation_polygon?: [number, number][];
+  orange_slope_polygon?: [number, number][];
+  green_safe_polygon?: [number, number][];
+}
+
 export interface Shelter {
   name: string;
   lat: number;
   lng: number;
   elevation_m: number;
   capacity: number;
-  is_primary: boolean;
+  is_primary?: boolean;
 }
 
 export interface EvacuationRoute {
   name: string;
-  type: string;
-  is_safe: boolean;
-  clearance_elevation_m: number;
+  status?: string;
+  safety_score?: number;
+  type?: string;
+  is_safe?: boolean;
+  clearance_elevation_m?: number;
   path: [number, number][]; // [lat, lng]
+}
+
+export interface SensorLocation {
+  id: string;
+  type: string;
+  lat: number;
+  lng: number;
+  status?: string;
 }
 
 export interface Village {
   id: string;
   name: string;
   ward: string;
+  district?: string;
+  state?: string;
   lat: number;
   lng: number;
   elevation_m: number;
   slope_deg: number;
+  soil_type?: string;
   distance_to_stream_m: number;
+  historical_landslide_count?: number;
+  historical_flood_count?: number;
   population: number;
+  vulnerable_households?: number;
   risk_level: RiskLevel;
   risk_percentage: number;
   risk_badge: string;
   lead_time_display: string;
-  primary_shelter: string;
+  primary_shelter?: string | Shelter;
+  hazard_zones?: HazardZones;
   inundation_polygon?: [number, number][];
   river_stream?: [number, number][];
   shelters?: Shelter[];
+  safe_shelters?: Shelter[];
   routes?: EvacuationRoute[];
+  evacuation_routes?: EvacuationRoute[];
+  sensor_locations?: SensorLocation[];
+  sensors?: Record<string, string>;
 }
 
 export interface Telemetry {

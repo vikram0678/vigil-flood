@@ -3,6 +3,44 @@ import L from 'leaflet';
 import { useFlood } from '../../context/FloodContext';
 import { BASEMAP_2D_TILES, RISK_COLORS } from '../../constants';
 
+const HYDRO_STREAM_ARROW_SVG = `
+  <svg viewBox="0 0 32 32" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg" class="hydro-vector-svg">
+    <path d="M16 28 L16 4" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M7 13 L16 3 L25 13" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M10 20 L16 13 L22 20" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+  </svg>
+`;
+
+function getBearing(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const toDeg = (rad: number) => (rad * 180) / Math.PI;
+  const phi1 = toRad(lat1);
+  const phi2 = toRad(lat2);
+  const deltaLambda = toRad(lon2 - lon1);
+  const y = Math.sin(deltaLambda) * Math.cos(phi2);
+  const x = Math.cos(phi1) * Math.sin(phi2) - Math.sin(phi1) * Math.cos(phi2) * Math.cos(deltaLambda);
+  const brng = toDeg(Math.atan2(y, x));
+  return (brng + 360) % 360;
+}
+
+function getDownhillFlowArrowPoints(streamCoords: [number, number][]) {
+  if (!streamCoords || streamCoords.length < 2) return [];
+  const arrowPoints: { lat: number; lng: number; bearing: number }[] = [];
+
+  for (let i = 0; i < streamCoords.length - 1; i++) {
+    const p1 = streamCoords[i];
+    const p2 = streamCoords[i + 1];
+    const bearing = getBearing(p1[0], p1[1], p2[0], p2[1]);
+
+    [0.30, 0.70].forEach(ratio => {
+      const lat = p1[0] + (p2[0] - p1[0]) * ratio;
+      const lng = p1[1] + (p2[1] - p1[1]) * ratio;
+      arrowPoints.push({ lat, lng, bearing });
+    });
+  }
+  return arrowPoints;
+}
+
 export const GISMap2D: React.FC = () => {
   const { 
     villages, 
@@ -37,6 +75,7 @@ export const GISMap2D: React.FC = () => {
     }).setView(mandiCoords, 11);
 
     mapInstanceRef.current = map;
+    (window as any).leafletMap = map;
 
     // Attach layer groups
     hexGridLayerRef.current.addTo(map);
@@ -174,7 +213,7 @@ export const GISMap2D: React.FC = () => {
       }
     });
 
-    // Render Hexagonal Risk Grid
+    // Render Hexagonal Risk Grid (Google Flood Hub Style)
     hexGridLayerRef.current.clearLayers();
     villages.forEach(v => {
       const cellRadius = 0.015;
@@ -198,18 +237,58 @@ export const GISMap2D: React.FC = () => {
     });
   }, [villages, selectVillage]);
 
-  // 4. Update Overlays for Selected Village (Inundation, Shelters, Routes, Streams)
+  // 4. Update Overlays for Selected Village (Hazard Zones, Shelters, Routes, Streams, Sensors)
   useEffect(() => {
     if (!selectedVillageData) return;
     const v = selectedVillageData.village;
+    const isCritical = selectedVillageData.risk_analysis?.risk_level === 'CRITICAL' || selectedVillageData.risk_analysis?.risk_level === 'EXTREME';
 
     hazardLayerRef.current.clearLayers();
     streamLayerRef.current.clearLayers();
     shelterLayerRef.current.clearLayers();
     routeLayerRef.current.clearLayers();
+    sensorLayerRef.current.clearLayers();
 
-    // Inundation Polygon
-    if (v.inundation_polygon && v.inundation_polygon.length > 0) {
+    // A. Hazard Area Inundation & Slope Polygons (Red, Orange, Green Zones)
+    const zones = v.hazard_zones;
+    if (zones) {
+      // 🔴 Red Inundation Zone
+      if (zones.red_inundation_polygon && zones.red_inundation_polygon.length > 0) {
+        const redPoly = L.polygon(zones.red_inundation_polygon, {
+          color: "#ef4444",
+          fillColor: "#ef4444",
+          fillOpacity: isCritical ? 0.55 : 0.35,
+          weight: isCritical ? 3 : 2,
+          dashArray: isCritical ? "4, 6" : undefined
+        });
+        redPoly.bindTooltip("<b>🔴 Red Hazard Zone</b><br>High Flash Flood & Inundation Risk", { sticky: true });
+        hazardLayerRef.current.addLayer(redPoly);
+      }
+
+      // 🟠 Orange Slope Zone
+      if (zones.orange_slope_polygon && zones.orange_slope_polygon.length > 0) {
+        const orangePoly = L.polygon(zones.orange_slope_polygon, {
+          color: "#f97316",
+          fillColor: "#f97316",
+          fillOpacity: 0.25,
+          weight: 1.5
+        });
+        orangePoly.bindTooltip("<b>🟠 Orange Buffer Zone</b><br>Steep Slope & Debris Flow Risk", { sticky: true });
+        hazardLayerRef.current.addLayer(orangePoly);
+      }
+
+      // 🟢 Green Safe Ridge Zone
+      if (zones.green_safe_polygon && zones.green_safe_polygon.length > 0) {
+        const greenPoly = L.polygon(zones.green_safe_polygon, {
+          color: "#10b981",
+          fillColor: "#10b981",
+          fillOpacity: 0.3,
+          weight: 2
+        });
+        greenPoly.bindTooltip("<b>🟢 Green Safe Zone</b><br>Elevated Ground / Safe Relief Area", { sticky: true });
+        hazardLayerRef.current.addLayer(greenPoly);
+      }
+    } else if (v.inundation_polygon && v.inundation_polygon.length > 0) {
       const color = RISK_COLORS[v.risk_level] || RISK_COLORS.LOW;
       L.polygon(v.inundation_polygon, {
         color: color,
@@ -220,47 +299,160 @@ export const GISMap2D: React.FC = () => {
       }).addTo(hazardLayerRef.current);
     }
 
-    // River Drainage Stream Line
-    if (v.river_stream && v.river_stream.length > 0) {
-      L.polyline(v.river_stream, {
-        color: '#0284c7',
-        weight: 5,
+    // B. River Drainage Streams (🌊 Multi-layer Hydrodynamic Flow + Spaced Downhill Arrows)
+    const stream = v.river_stream;
+    if (stream && stream.length > 1) {
+      // 1. Base Wide River Channel
+      const baseStreamLine = L.polyline(stream, {
+        color: "#0369a1",
+        weight: 12,
         opacity: 0.85
-      }).addTo(streamLayerRef.current);
+      });
+      baseStreamLine.bindTooltip(`<b>🌊 River Drainage Channel</b><br>Flow Direction: <b>Downhill into Gorge (${v.elevation_m}m)</b><br>Downstream Velocity: <b>25–35 km/h</b>`, { sticky: true });
+      streamLayerRef.current.addLayer(baseStreamLine);
 
-      L.polyline(v.river_stream, {
-        color: '#ffffff',
-        weight: 3,
-        opacity: 0.9,
-        className: 'animated-stream-flow-pulse'
-      }).addTo(streamLayerRef.current);
-    }
+      // 2. Inner Hydrodynamic Core Track
+      const coreStreamLine = L.polyline(stream, {
+        color: "#06b6d4",
+        weight: 6,
+        opacity: 0.9
+      });
+      streamLayerRef.current.addLayer(coreStreamLine);
 
-    // Shelters
-    if (v.shelters && v.shelters.length > 0) {
-      v.shelters.forEach(s => {
-        const icon = L.divIcon({
-          className: 'custom-shelter-pin',
-          html: `<div class="shelter-pin-badge" title="${s.name} (${s.elevation_m}m)">⛺</div>`,
-          iconSize: [26, 26],
-          iconAnchor: [13, 13]
+      // 3. Continuous Animated Downhill Pulse Line
+      const pulseLine = L.polyline(stream, {
+        color: "#ffffff",
+        weight: 3.5,
+        opacity: 0.95,
+        className: "animated-stream-flow-pulse"
+      });
+      streamLayerRef.current.addLayer(pulseLine);
+
+      // 4. Multiple Evenly-Spaced Downhill Flow Direction Arrows
+      const flowArrows = getDownhillFlowArrowPoints(stream);
+      flowArrows.forEach((pt, idx) => {
+        const arrowMarker = L.marker([pt.lat, pt.lng], {
+          icon: L.divIcon({
+            className: "hydro-arrow-marker-wrapper",
+            html: `<div class="flow-stream-chevron" style="transform: rotate(${pt.bearing}deg);" title="Downhill River Flow #${idx + 1} (${Math.round(pt.bearing)}° Bearing)">${HYDRO_STREAM_ARROW_SVG}</div>`,
+            iconSize: [28, 28],
+            iconAnchor: [14, 14]
+          }),
+          zIndexOffset: 900
         });
-        L.marker([s.lat, s.lng], { icon })
-          .bindTooltip(`<b>${s.name}</b><br>Safe Elevation: ${s.elevation_m}m | Cap: ${s.capacity}`, { direction: 'top' })
-          .addTo(shelterLayerRef.current);
+        streamLayerRef.current.addLayer(arrowMarker);
       });
+
+      // 5. Central Flow Direction Pill Banner
+      const midIdx = Math.floor(stream.length / 2);
+      const midCoord = stream[midIdx];
+      const flowBadgeMarker = L.marker(midCoord, {
+        icon: L.divIcon({
+          className: "flow-badge-wrapper",
+          html: `<div class="flow-direction-2d-badge"><span>🌊 FLOOD FLOW: DOWNHILL GORGE</span><span class="flow-arrow-icon">➤➤➤</span></div>`,
+          iconSize: [210, 30],
+          iconAnchor: [105, 15]
+        }),
+        zIndexOffset: 1000
+      });
+      streamLayerRef.current.addLayer(flowBadgeMarker);
+
+      // 6. Upstream & Downstream Badges
+      const upperPt = stream[0];
+      const lowerPt = stream[stream.length - 1];
+
+      const upstreamBadge = L.marker(upperPt, {
+        icon: L.divIcon({
+          className: "endpoint-badge-wrapper",
+          html: `<div class="hydro-endpoint-badge upstream">🏔️ Upstream Ridge ➔</div>`,
+          iconSize: [160, 24],
+          iconAnchor: [80, 28]
+        }),
+        zIndexOffset: 950
+      });
+      streamLayerRef.current.addLayer(upstreamBadge);
+
+      const downstreamBadge = L.marker(lowerPt, {
+        icon: L.divIcon({
+          className: "endpoint-badge-wrapper",
+          html: `<div class="hydro-endpoint-badge downstream">🌊 Gorge Basin (${v.elevation_m}m) ➔</div>`,
+          iconSize: [160, 24],
+          iconAnchor: [90, -8]
+        }),
+        zIndexOffset: 950
+      });
+      streamLayerRef.current.addLayer(downstreamBadge);
     }
 
-    // Evacuation Routes
-    if (v.routes && v.routes.length > 0) {
-      v.routes.forEach(r => {
-        L.polyline(r.path, {
-          color: r.is_safe ? '#10b981' : '#ef4444',
-          weight: 4,
-          dashArray: r.is_safe ? undefined : '6, 6'
-        }).bindTooltip(`<b>${r.name}</b><br>Status: ${r.is_safe ? '🟢 Recommended Safe' : '🔴 Flood Inundated'}`, { direction: 'top' })
-          .addTo(routeLayerRef.current);
+    // C. Safe Relief Shelters (⛺)
+    const shelters = v.safe_shelters || v.shelters || [];
+    shelters.forEach(s => {
+      const shelterMarker = L.marker([s.lat, s.lng], {
+        icon: L.divIcon({
+          className: "custom-shelter-pin",
+          html: `<div class="shelter-pin-badge">⛺</div>`,
+          iconSize: [28, 28],
+          iconAnchor: [14, 14]
+        })
       });
+      shelterMarker.bindTooltip(`
+        <div style="font-family:sans-serif; padding:2px;">
+          <div style="font-weight:700; color:#10b981;">⛺ ${s.name}</div>
+          <div style="font-size:11px; color:#cbd5e1;">Capacity: <b>${s.capacity}</b> people | Elev: <b>${s.elevation_m}m</b></div>
+          <div style="font-size:10px; color:#34d399; margin-top:2px;">Status: DESIGNATED SAFE REFUGE</div>
+        </div>
+      `, { sticky: true, direction: "top" });
+      shelterLayerRef.current.addLayer(shelterMarker);
+    });
+
+    // D. Evacuation Routes (🛣️)
+    const routes = v.evacuation_routes || v.routes || [];
+    routes.forEach(r => {
+      const isSafe = r.safety_score !== undefined ? r.safety_score > 50 : (r.is_safe ?? true);
+      const pathCoords = r.path || [[v.lat, v.lng], [shelters[0]?.lat || v.lat, shelters[0]?.lng || v.lng]];
+
+      const routeLine = L.polyline(pathCoords, {
+        color: isSafe ? "#10b981" : "#ef4444",
+        weight: 3.5,
+        dashArray: isSafe ? "6, 8" : "2, 6",
+        opacity: 0.9
+      });
+      routeLine.bindTooltip(`<b>${r.name}</b><br>Status: ${r.status || (isSafe ? 'OPEN' : 'AVOID')}`, { sticky: true });
+      routeLayerRef.current.addLayer(routeLine);
+    });
+
+    // E. Real-Time IoT Sensor Nodes (📡)
+    const sensors = v.sensor_locations || [];
+    sensors.forEach(sens => {
+      const sensorMarker = L.marker([sens.lat, sens.lng], {
+        icon: L.divIcon({
+          className: "custom-sensor-pin",
+          html: `<div class="sensor-pin-badge">📡</div>`,
+          iconSize: [22, 22],
+          iconAnchor: [11, 11]
+        })
+      });
+      const isRiverGauge = sens.type.toLowerCase().includes("river") || sens.id.includes("WTR");
+      sensorMarker.bindTooltip(`
+        <div style="font-family:sans-serif; padding:2px;">
+          <div style="font-weight:700; color:#38bdf8;">📡 ${sens.type} Node</div>
+          <div style="font-size:11px; color:#cbd5e1;">ID: <code>${sens.id}</code></div>
+          <div style="font-size:10px; color:#10b981;">Status: LIVE TELEMETRY STREAMING</div>
+          ${isRiverGauge ? `<div style="font-size:9px; color:#38bdf8; margin-top:2px;">💡 Click to View 24h Hydrograph Curve</div>` : ''}
+        </div>
+      `, { sticky: true, direction: "top" });
+
+      if (isRiverGauge) {
+        sensorMarker.on("click", () => {
+          window.dispatchEvent(new CustomEvent('open-hydrograph-modal', { detail: { villageId: v.id } }));
+        });
+      }
+      sensorLayerRef.current.addLayer(sensorMarker);
+    });
+
+    // Pan / Fly to selected village
+    if (mapInstanceRef.current && v.lat && v.lng) {
+      mapInstanceRef.current.flyTo([v.lat, v.lng], 13, { duration: 1.2 });
     }
   }, [selectedVillageData]);
 
@@ -283,6 +475,9 @@ export const GISMap2D: React.FC = () => {
 
     if (layers.streams) map.addLayer(streamLayerRef.current);
     else map.removeLayer(streamLayerRef.current);
+
+    if (layers.sensors) map.addLayer(sensorLayerRef.current);
+    else map.removeLayer(sensorLayerRef.current);
   }, [layers]);
 
   return (

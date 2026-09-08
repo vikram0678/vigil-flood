@@ -8,6 +8,7 @@ export const GISMap3D: React.FC = () => {
     villages, 
     selectedVillageId, 
     selectedVillageData, 
+    selectVillage,
     basemap3D, 
     isDroneFlying, 
     toggleDroneFlying,
@@ -16,6 +17,7 @@ export const GISMap3D: React.FC = () => {
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const map3dInstanceRef = useRef<maplibregl.Map | null>(null);
+  const markers3DRef = useRef<maplibregl.Marker[]>([]);
   const droneTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const animFrameRef = useRef<number | null>(null);
 
@@ -181,7 +183,60 @@ export const GISMap3D: React.FC = () => {
     }
   }, [basemap3D]);
 
-  // 3. Update 3D Inundation & River stream lines based on simulation sliders
+  // 3. Render 3D Village Markers & Shelters
+  useEffect(() => {
+    const map3d = map3dInstanceRef.current;
+    if (!map3d || villages.length === 0) return;
+
+    // Clear previous markers
+    markers3DRef.current.forEach(m => m.remove());
+    markers3DRef.current = [];
+
+    villages.forEach(v => {
+      // Village 3D Floating Name Badge
+      const el = document.createElement("div");
+      el.className = "marker-3d-village-badge";
+      el.innerHTML = `
+        <div class="badge-3d-bubble">
+          <span class="badge-3d-dot"></span>
+          <span><b>${v.name}</b> (${v.elevation_m}m)</span>
+        </div>
+      `;
+      el.onclick = () => selectVillage(v.id);
+
+      const marker = new maplibregl.Marker({ element: el })
+        .setLngLat([v.lng, v.lat])
+        .setPopup(new maplibregl.Popup({ offset: 20 }).setHTML(`
+          <div style="font-family:sans-serif; padding:4px;">
+            <div style="font-weight:700; color:#0284c7;">🏔️ ${v.name} (${v.ward})</div>
+            <div style="font-size:11px;">Elevation: <b>${v.elevation_m}m</b> | Slope: <b>${v.slope_deg}°</b></div>
+            <div style="font-size:11px; color:#ef4444; font-weight:700; margin-top:2px;">Threat: ${v.risk_percentage}% (${v.risk_level})</div>
+          </div>
+        `))
+        .addTo(map3d);
+
+      markers3DRef.current.push(marker);
+
+      // Safe Ridge Shelter 3D Marker
+      const shelters = v.safe_shelters || v.shelters || [];
+      shelters.forEach(s => {
+        const shelterEl = document.createElement("div");
+        shelterEl.className = "marker-3d-shelter-badge";
+        shelterEl.innerHTML = `
+          <div class="shelter-3d-bubble">
+            ⛺ <b>${s.name}</b> (${s.elevation_m}m)
+          </div>
+        `;
+        const shelterMarker = new maplibregl.Marker({ element: shelterEl })
+          .setLngLat([s.lng, s.lat])
+          .addTo(map3d);
+
+        markers3DRef.current.push(shelterMarker);
+      });
+    });
+  }, [villages, selectVillage]);
+
+  // 4. Update 3D Inundation & River stream lines based on simulation sliders
   useEffect(() => {
     const map3d = map3dInstanceRef.current;
     if (!map3d || !map3d.isStyleLoaded()) return;
@@ -204,8 +259,9 @@ export const GISMap3D: React.FC = () => {
     }
 
     // Update Inundation Polygon
-    if (v.inundation_polygon && map3d.getSource('3d-flood-water-source')) {
-      const polyGeoJson = [v.inundation_polygon.map(pt => [pt[1], pt[0]])];
+    const inundationPts = v.hazard_zones?.red_inundation_polygon || v.inundation_polygon;
+    if (inundationPts && map3d.getSource('3d-flood-water-source')) {
+      const polyGeoJson = [inundationPts.map(pt => [pt[1], pt[0]])];
       (map3d.getSource('3d-flood-water-source') as maplibregl.GeoJSONSource).setData({
         type: 'FeatureCollection',
         features: [{
@@ -215,9 +271,20 @@ export const GISMap3D: React.FC = () => {
         }]
       });
     }
-  }, [selectedVillageData, selectedVillageId, simulation, villages]);
 
-  // 4. Drone Flythrough Sequence
+    // Camera fly-to
+    if (v.lng && v.lat && !isDroneFlying) {
+      map3d.flyTo({
+        center: [v.lng, v.lat],
+        zoom: 13.5,
+        pitch: 58,
+        bearing: -25,
+        duration: 2000
+      });
+    }
+  }, [selectedVillageData, selectedVillageId, simulation, villages, isDroneFlying]);
+
+  // 5. Drone Flythrough Sequence
   useEffect(() => {
     const map3d = map3dInstanceRef.current;
     if (!map3d) return;

@@ -147,24 +147,18 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setSimulation(prev => ({ ...prev, [key]: value, activePreset: "" }));
   };
 
-  const applyScenario = async (preset: string) => {
-    setSimulation(prev => ({ ...prev, activePreset: preset }));
+  const applyScenario = async (scenarioName: string) => {
+    setSimulation(prev => ({ ...prev, activePreset: scenarioName }));
     try {
-      const res = await fetch(`/api/simulate/${preset.toLowerCase()}`);
-      const data = await res.json();
-      if (data.telemetry) {
-        setSimulation(prev => ({
-          ...prev,
-          rain: data.telemetry.rain_1h || 0,
-          soil: data.telemetry.soil_moisture || 0,
-          water: data.telemetry.water_level_m || 1.0,
-          activePreset: preset
-        }));
-      }
-      await selectVillage(selectedVillageId);
+      await fetch("/api/simulate/scenario", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scenario_name: scenarioName })
+      });
       await refreshData();
+      await selectVillage(selectedVillageId);
     } catch (err) {
-      console.error(`Failed to apply scenario ${preset}:`, err);
+      console.error(`Failed to apply scenario ${scenarioName}:`, err);
     }
   };
 

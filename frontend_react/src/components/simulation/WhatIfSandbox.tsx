@@ -2,7 +2,16 @@ import React, { useRef } from 'react';
 import { useFlood } from '../../context/FloodContext';
 
 export const WhatIfSandbox: React.FC = () => {
-  const { simulation, setSimulationValue, applyScenario, selectedVillageId, selectVillage } = useFlood();
+  const { 
+    simulation, 
+    setSimulationValue, 
+    applyScenario, 
+    selectedVillageId, 
+    selectVillage,
+    selectedVillageData,
+    toggleWaterSensor
+  } = useFlood();
+
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleSliderChange = (key: 'rain' | 'soil' | 'water', value: number) => {
@@ -34,21 +43,20 @@ export const WhatIfSandbox: React.FC = () => {
   };
 
   const presets = [
-    { id: 'cloudburst', name: '⚡ Cloudburst (120mm/h)' },
-    { id: 'monsoon_peak', name: '🌧️ Heavy Monsoon (65mm/h)' },
-    { id: 'dam_spillway', name: '🌊 Dam Spillway (3.8m)' },
-    { id: 'baseline', name: '☀️ Clear Weather (Baseline)' }
+    { id: 'BASELINE_NORMAL', name: '🟢 Normal Baseline' },
+    { id: 'HEAVY_MONSOON', name: '🟡 Heavy Monsoon' },
+    { id: 'CLOUDBURST_CRITICAL', name: '🔴 Cloudburst Emergency' },
+    { id: 'SENSOR_FAILURE_DEMO', name: '🛡️ Test Fallback Model' }
   ];
+
+  const isWaterSensorOffline = selectedVillageData?.sensor_health?.sensors?.find(
+    s => (s.sensor_type || '').toLowerCase().includes("water")
+  )?.status === "OFFLINE";
 
   return (
     <div className="sandbox-card">
       <div className="sandbox-header">
-        <div className="sandbox-title">
-          <span>🧪 Interactive What-If Scenario Sandbox</span>
-          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-            (Live Physics + TreeSHAP Inference)
-          </span>
-        </div>
+        <div className="sandbox-title">⚡ Interactive "What-If" Simulation Sandbox</div>
         <div className="preset-buttons">
           {presets.map((p) => (
             <button
@@ -66,14 +74,14 @@ export const WhatIfSandbox: React.FC = () => {
         {/* Rainfall Slider */}
         <div className="slider-group">
           <div className="slider-label-row">
-            <span>Rainfall Rate:</span>
+            <span>🌧️ Rainfall Intensity</span>
             <span className="slider-val">{simulation.rain} mm/h</span>
           </div>
           <input
             type="range"
             min="0"
-            max="150"
-            step="1"
+            max="160"
+            step="2"
             value={simulation.rain}
             onChange={(e) => handleSliderChange('rain', parseFloat(e.target.value))}
           />
@@ -82,13 +90,13 @@ export const WhatIfSandbox: React.FC = () => {
         {/* Soil Moisture Slider */}
         <div className="slider-group">
           <div className="slider-label-row">
-            <span>Soil Saturation:</span>
+            <span>🌱 Soil Moisture Saturation</span>
             <span className="slider-val">{simulation.soil}%</span>
           </div>
           <input
             type="range"
-            min="0"
-            max="100"
+            min="15"
+            max="98"
             step="1"
             value={simulation.soil}
             onChange={(e) => handleSliderChange('soil', parseFloat(e.target.value))}
@@ -98,12 +106,12 @@ export const WhatIfSandbox: React.FC = () => {
         {/* Water Level Slider */}
         <div className="slider-group">
           <div className="slider-label-row">
-            <span>Stream Gauge:</span>
+            <span>🌊 River Surge Level</span>
             <span className="slider-val">{simulation.water} m</span>
           </div>
           <input
             type="range"
-            min="0.2"
+            min="0.5"
             max="6.0"
             step="0.1"
             value={simulation.water}
@@ -111,31 +119,21 @@ export const WhatIfSandbox: React.FC = () => {
           />
         </div>
 
-        {/* Live Hydrograph Trigger Button */}
-        <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+        {/* Water Sensor Outage Toggle Button & Hydrograph */}
+        <div className="slider-group" style={{ justifyContent: 'center', gap: '6px' }}>
           <button
-            style={{
-              width: '100%',
-              padding: '8px 10px',
-              background: 'linear-gradient(135deg, #0369a1, #0284c7)',
+            className="preset-btn"
+            style={{ 
+              background: isWaterSensorOffline ? '#b91c1c' : '#334155', 
               color: '#ffffff',
-              border: '1px solid #38bdf8',
-              borderRadius: 'var(--radius-sm)',
-              fontSize: '0.76rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px'
+              height: '100%',
+              fontSize: '0.78rem',
+              fontWeight: 600,
+              padding: '6px 10px'
             }}
-            onClick={() => {
-              const event = new CustomEvent('open-hydrograph-modal', { detail: { villageId: selectedVillageId } });
-              window.dispatchEvent(event);
-            }}
+            onClick={() => toggleWaterSensor()}
           >
-            <span>📈</span>
-            <span>View Hydrograph Gauge</span>
+            {isWaterSensorOffline ? '🔌 Reconnect Water Sensor' : '🔌 Toggle Water Sensor Outage'}
           </button>
         </div>
       </div>
