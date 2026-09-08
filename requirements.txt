@@ -14,6 +14,9 @@ requests>=2.31.0
 python-dotenv>=1.0.0
 watchfiles>=0.21.0
 
+# --- High-Speed In-Memory Cache & Message Broker ---
+redis>=5.0.0
+
 # --- Machine Learning, Deep Learning & Explainable AI (XAI) ---
 scikit-learn>=1.4.0
 xgboost>=2.0.0
