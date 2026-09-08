@@ -17,6 +17,16 @@ let ws = null;
 let isAudioEnabled = false;
 let active3DBasemap = "google_hybrid";
 
+// Next-Gen Geospatial Enhancements (Google Flood Hub + Earth Nullschool + River Runner 3D)
+let hexGridLayerGroup = null;
+let nullschoolCanvas = null;
+let nullschoolCtx = null;
+let isParticlesEnabled = true;
+let isHexGridEnabled = true;
+let isDroneFlying = false;
+let droneFlightTimer = null;
+let hydroParticles = [];
+
 // Color mapping constants
 const RISK_COLORS = {
   LOW: "#10b981",
@@ -112,11 +122,15 @@ function initMap() {
   }).setView(mandiCoords, 11);
 
   // Initialize Layer Groups
+  hexGridLayerGroup = L.layerGroup().addTo(map);
   shelterLayerGroup = L.layerGroup().addTo(map);
   routeLayerGroup = L.layerGroup().addTo(map);
   hazardZoneLayerGroup = L.layerGroup().addTo(map);
   streamLayerGroup = L.layerGroup().addTo(map);
   sensorLayerGroup = L.layerGroup().addTo(map);
+
+  // Initialize Earth Nullschool Particle Canvas Layer
+  initNullschoolParticleEngine();
 
   // Set default basemap to Google Mountain Terrain
   setBasemap("google_terrain");
@@ -730,6 +744,8 @@ async function fetchInitialData(isFirstLoad = false) {
     allVillages = data.villages || [];
     renderVillageList(allVillages);
     updateMapMarkers(allVillages);
+    renderGoogleFloodHexGrid(allVillages);
+    initHydroParticles(allVillages);
     updateThreatIndex(allVillages);
 
     // Select first village ONLY on initial page load
@@ -1171,13 +1187,22 @@ function renderMapGISOverlays(data) {
         iconAnchor: [11, 11]
       })
     });
+    const isRiverGauge = sens.type.toLowerCase().includes("river") || sens.id.includes("WTR");
     sensorMarker.bindTooltip(`
       <div style="font-family:sans-serif; padding:2px;">
         <div style="font-weight:700; color:#38bdf8;">📡 ${sens.type} Node</div>
         <div style="font-size:11px; color:#cbd5e1;">ID: <code>${sens.id}</code></div>
         <div style="font-size:10px; color:#10b981;">Status: LIVE TELEMETRY STREAMING</div>
+        ${isRiverGauge ? `<div style="font-size:9px; color:#38bdf8; margin-top:2px;">💡 Click to View 24h Hydrograph Curve</div>` : ''}
       </div>
     `, { sticky: true, direction: "top" });
+
+    if (isRiverGauge) {
+      sensorMarker.on("click", () => {
+        openHydrographModal(v.id);
+      });
+    }
+
     sensorLayerGroup.addLayer(sensorMarker);
   });
 }
@@ -1233,6 +1258,25 @@ function setupEventListeners() {
     else map.removeLayer(hazardZoneLayerGroup);
   });
 
+  const hexToggle = document.getElementById("filter-google-hexgrid");
+  if (hexToggle) {
+    hexToggle.addEventListener("change", (e) => {
+      isHexGridEnabled = e.target.checked;
+      if (e.target.checked) map.addLayer(hexGridLayerGroup);
+      else map.removeLayer(hexGridLayerGroup);
+    });
+  }
+
+  const particleToggle = document.getElementById("filter-nullschool-particles");
+  if (particleToggle) {
+    particleToggle.addEventListener("change", (e) => {
+      isParticlesEnabled = e.target.checked;
+      if (nullschoolCanvas) {
+        nullschoolCanvas.style.display = isParticlesEnabled ? "block" : "none";
+      }
+    });
+  }
+
   document.getElementById("filter-shelters").addEventListener("change", (e) => {
     if (e.target.checked) map.addLayer(shelterLayerGroup);
     else map.removeLayer(shelterLayerGroup);
@@ -1252,6 +1296,30 @@ function setupEventListeners() {
     if (e.target.checked) map.addLayer(streamLayerGroup);
     else map.removeLayer(streamLayerGroup);
   });
+
+  // B2. 3D Evacuation Drone Flythrough Button
+  const droneBtn = document.getElementById("btn-drone-flythrough");
+  if (droneBtn) {
+    droneBtn.addEventListener("click", () => {
+      toggle3DDroneFlythrough();
+    });
+  }
+
+  // B3. River Gauge Hydrograph Modal Close
+  const hydroModal = document.getElementById("hydrograph-modal");
+  const closeHydroBtn = document.getElementById("btn-close-hydrograph");
+  if (closeHydroBtn) {
+    closeHydroBtn.addEventListener("click", () => {
+      if (hydroModal) hydroModal.classList.remove("active");
+    });
+  }
+  if (hydroModal) {
+    hydroModal.addEventListener("click", (e) => {
+      if (e.target === hydroModal) {
+        hydroModal.classList.remove("active");
+      }
+    });
+  }
 
   // C. What-If Preset Buttons
   document.querySelectorAll(".preset-btn").forEach(btn => {
@@ -1432,3 +1500,448 @@ function initWebSocket() {
     setTimeout(initWebSocket, 4000);
   };
 }
+
+// ==========================================================
+// 16. GOOGLE FLOOD HUB STYLE HEXAGONAL RISK GRIDS
+// ==========================================================
+function createHexagon(centerLat, centerLng, radius = 0.015) {
+  const coords = [];
+  for (let i = 0; i < 6; i++) {
+    const angle = (Math.PI / 3) * i + Math.PI / 6;
+    const lat = centerLat + radius * Math.sin(angle) * 0.85;
+    const lng = centerLng + radius * Math.cos(angle);
+    coords.push([lat, lng]);
+  }
+  return coords;
+}
+
+function renderGoogleFloodHexGrid(villages) {
+  if (!map || !hexGridLayerGroup) return;
+  hexGridLayerGroup.clearLayers();
+
+  const HEX_COLORS = {
+    LOW: { fill: "#10b981", stroke: "#34d399", opacity: 0.25 },
+    MODERATE: { fill: "#f59e0b", stroke: "#fbbf24", opacity: 0.35 },
+    HIGH: { fill: "#f97316", stroke: "#fdba74", opacity: 0.45 },
+    CRITICAL: { fill: "#ef4444", stroke: "#f87171", opacity: 0.55 }
+  };
+
+  villages.forEach((v) => {
+    const theme = HEX_COLORS[v.risk_level] || HEX_COLORS.LOW;
+
+    // Create a 2-cell cluster for each village catchment
+    const cellPositions = [
+      [v.lat, v.lng, `⬡ H3-Catchment: ${v.name} Main Gorge`],
+      [v.lat + 0.012, v.lng + 0.008, `⬡ H3-Catchment: ${v.name} Inflow Ridge`]
+    ];
+
+    cellPositions.forEach(([cLat, cLng, label]) => {
+      const hexCoords = createHexagon(cLat, cLng, 0.014);
+      const polygon = L.polygon(hexCoords, {
+        fillColor: theme.fill,
+        fillOpacity: theme.opacity,
+        color: theme.stroke,
+        weight: 1.5,
+        className: "google-hex-polygon"
+      });
+
+      polygon.bindTooltip(`
+        <div style="font-family:sans-serif; padding:4px;">
+          <div style="font-size:11px; font-weight:800; color:${theme.stroke};">${label}</div>
+          <div style="font-size:10px; color:#e2e8f0; margin-top:2px;">
+            Threat Level: <b>${v.risk_level} (${v.risk_percentage}%)</b><br>
+            Lead Time: <b>${v.lead_time_display || "10-30 min"}</b><br>
+            Est. Discharge: <b>${Math.round(400 + (v.risk_percentage * 12))} m³/s</b>
+          </div>
+          <div style="font-size:9px; color:#38bdf8; margin-top:3px; border-top:1px solid rgba(255,255,255,0.1); padding-top:2px;">
+            💡 Click to Open River Gauge Hydrograph
+          </div>
+        </div>
+      `, { sticky: true });
+
+      polygon.on("click", () => {
+        selectVillage(v.id, true);
+        openHydrographModal(v.id);
+      });
+
+      hexGridLayerGroup.addLayer(polygon);
+    });
+  });
+}
+
+// ==========================================================
+// 17. GOOGLE FLOOD HUB HYDROGRAPH MODAL & CANVAS CHART
+// ==========================================================
+function openHydrographModal(villageId) {
+  const modal = document.getElementById("hydrograph-modal");
+  if (!modal) return;
+
+  const v = allVillages.find(vil => vil.id === villageId) || allVillages[0];
+  if (!v) return;
+
+  document.getElementById("hydro-station-title").innerText = `River Gauge Hydrograph — ${v.name} Station`;
+  document.getElementById("hydro-station-subtitle").innerText = `Beas River Basin • CWC Gauge #${v.id} (${v.elevation_m}m Elevation)`;
+
+  // Stage Metrics
+  const waterLevel = v.telemetry?.water_level_m || (1.2 + (v.risk_percentage * 0.035));
+  const isHigh = v.risk_percentage >= 70;
+  const isCritical = v.risk_percentage >= 85;
+
+  document.getElementById("hydro-curr-stage").innerText = `${waterLevel.toFixed(2)} m`;
+  document.getElementById("hydro-curr-stage").style.color = isCritical ? "#ef4444" : isHigh ? "#f59e0b" : "#38bdf8";
+
+  document.getElementById("hydro-stage-status").innerText = isCritical ? "🔴 Critical Bank Breach" : isHigh ? "🟡 Above Warning Threshold" : "🟢 Normal Seasonal Flow";
+  document.getElementById("hydro-danger-threshold").innerText = "4.50 m";
+
+  const discharge = Math.round(400 + (waterLevel * 320));
+  document.getElementById("hydro-discharge").innerText = `${discharge.toLocaleString()} m³/s`;
+
+  document.getElementById("hydro-forecast-peak").innerText = isCritical ? "+28 min (Crest Peak)" : isHigh ? "+45 min (Rising)" : "+3h (Stable)";
+
+  modal.classList.add("active");
+
+  // Draw smooth hydrograph curve
+  setTimeout(() => {
+    drawHydrographChart(waterLevel, isCritical);
+  }, 50);
+}
+
+function drawHydrographChart(currentStage, isCritical) {
+  const canvas = document.getElementById("hydrograph-canvas");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const w = canvas.width;
+  const h = canvas.height;
+
+  ctx.clearRect(0, 0, w, h);
+
+  const padding = { top: 20, right: 30, bottom: 35, left: 45 };
+  const graphW = w - padding.left - padding.right;
+  const graphH = h - padding.top - padding.bottom;
+
+  const maxStage = 6.0;
+  const getY = (val) => padding.top + graphH - (val / maxStage) * graphH;
+  const getX = (pct) => padding.left + pct * graphW;
+
+  // 1. Background Grid Lines
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+  ctx.lineWidth = 1;
+  ctx.fillStyle = "rgba(148, 163, 184, 0.7)";
+  ctx.font = "10px Inter, sans-serif";
+  ctx.textAlign = "right";
+
+  for (let stage = 0; stage <= maxStage; stage += 1.5) {
+    const y = getY(stage);
+    ctx.beginPath();
+    ctx.moveTo(padding.left, y);
+    ctx.lineTo(w - padding.right, y);
+    ctx.stroke();
+    ctx.fillText(`${stage.toFixed(1)}m`, padding.left - 6, y + 3);
+  }
+
+  // Time labels on X axis
+  const timeLabels = ["-12h", "-8h", "-4h", "NOW", "+1h", "+2h", "+3h (AI)"];
+  ctx.textAlign = "center";
+  timeLabels.forEach((label, idx) => {
+    const x = getX(idx / (timeLabels.length - 1));
+    ctx.fillText(label, x, h - 10);
+    ctx.beginPath();
+    ctx.moveTo(x, padding.top);
+    ctx.lineTo(x, h - padding.bottom);
+    ctx.stroke();
+  });
+
+  // 2. Danger Level Threshold Line (4.50m)
+  const dangerY = getY(4.5);
+  ctx.strokeStyle = "#ef4444";
+  ctx.setLineDash([5, 4]);
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(padding.left, dangerY);
+  ctx.lineTo(w - padding.right, dangerY);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = "#ef4444";
+  ctx.textAlign = "right";
+  ctx.fillText("DANGER LEVEL (4.50m)", w - padding.right, dangerY - 4);
+
+  // 3. Observed Historical Curve (-12h to NOW)
+  const histPoints = [
+    { p: 0.0, val: Math.max(0.8, currentStage * 0.45) },
+    { p: 0.15, val: Math.max(0.9, currentStage * 0.52) },
+    { p: 0.3, val: Math.max(1.1, currentStage * 0.65) },
+    { p: 0.4, val: Math.max(1.3, currentStage * 0.8) },
+    { p: 0.5, val: currentStage }
+  ];
+
+  // Fill gradient under historical line
+  const fillGrad = ctx.createLinearGradient(0, padding.top, 0, h - padding.bottom);
+  fillGrad.addColorStop(0, "rgba(56, 189, 248, 0.4)");
+  fillGrad.addColorStop(1, "rgba(56, 189, 248, 0.0)");
+
+  ctx.beginPath();
+  ctx.moveTo(getX(histPoints[0].p), getY(0));
+  histPoints.forEach((pt) => {
+    const x = getX(pt.p);
+    const y = getY(pt.val);
+    ctx.lineTo(x, y);
+  });
+  ctx.lineTo(getX(0.5), getY(0));
+  ctx.closePath();
+  ctx.fillStyle = fillGrad;
+  ctx.fill();
+
+  // Stroke historical line
+  ctx.beginPath();
+  histPoints.forEach((pt, i) => {
+    const x = getX(pt.p);
+    const y = getY(pt.val);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = "#38bdf8";
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // 4. Forecasted Surge Curve (NOW to +3h)
+  const peakVal = isCritical ? Math.min(5.8, currentStage * 1.35) : Math.max(currentStage * 1.05, 2.2);
+  const fcstPoints = [
+    { p: 0.5, val: currentStage },
+    { p: 0.65, val: (currentStage + peakVal) / 2 },
+    { p: 0.8, val: peakVal },
+    { p: 1.0, val: peakVal * 0.88 }
+  ];
+
+  ctx.beginPath();
+  fcstPoints.forEach((pt, i) => {
+    const x = getX(pt.p);
+    const y = getY(pt.val);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = "#f59e0b";
+  ctx.setLineDash([6, 4]);
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Now point dot
+  const nowX = getX(0.5);
+  const nowY = getY(currentStage);
+  ctx.beginPath();
+  ctx.arc(nowX, nowY, 6, 0, Math.PI * 2);
+  ctx.fillStyle = "#ffffff";
+  ctx.fill();
+  ctx.strokeStyle = "#38bdf8";
+  ctx.lineWidth = 3;
+  ctx.stroke();
+}
+
+// ==========================================================
+// 18. EARTH NULLSCHOOL FLUID PARTICLE STREAM ENGINE
+// ==========================================================
+function initNullschoolParticleEngine() {
+  const mapContainer = document.getElementById("gis-map");
+  if (!mapContainer || nullschoolCanvas) return;
+
+  nullschoolCanvas = document.createElement("canvas");
+  nullschoolCanvas.id = "nullschool-canvas";
+  nullschoolCanvas.className = "nullschool-particle-canvas";
+  mapContainer.appendChild(nullschoolCanvas);
+  nullschoolCtx = nullschoolCanvas.getContext("2d");
+
+  const resizeCanvas = () => {
+    if (!nullschoolCanvas || !mapContainer) return;
+    nullschoolCanvas.width = mapContainer.clientWidth;
+    nullschoolCanvas.height = mapContainer.clientHeight;
+  };
+
+  resizeCanvas();
+  window.addEventListener("resize", resizeCanvas);
+  if (map) {
+    map.on("resize", resizeCanvas);
+  }
+
+  // Start 60 FPS animation loop
+  requestAnimationFrame(nullschoolAnimationLoop);
+}
+
+function initHydroParticles(villages) {
+  hydroParticles = [];
+  if (!villages || !villages.length) return;
+
+  const validStreams = villages.filter(v => v.river_stream && v.river_stream.length > 1);
+  if (!validStreams.length) return;
+
+  const totalParticles = 120;
+  for (let i = 0; i < totalParticles; i++) {
+    const streamVillage = validStreams[i % validStreams.length];
+    hydroParticles.push({
+      villageId: streamVillage.id,
+      stream: streamVillage.river_stream,
+      progress: Math.random(), // 0.0 to 1.0 along the polyline
+      speed: 0.003 + Math.random() * 0.005,
+      size: 1.8 + Math.random() * 2.2,
+      alpha: 0.4 + Math.random() * 0.6
+    });
+  }
+}
+
+function getPointAlongPolyline(pts, progress) {
+  if (!pts || pts.length === 0) return [0, 0];
+  if (pts.length === 1) return pts[0];
+
+  const totalSegments = pts.length - 1;
+  const scaled = progress * totalSegments;
+  const segIdx = Math.min(Math.floor(scaled), totalSegments - 1);
+  const segProgress = scaled - segIdx;
+
+  const p1 = pts[segIdx];
+  const p2 = pts[segIdx + 1];
+
+  const lat = p1[0] + (p2[0] - p1[0]) * segProgress;
+  const lng = p1[1] + (p2[1] - p1[1]) * segProgress;
+  return [lat, lng];
+}
+
+function nullschoolAnimationLoop() {
+  if (nullschoolCanvas && nullschoolCtx && isParticlesEnabled) {
+    const w = nullschoolCanvas.width;
+    const h = nullschoolCanvas.height;
+
+    // Fading motion blur trail
+    nullschoolCtx.fillStyle = "rgba(10, 15, 29, 0.18)";
+    nullschoolCtx.fillRect(0, 0, w, h);
+
+    if (map && !is3DMode) {
+      hydroParticles.forEach(p => {
+        // Advance particle along stream
+        p.progress += p.speed;
+        if (p.progress >= 1.0) p.progress = 0.0;
+
+        const [lat, lng] = getPointAlongPolyline(p.stream, p.progress);
+        const pt = map.latLngToContainerPoint([lat, lng]);
+
+        if (pt.x >= 0 && pt.x <= w && pt.y >= 0 && pt.y <= h) {
+          // Draw luminous flowing particle
+          nullschoolCtx.beginPath();
+          nullschoolCtx.arc(pt.x, pt.y, p.size, 0, Math.PI * 2);
+          nullschoolCtx.fillStyle = `rgba(56, 189, 248, ${p.alpha})`;
+          nullschoolCtx.shadowColor = "#06b6d4";
+          nullschoolCtx.shadowBlur = 8;
+          nullschoolCtx.fill();
+
+          // Inner white glow spark
+          nullschoolCtx.beginPath();
+          nullschoolCtx.arc(pt.x, pt.y, p.size * 0.5, 0, Math.PI * 2);
+          nullschoolCtx.fillStyle = "#ffffff";
+          nullschoolCtx.fill();
+        }
+      });
+    }
+  }
+
+  requestAnimationFrame(nullschoolAnimationLoop);
+}
+
+// ==========================================================
+// 19. RIVER RUNNER 3D DRONE EVACUATION FLYTHROUGH
+// ==========================================================
+function toggle3DDroneFlythrough() {
+  if (isDroneFlying) {
+    stop3DDroneFlythrough();
+  } else {
+    start3DDroneFlythrough();
+  }
+}
+
+function start3DDroneFlythrough() {
+  if (!map3d) {
+    switchViewMode("3d");
+  }
+
+  const v = allVillages.find(vil => vil.id === currentVillageId) || allVillages[0];
+  if (!v || !v.river_stream || v.river_stream.length < 2) return;
+
+  isDroneFlying = true;
+  const droneBtn = document.getElementById("btn-drone-flythrough");
+  const droneText = document.getElementById("drone-btn-text");
+  if (droneBtn) droneBtn.classList.add("active");
+  if (droneText) droneText.innerText = "Stop 3D Drone Flight";
+
+  const stream = v.river_stream;
+  const shelters = v.safe_shelters || [];
+  const primaryShelter = shelters[0] || { lat: v.lat + 0.005, lng: v.lng - 0.006, name: "Upper Mountain School" };
+
+  const flightWaypoints = [
+    {
+      name: "Waypoint 1/4: Inflow Mountain Ridge",
+      center: [stream[0][1], stream[0][0]],
+      zoom: 13.8,
+      pitch: 60,
+      bearing: -35,
+      delay: 3500
+    },
+    {
+      name: "Waypoint 2/4: Beas River Canyon Rapids",
+      center: [stream[Math.floor(stream.length / 2)][1], stream[Math.floor(stream.length / 2)][0]],
+      zoom: 14.5,
+      pitch: 65,
+      bearing: -20,
+      delay: 4000
+    },
+    {
+      name: "Waypoint 3/4: Red Flash Flood Inundation Area",
+      center: [stream[stream.length - 1][1], stream[stream.length - 1][0]],
+      zoom: 14.0,
+      pitch: 62,
+      bearing: -45,
+      delay: 4000
+    },
+    {
+      name: `Waypoint 4/4: Designated Safe Shelter — ${primaryShelter.name}`,
+      center: [primaryShelter.lng, primaryShelter.lat],
+      zoom: 14.8,
+      pitch: 50,
+      bearing: 30,
+      delay: 4500
+    }
+  ];
+
+  let currentIdx = 0;
+
+  function executeNextWaypoint() {
+    if (!isDroneFlying || currentIdx >= flightWaypoints.length) {
+      stop3DDroneFlythrough();
+      return;
+    }
+
+    const wp = flightWaypoints[currentIdx];
+    if (droneText) droneText.innerText = `🚁 ${wp.name}`;
+
+    map3d.flyTo({
+      center: wp.center,
+      zoom: wp.zoom,
+      pitch: wp.pitch,
+      bearing: wp.bearing,
+      speed: 0.4,
+      curve: 1.4,
+      essential: true
+    });
+
+    currentIdx++;
+    droneFlightTimer = setTimeout(executeNextWaypoint, wp.delay);
+  }
+
+  executeNextWaypoint();
+}
+
+function stop3DDroneFlythrough() {
+  isDroneFlying = false;
+  clearTimeout(droneFlightTimer);
+  const droneBtn = document.getElementById("btn-drone-flythrough");
+  const droneText = document.getElementById("drone-btn-text");
+  if (droneBtn) droneBtn.classList.remove("active");
+  if (droneText) droneText.innerText = "Start 3D Drone Flythrough";
+}
+

@@ -1571,3 +1571,165 @@ input[type="range"] {
   border-radius: var(--radius-md);
   margin-bottom: 20px;
 }
+
+/* ==========================================================
+   🚁 RIVER RUNNER 3D DRONE FLYTHROUGH CONTROLS
+   ========================================================== */
+.drone-flythrough-btn {
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  color: #ffffff;
+  border: 1px solid #38bdf8;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(2, 132, 199, 0.4);
+  transition: all 0.2s ease;
+}
+
+.drone-flythrough-btn:hover {
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  box-shadow: 0 4px 14px rgba(14, 165, 233, 0.6);
+  transform: translateY(-1px);
+}
+
+.drone-flythrough-btn.active {
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  border-color: #fca5a5;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.6);
+  animation: dronePulse 1.5s infinite;
+}
+
+@keyframes dronePulse {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+/* ==========================================================
+   🌊 GOOGLE FLOOD HUB HYDROGRAPH MODAL & METRICS
+   ========================================================== */
+.hydrograph-card {
+  max-width: 760px;
+  width: 95%;
+  background: #0d1527;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(2, 132, 199, 0.3);
+}
+
+.hydrograph-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.hydro-metric-card {
+  background: #131d33;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+}
+
+.hydro-metric-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.hydro-metric-val {
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.1;
+  font-family: 'Outfit', sans-serif;
+}
+
+.hydro-metric-sub {
+  font-size: 0.68rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.hydrograph-chart-container {
+  background: #080e1d;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+}
+
+.hydrograph-chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.hydro-legend {
+  display: flex;
+  align-items: center;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+.legend-box {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.legend-box.hist {
+  background: #38bdf8;
+}
+
+.legend-box.fcst {
+  background: #f59e0b;
+  border: 1px dashed #ffffff;
+}
+
+#hydrograph-canvas {
+  width: 100%;
+  height: 200px;
+  display: block;
+}
+
+/* ==========================================================
+   🌀 EARTH NULLSCHOOL PARTICLE STREAM CANVAS
+   ========================================================== */
+.nullschool-particle-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 450;
+}
+
+/* ==========================================================
+   ⬡ GOOGLE FLOOD HUB HEXAGONAL RISK CELLS
+   ========================================================== */
+.google-hex-polygon {
+  stroke-dasharray: 4, 4;
+  animation: hexPulse 3s infinite ease-in-out;
+}
+
+@keyframes hexPulse {
+  0%, 100% { fill-opacity: 0.35; stroke-opacity: 0.8; }
+  50% { fill-opacity: 0.55; stroke-opacity: 1.0; }
+}
+

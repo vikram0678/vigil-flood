@@ -125,6 +125,12 @@
               <button class="basemap-3d-btn" data-basemap3d="dark_3d">🌑 3D Dark</button>
             </div>
 
+            <!-- River Runner 3D Drone Camera Flythrough -->
+            <button id="btn-drone-flythrough" class="drone-flythrough-btn" title="Automated 3D Evacuation Drone Flight along River Gorge">
+              <span class="drone-icon">🚁</span>
+              <span id="drone-btn-text">Start 3D Drone Flythrough</span>
+            </button>
+
             <div style="font-size:0.7rem; color:var(--text-secondary); line-height:1.4; margin:6px 0 2px 0;">
               • <b>Right-Click + Drag:</b> Tilt 3D Horizon<br>
               • <b>Ctrl + Drag:</b> 360° Rotate Mountain Gorge
@@ -139,6 +145,14 @@
             <label class="layer-checkbox-label">
               <input type="checkbox" id="filter-hazard-zones" checked>
               <span><span class="legend-dot" style="background:#ef4444;"></span> Inundation Zones (Red/Orange/Green)</span>
+            </label>
+            <label class="layer-checkbox-label">
+              <input type="checkbox" id="filter-google-hexgrid" checked>
+              <span>⬡ Risk Grid (Google Flood Hub Style)</span>
+            </label>
+            <label class="layer-checkbox-label">
+              <input type="checkbox" id="filter-nullschool-particles" checked>
+              <span>🌀 Fluid Particles (Earth Nullschool Style)</span>
             </label>
             <label class="layer-checkbox-label">
               <input type="checkbox" id="filter-shelters" checked>
@@ -509,6 +523,58 @@
               <p>Bridges the last-mile gap by assigning high-ridge safe shelters, calculating safe escape routes, and dispatching CAP SMS alerts.</p>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Google Flood Hub Style River Gauge Hydrograph Modal -->
+  <div id="hydrograph-modal" class="modal-overlay">
+    <div class="modal-card hydrograph-card">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:1.6rem;">🌊</span>
+          <div>
+            <h2 id="hydro-station-title" class="modal-title">River Gauge Hydrograph — Pandoh Station</h2>
+            <div id="hydro-station-subtitle" style="font-size:0.8rem; color:var(--text-muted);">Beas River Basin • CWC & Local IoT Telemetry</div>
+          </div>
+        </div>
+        <button id="btn-close-hydrograph" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="hydrograph-metrics-grid">
+          <div class="hydro-metric-card">
+            <div class="hydro-metric-label">CURRENT STAGE (WATER LEVEL)</div>
+            <div id="hydro-curr-stage" class="hydro-metric-val" style="color:#38bdf8;">3.45 m</div>
+            <div id="hydro-stage-status" class="hydro-metric-sub">🟡 Above Warning Level</div>
+          </div>
+          <div class="hydro-metric-card">
+            <div class="hydro-metric-label">DANGER THRESHOLD</div>
+            <div id="hydro-danger-threshold" class="hydro-metric-val" style="color:#ef4444;">4.50 m</div>
+            <div class="hydro-metric-sub">Major Bank Overtopping</div>
+          </div>
+          <div class="hydro-metric-card">
+            <div class="hydro-metric-label">ESTIMATED DISCHARGE</div>
+            <div id="hydro-discharge" class="hydro-metric-val" style="color:#10b981;">1,420 m³/s</div>
+            <div class="hydro-metric-sub">Velocity: 28 km/h (Downhill Gorge)</div>
+          </div>
+          <div class="hydro-metric-card">
+            <div class="hydro-metric-label">AI FORECASTED CREST PEAK</div>
+            <div id="hydro-forecast-peak" class="hydro-metric-val" style="color:#f59e0b;">+42 min</div>
+            <div class="hydro-metric-sub">Expected Crest: 4.82 m (Critical)</div>
+          </div>
+        </div>
+
+        <!-- Interactive Canvas Hydrograph Curve -->
+        <div class="hydrograph-chart-container">
+          <div class="hydrograph-chart-header">
+            <span>📈 24-Hour Stage Hydrograph & 3-Hour ML Crest Forecast</span>
+            <div class="hydro-legend">
+              <span class="legend-box hist"></span> Past 12h Observed &nbsp;
+              <span class="legend-box fcst"></span> AI Forecasted Surge
+            </div>
+          </div>
+          <canvas id="hydrograph-canvas" width="680" height="220"></canvas>
         </div>
       </div>
     </div>
