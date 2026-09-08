@@ -66,9 +66,10 @@ export const GISMap2D: React.FC = () => {
   const markersRef = useRef<Record<string, L.CircleMarker>>({});
   const hexPolygonsRef = useRef<Record<string, L.Polygon>>({});
 
-  // Auto-invalidateSize whenever viewMode switches to 2D
+  // Auto-invalidateSize and center camera whenever viewMode switches to 2D
   useEffect(() => {
     if (viewMode === '2d' && mapInstanceRef.current) {
+      const map = mapInstanceRef.current;
       const t1 = setTimeout(() => {
         if (mapInstanceRef.current) {
           mapInstanceRef.current.invalidateSize();
@@ -78,6 +79,15 @@ export const GISMap2D: React.FC = () => {
       const t2 = setTimeout(() => {
         if (mapInstanceRef.current) {
           mapInstanceRef.current.invalidateSize();
+          const v = selectedVillageData?.village || villages.find(x => x.id === selectedVillageId);
+          if (v && typeof v.lat === 'number' && typeof v.lng === 'number' && !isNaN(v.lat) && !isNaN(v.lng)) {
+            const s = mapInstanceRef.current.getSize();
+            if (s && s.x > 0 && s.y > 0) {
+              try {
+                mapInstanceRef.current.setView([v.lat, v.lng], 13);
+              } catch (_) {}
+            }
+          }
         }
       }, 250);
 
@@ -86,7 +96,7 @@ export const GISMap2D: React.FC = () => {
         clearTimeout(t2);
       };
     }
-  }, [viewMode]);
+  }, [viewMode, selectedVillageId, selectedVillageData, villages]);
 
   // 1. Initialize Leaflet Map Instance ONCE
   useEffect(() => {
@@ -512,18 +522,33 @@ export const GISMap2D: React.FC = () => {
     });
   }, [selectedVillageData]);
 
-  // Camera fly-to ONLY when selected village explicitly changes
+  // Camera fly-to ONLY when selected village explicitly changes and map has valid size in 2D view
   const lastFlownVillageIdRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!mapInstanceRef.current || !selectedVillageId) return;
+    const map = mapInstanceRef.current;
+    if (!map || !selectedVillageId || viewMode !== '2d') return;
     if (lastFlownVillageIdRef.current === selectedVillageId) return;
 
-    const v = selectedVillageData?.village || villages.find(x => x.id === selectedVillageId);
-    if (v && v.lat && v.lng) {
-      lastFlownVillageIdRef.current = selectedVillageId;
-      mapInstanceRef.current.flyTo([v.lat, v.lng], 13, { duration: 1.2 });
+    // Check if map container has valid rendered pixel dimensions
+    try {
+      const size = map.getSize();
+      if (!size || size.x <= 0 || size.y <= 0 || isNaN(size.x) || isNaN(size.y)) {
+        return;
+      }
+    } catch (_) {
+      return;
     }
-  }, [selectedVillageId, villages, selectedVillageData]);
+
+    const v = selectedVillageData?.village || villages.find(x => x.id === selectedVillageId);
+    if (v && typeof v.lat === 'number' && typeof v.lng === 'number' && !isNaN(v.lat) && !isNaN(v.lng)) {
+      lastFlownVillageIdRef.current = selectedVillageId;
+      try {
+        map.flyTo([v.lat, v.lng], 13, { duration: 1.2 });
+      } catch (err) {
+        console.warn("Leaflet flyTo guarded error:", err);
+      }
+    }
+  }, [selectedVillageId, villages, selectedVillageData, viewMode]);
 
   // 5. Layer visibility sync
   useEffect(() => {

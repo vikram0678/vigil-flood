@@ -317,25 +317,29 @@ export const GISMap3D: React.FC = () => {
     }
   }, [selectedVillageData, selectedVillageId, simulation, villages]);
 
-  // 4b. Camera fly-to ONLY when selected village explicitly changes
+  // 4b. Camera fly-to ONLY when selected village explicitly changes in 3D view
   const lastFlown3DVillageIdRef = useRef<string | null>(null);
   useEffect(() => {
     const map3d = map3dInstanceRef.current;
-    if (!map3d || !selectedVillageId || isDroneFlying) return;
+    if (!map3d || !selectedVillageId || isDroneFlying || viewMode !== '3d') return;
     if (lastFlown3DVillageIdRef.current === selectedVillageId) return;
 
     const v = selectedVillageData?.village || villages.find(x => x.id === selectedVillageId);
-    if (v && v.lng && v.lat) {
+    if (v && typeof v.lng === 'number' && typeof v.lat === 'number' && !isNaN(v.lng) && !isNaN(v.lat)) {
       lastFlown3DVillageIdRef.current = selectedVillageId;
-      map3d.flyTo({
-        center: [v.lng, v.lat],
-        zoom: 13.5,
-        pitch: 58,
-        bearing: -25,
-        duration: 2000
-      });
+      try {
+        map3d.flyTo({
+          center: [v.lng, v.lat],
+          zoom: 13.5,
+          pitch: 58,
+          bearing: -25,
+          duration: 2000
+        });
+      } catch (err) {
+        console.warn("MapLibre flyTo error:", err);
+      }
     }
-  }, [selectedVillageId, villages, selectedVillageData, isDroneFlying]);
+  }, [selectedVillageId, villages, selectedVillageData, isDroneFlying, viewMode]);
 
   // 5. Drone Flythrough Sequence
   useEffect(() => {
