@@ -13,7 +13,7 @@ export const useWebSocket = () => {
       const host = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" 
         ? "localhost:8000" 
         : window.location.host;
-      const wsUrl = `${protocol}//${host}/ws`;
+      const wsUrl = `${protocol}//${host}/ws/telemetry`;
 
       try {
         const socket = new WebSocket(wsUrl);
@@ -26,7 +26,7 @@ export const useWebSocket = () => {
         socket.onmessage = async (event) => {
           try {
             const message = JSON.parse(event.data);
-            if (message.type === "TELEMETRY_UPDATE" || message.type === "SIMULATION_UPDATE") {
+            if (message.type === "TELEMETRY_PULSE" || message.type === "TELEMETRY_UPDATE" || message.type === "SIMULATION_UPDATE") {
               await refreshData();
               if (selectedVillageId) {
                 await selectVillage(selectedVillageId);

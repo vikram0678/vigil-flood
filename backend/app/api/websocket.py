@@ -27,6 +27,7 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
+@ws_router.websocket("/ws")
 @ws_router.websocket("/ws/telemetry")
 async def websocket_telemetry_stream(websocket: WebSocket):
     await manager.connect(websocket)
