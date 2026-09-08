@@ -138,6 +138,9 @@ function init3DMap() {
   try {
     map3d = new maplibregl.Map({
       container: "gis-map-3d",
+      maxZoom: 18.5,
+      minZoom: 8,
+      maxPitch: 80,
       style: {
         version: 8,
         sources: {
@@ -151,6 +154,7 @@ function init3DMap() {
               "https://mt3.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
             ],
             tileSize: 256,
+            maxzoom: 20,
             attribution: "&copy; Google Maps"
           },
           // 2. Free Global 3D DEM Terrarium Elevation Mesh
@@ -168,12 +172,14 @@ function init3DMap() {
           {
             id: "hybrid-satellite-layer",
             type: "raster",
-            source: "google-hybrid-imagery"
+            source: "google-hybrid-imagery",
+            minzoom: 0,
+            maxzoom: 22
           }
         ],
         terrain: {
           source: "terrain-dem",
-          exaggeration: 1.6 // Enhanced 1.6x Himalayan Mountain Relief
+          exaggeration: 1.5 // Enhanced 1.5x Himalayan Mountain Relief
         }
       },
       center: [77.0394, 31.6702], // Pandoh
@@ -759,9 +765,11 @@ async function selectVillage(villageId, flyCamera = true) {
       }
     }
 
-    // Always update 3D flood polygon and markers without resetting user's zoom/pan position
+    // Always update 3D flood polygon without rebuilding all DOM markers during slider drags
     if (is3DMode && map3d) {
-      render3DMarkers(allVillages);
+      if (flyCamera) {
+        render3DMarkers(allVillages);
+      }
       update3DFloodSimulation();
     }
   } catch (err) {
@@ -1162,12 +1170,13 @@ function setupEventListeners() {
     });
   });
 
-  // D. What-If Sliders
+  // D. What-If Sliders (Debounced to prevent WebGL context overload)
   const rainSlider = document.getElementById("slider-rain");
   const soilSlider = document.getElementById("slider-soil");
   const waterSlider = document.getElementById("slider-water");
+  let simDebounceTimer = null;
 
-  const sendCustomUpdate = async () => {
+  const sendCustomUpdate = () => {
     const rain = parseFloat(rainSlider.value);
     const soil = parseFloat(soilSlider.value);
     const water = parseFloat(waterSlider.value);
@@ -1176,28 +1185,31 @@ function setupEventListeners() {
     document.getElementById("val-soil").innerText = `${soil}%`;
     document.getElementById("val-water").innerText = `${water} m`;
 
-    // Immediately update 3D rising flood simulation in real time!
-    if (is3DMode) {
+    // 1. Instantly update 3D rising flood simulation on WebGL GPU canvas (60fps smooth)
+    if (is3DMode && map3d) {
       update3DFloodSimulation();
     }
 
-    try {
-      await fetch("/api/simulate/custom", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          village_id: currentVillageId,
-          rain_1h: rain,
-          soil_moisture: soil,
-          water_level_m: water,
-          water_level_rise_rate: (water - 1.0) * 0.4
-        })
-      });
-      selectVillage(currentVillageId, false);
-      fetchInitialData(false);
-    } catch (e) {
-      console.error(e);
-    }
+    // 2. Debounce backend ML inference call to 120ms to avoid network/DOM thrashing
+    clearTimeout(simDebounceTimer);
+    simDebounceTimer = setTimeout(async () => {
+      try {
+        await fetch("/api/simulate/custom", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            village_id: currentVillageId,
+            rain_1h: rain,
+            soil_moisture: soil,
+            water_level_m: water,
+            water_level_rise_rate: (water - 1.0) * 0.4
+          })
+        });
+        selectVillage(currentVillageId, false);
+      } catch (e) {
+        console.error(e);
+      }
+    }, 120);
   };
 
   rainSlider.addEventListener("input", sendCustomUpdate);
