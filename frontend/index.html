@@ -114,10 +114,18 @@
 
           <div id="basemap-section-3d" style="display:none;">
             <div class="map-control-title">
-              <span>🏔️ 3D Controls</span>
+              <span>🏔️ 3D Base Imagery</span>
               <span style="font-size:0.65rem; color:var(--accent-cyan);">1.5x DEM</span>
             </div>
-            <div style="font-size:0.72rem; color:var(--text-secondary); line-height:1.4; margin:4px 0;">
+            
+            <div class="basemap-toggle-grid">
+              <button class="basemap-3d-btn active" data-basemap3d="esri_satellite">🛰️ ESRI High-Res</button>
+              <button class="basemap-3d-btn" data-basemap3d="google_hybrid">🗺️ G-Hybrid</button>
+              <button class="basemap-3d-btn" data-basemap3d="topo_3d">⛰️ 3D Contours</button>
+              <button class="basemap-3d-btn" data-basemap3d="dark_3d">🌑 3D Dark</button>
+            </div>
+
+            <div style="font-size:0.7rem; color:var(--text-secondary); line-height:1.4; margin:6px 0 2px 0;">
               • <b>Right-Click + Drag:</b> Tilt 3D Horizon<br>
               • <b>Ctrl + Drag:</b> 360° Rotate Mountain Gorge
             </div>

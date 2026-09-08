@@ -48,6 +48,52 @@ const BASEMAP_TILES = {
   }
 };
 
+// 3D Mountain Mesh Tile Sources (CORS-Enabled & Multi-Provider Backup)
+const BASEMAP_3D_SOURCES = {
+  esri_satellite: {
+    name: "High-Res 3D Satellite",
+    tiles: [
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+    ],
+    tileSize: 256,
+    maxzoom: 19,
+    attribution: "&copy; Esri World Imagery"
+  },
+  google_hybrid: {
+    name: "Google Hybrid 3D",
+    tiles: [
+      "https://mt0.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+      "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+      "https://mt2.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+      "https://mt3.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
+    ],
+    tileSize: 256,
+    maxzoom: 20,
+    attribution: "&copy; Google Maps"
+  },
+  topo_3d: {
+    name: "3D Topo Contours",
+    tiles: [
+      "https://a.tile.opentopomap.org/{z}/{x}/{y}.png",
+      "https://b.tile.opentopomap.org/{z}/{x}/{y}.png",
+      "https://c.tile.opentopomap.org/{z}/{x}/{y}.png"
+    ],
+    tileSize: 256,
+    maxzoom: 17,
+    attribution: "&copy; OpenTopoMap"
+  },
+  dark_3d: {
+    name: "3D Dark Tactical",
+    tiles: [
+      "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
+      "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png"
+    ],
+    tileSize: 512,
+    maxzoom: 19,
+    attribution: "&copy; CARTO"
+  }
+};
+
 // Initialize Application
 document.addEventListener("DOMContentLoaded", () => {
   initMap();
@@ -136,6 +182,7 @@ function init3DMap() {
   if (map3d) return;
 
   try {
+    const defaultBasemap = BASEMAP_3D_SOURCES.esri_satellite;
     map3d = new maplibregl.Map({
       container: "gis-map-3d",
       maxZoom: 18.5,
@@ -144,18 +191,13 @@ function init3DMap() {
       style: {
         version: 8,
         sources: {
-          // 1. High-Resolution Google Hybrid Satellite with Village Names, Roads & Places
-          "google-hybrid-imagery": {
+          // 1. High-Resolution Satellite with 100% WebGL CORS Support & Zero Rate Limits
+          "hybrid-satellite-source": {
             type: "raster",
-            tiles: [
-              "https://mt0.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
-              "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
-              "https://mt2.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
-              "https://mt3.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
-            ],
-            tileSize: 256,
-            maxzoom: 20,
-            attribution: "&copy; Google Maps"
+            tiles: defaultBasemap.tiles,
+            tileSize: defaultBasemap.tileSize || 256,
+            maxzoom: defaultBasemap.maxzoom || 19,
+            attribution: defaultBasemap.attribution
           },
           // 2. Free Global 3D DEM Terrarium Elevation Mesh
           "terrain-dem": {
@@ -172,7 +214,7 @@ function init3DMap() {
           {
             id: "hybrid-satellite-layer",
             type: "raster",
-            source: "google-hybrid-imagery",
+            source: "hybrid-satellite-source",
             minzoom: 0,
             maxzoom: 22
           }
@@ -635,6 +677,44 @@ function setBasemap(type) {
   document.querySelectorAll(".basemap-btn").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.basemap === type);
   });
+}
+
+// 2B. 3D Mountain Mesh Basemap Switcher Handler
+function setBasemap3D(type) {
+  if (!map3d) return;
+  const cfg = BASEMAP_3D_SOURCES[type] || BASEMAP_3D_SOURCES.esri_satellite;
+
+  document.querySelectorAll(".basemap-3d-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.basemap3d === type);
+  });
+
+  try {
+    if (map3d.getLayer("hybrid-satellite-layer")) {
+      map3d.removeLayer("hybrid-satellite-layer");
+    }
+    if (map3d.getSource("hybrid-satellite-source")) {
+      map3d.removeSource("hybrid-satellite-source");
+    }
+
+    map3d.addSource("hybrid-satellite-source", {
+      type: "raster",
+      tiles: cfg.tiles,
+      tileSize: cfg.tileSize || 256,
+      maxzoom: cfg.maxzoom || 19,
+      attribution: cfg.attribution
+    });
+
+    const beforeLayer = map3d.getLayer("3d-flood-water-fill") ? "3d-flood-water-fill" : undefined;
+    map3d.addLayer({
+      id: "hybrid-satellite-layer",
+      type: "raster",
+      source: "hybrid-satellite-source",
+      minzoom: 0,
+      maxzoom: 22
+    }, beforeLayer);
+  } catch (err) {
+    console.error("3D basemap switch error:", err);
+  }
 }
 
 // 3. Fetch Initial Telemetry & Villages
@@ -1126,11 +1206,19 @@ function setupEventListeners() {
     });
   });
 
-  // A. Basemap Switcher Buttons
+  // A. Basemap Switcher Buttons (2D)
   document.querySelectorAll(".basemap-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       const basemapType = btn.dataset.basemap;
       setBasemap(basemapType);
+    });
+  });
+
+  // A2. Basemap Switcher Buttons (3D Mountain Mesh)
+  document.querySelectorAll(".basemap-3d-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const basemapType = btn.dataset.basemap3d;
+      setBasemap3D(basemapType);
     });
   });
 
