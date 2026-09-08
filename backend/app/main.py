@@ -55,12 +55,18 @@ def serve_index():
     # 1. Prefer compiled React + TSX build if available
     react_index = FRONTEND_REACT_DIST / "index.html"
     if react_index.exists():
-        return FileResponse(str(react_index))
+        return FileResponse(
+            str(react_index), 
+            headers={"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
+        )
 
     # 2. Seamlessly fall back to working Vanilla HTML if React build is not present
     vanilla_index = FRONTEND_DIR / "index.html"
     if vanilla_index.exists():
-        return FileResponse(str(vanilla_index))
+        return FileResponse(
+            str(vanilla_index),
+            headers={"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
+        )
 
     return {"message": f"{APP_NAME} Backend Running. Frontend not found."}
 
