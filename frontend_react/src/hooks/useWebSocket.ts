@@ -3,15 +3,18 @@ import { useFlood } from '../context/FloodContext';
 
 export const useWebSocket = () => {
   const { updateVillagesFromTelemetry, refreshData } = useFlood();
-  const wsRef = useRef<WebSocket | null>(null);
-  const isMountedRef = useRef<boolean>(true);
+  const updateVillagesRef = useRef(updateVillagesFromTelemetry);
+  updateVillagesRef.current = updateVillagesFromTelemetry;
+  const refreshDataRef = useRef(refreshData);
+  refreshDataRef.current = refreshData;
 
   useEffect(() => {
-    isMountedRef.current = true;
+    let socket: WebSocket | null = null;
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    let isAlive = true;
 
     const connect = () => {
-      if (!isMountedRef.current) return;
+      if (!isAlive) return;
 
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
       const host = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" 
@@ -20,8 +23,7 @@ export const useWebSocket = () => {
       const wsUrl = `${protocol}//${host}/ws/telemetry`;
 
       try {
-        const socket = new WebSocket(wsUrl);
-        wsRef.current = socket;
+        socket = new WebSocket(wsUrl);
 
         socket.onopen = () => {
           console.log("🌊 [VIGIL-FLOOD] Live Telemetry WebSocket Connected.");
@@ -31,9 +33,13 @@ export const useWebSocket = () => {
           try {
             const message = JSON.parse(event.data);
             if (message.type === "TELEMETRY_PULSE" && message.villages) {
-              updateVillagesFromTelemetry(message.villages);
+              if (updateVillagesRef.current) {
+                updateVillagesRef.current(message.villages);
+              }
             } else if (message.type === "SIMULATION_UPDATE") {
-              refreshData();
+              if (refreshDataRef.current) {
+                refreshDataRef.current();
+              }
             }
           } catch (e) {
             console.error("WS message parse error:", e);
@@ -41,21 +47,18 @@ export const useWebSocket = () => {
         };
 
         socket.onclose = () => {
-          if (isMountedRef.current) {
-            console.log("WebSocket closed. Reconnecting in 3s...");
+          if (isAlive) {
             reconnectTimer = setTimeout(connect, 3000);
           }
         };
 
-        socket.onerror = (err) => {
-          console.warn("WebSocket error:", err);
+        socket.onerror = () => {
           try {
-            socket.close();
+            if (socket) socket.close();
           } catch (_) {}
         };
       } catch (err) {
-        console.error("WebSocket connection failed:", err);
-        if (isMountedRef.current) {
+        if (isAlive) {
           reconnectTimer = setTimeout(connect, 3000);
         }
       }
@@ -64,13 +67,14 @@ export const useWebSocket = () => {
     connect();
 
     return () => {
-      isMountedRef.current = false;
+      isAlive = false;
       if (reconnectTimer) clearTimeout(reconnectTimer);
-      if (wsRef.current) {
-        wsRef.current.close();
-        wsRef.current = null;
+      if (socket) {
+        socket.close();
+        socket = null;
       }
     };
-  }, [updateVillagesFromTelemetry, refreshData]);
+  }, []);
 };
+
 
