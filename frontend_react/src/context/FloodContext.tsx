@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
 import { 
   Village, 
   VillageDetailResponse, 
@@ -90,7 +90,7 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   });
 
   // Fetch initial villages and selected village detail
-  const refreshData = async () => {
+  const refreshData = useCallback(async () => {
     try {
       const res = await fetch("/api/villages");
       const data = await res.json();
@@ -100,9 +100,9 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     } catch (err) {
       console.error("Failed to fetch villages list:", err);
     }
-  };
+  }, []);
 
-  const updateVillagesFromTelemetry = (newVillages: Village[]) => {
+  const updateVillagesFromTelemetry = useCallback((newVillages: Village[]) => {
     if (newVillages && Array.isArray(newVillages)) {
       setVillages(newVillages);
       setSelectedVillageData(prev => {
@@ -127,9 +127,9 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         };
       });
     }
-  };
+  }, []);
 
-  const selectVillage = async (villageId: string) => {
+  const selectVillage = useCallback(async (villageId: string) => {
     setSelectedVillageId(villageId);
     try {
       const res = await fetch(`/api/villages/${villageId}`);
@@ -146,36 +146,36 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     } catch (err) {
       console.error(`Failed to load details for ${villageId}:`, err);
     }
-  };
+  }, []);
 
   useEffect(() => {
     refreshData().then(() => {
       selectVillage("VIL-01");
     });
-  }, []);
+  }, [refreshData, selectVillage]);
 
-  const setHydrographOpen = (open: boolean, villageId: string | null = null) => {
+  const setHydrographOpen = useCallback((open: boolean, villageId: string | null = null) => {
     setHydrographOpenState(open);
     if (villageId) setHydrographVillageId(villageId);
     else if (open) setHydrographVillageId(selectedVillageId);
-  };
+  }, [selectedVillageId]);
 
-  const toggleDroneFlying = (flying?: boolean) => {
+  const toggleDroneFlying = useCallback((flying?: boolean) => {
     setIsDroneFlying(prev => (flying !== undefined ? flying : !prev));
-  };
+  }, []);
 
-  const toggleLayer = (layerName: keyof typeof layers, visible?: boolean) => {
+  const toggleLayer = useCallback((layerName: keyof typeof layers, visible?: boolean) => {
     setLayers(prev => ({
       ...prev,
       [layerName]: visible !== undefined ? visible : !prev[layerName]
     }));
-  };
+  }, []);
 
-  const setSimulationValue = (key: 'rain' | 'soil' | 'water', value: number) => {
+  const setSimulationValue = useCallback((key: 'rain' | 'soil' | 'water', value: number) => {
     setSimulation(prev => ({ ...prev, [key]: value, activePreset: "" }));
-  };
+  }, []);
 
-  const applyScenario = async (scenarioName: string) => {
+  const applyScenario = useCallback(async (scenarioName: string) => {
     setSimulation(prev => ({ ...prev, activePreset: scenarioName }));
     try {
       await fetch("/api/simulate/scenario", {
@@ -188,9 +188,9 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     } catch (err) {
       console.error(`Failed to apply scenario ${scenarioName}:`, err);
     }
-  };
+  }, [refreshData, selectVillage, selectedVillageId]);
 
-  const toggleWaterSensor = async () => {
+  const toggleWaterSensor = useCallback(async () => {
     try {
       const isCurrentlyOffline = selectedVillageData?.sensor_health?.sensors?.find(s => (s.sensor_type || '').toLowerCase().includes("water"))?.status === "OFFLINE";
       const newStatus = isCurrentlyOffline ? "ONLINE" : "OFFLINE";
@@ -207,40 +207,63 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     } catch (err) {
       console.error("Failed to toggle water sensor:", err);
     }
-  };
+  }, [selectedVillageData, selectVillage, selectedVillageId, refreshData]);
+
+  const contextValue = useMemo<FloodContextType>(() => ({
+    villages,
+    selectedVillageId,
+    selectedVillageData,
+    role,
+    viewMode,
+    basemap2D,
+    basemap3D,
+    isMethodologyOpen,
+    isHydrographOpen,
+    hydrographVillageId,
+    isDroneFlying,
+    layers,
+    simulation,
+    setRole,
+    setViewMode,
+    setBasemap2D,
+    setBasemap3D,
+    selectVillage,
+    setMethodologyOpen,
+    setHydrographOpen,
+    toggleDroneFlying,
+    toggleLayer,
+    setSimulationValue,
+    applyScenario,
+    toggleWaterSensor,
+    refreshData,
+    updateVillagesFromTelemetry
+  }), [
+    villages,
+    selectedVillageId,
+    selectedVillageData,
+    role,
+    viewMode,
+    basemap2D,
+    basemap3D,
+    isMethodologyOpen,
+    isHydrographOpen,
+    hydrographVillageId,
+    isDroneFlying,
+    layers,
+    simulation,
+    selectVillage,
+    setHydrographOpen,
+    toggleDroneFlying,
+    toggleLayer,
+    setSimulationValue,
+    applyScenario,
+    toggleWaterSensor,
+    refreshData,
+    updateVillagesFromTelemetry
+  ]);
 
   return (
-    <FloodContext.Provider
-      value={{
-        villages,
-        selectedVillageId,
-        selectedVillageData,
-        role,
-        viewMode,
-        basemap2D,
-        basemap3D,
-        isMethodologyOpen,
-        isHydrographOpen,
-        hydrographVillageId,
-        isDroneFlying,
-        layers,
-        simulation,
-        setRole,
-        setViewMode,
-        setBasemap2D,
-        setBasemap3D,
-        selectVillage,
-        setMethodologyOpen,
-        setHydrographOpen,
-        toggleDroneFlying,
-        toggleLayer,
-        setSimulationValue,
-        applyScenario,
-        toggleWaterSensor,
-        refreshData,
-        updateVillagesFromTelemetry
-      }}
-    >
+    <FloodContext.Provider value={contextValue}>
       {children}
     </FloodContext.Provider>
   );

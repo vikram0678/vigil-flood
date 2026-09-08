@@ -114,17 +114,22 @@ export const HydrographModal: React.FC = () => {
     ctx.fillText('NOW', nowX - 10, h - padding.bottom + 16);
   }, [isOpen, isCritical]);
 
+  const handleClose = () => {
+    setIsOpen(false);
+    setHydrographOpen(false);
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="modal-backdrop active" onClick={() => setIsOpen(false)}>
+    <div className="modal-backdrop active" onClick={handleClose}>
       <div className="modal-card hydrograph-card" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <div className="modal-title">
             <span>📈 Real-Time River Gauge Hydrograph & Forecast Peak</span>
             <span className="modal-tag">Google Flood Hub Model</span>
           </div>
-          <button className="modal-close-btn" onClick={() => setIsOpen(false)}>&times;</button>
+          <button className="modal-close-btn" onClick={handleClose}>&times;</button>
         </div>
 
         <div className="modal-body-content">
