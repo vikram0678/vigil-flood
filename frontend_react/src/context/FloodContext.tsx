@@ -170,7 +170,7 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   const toggleWaterSensor = async () => {
     try {
-      const isCurrentlyOffline = selectedVillageData?.sensor_health.sensors.find(s => s.type.includes("WATER"))?.status === "OFFLINE";
+      const isCurrentlyOffline = selectedVillageData?.sensor_health?.sensors?.find(s => (s.sensor_type || '').toLowerCase().includes("water"))?.status === "OFFLINE";
       const newStatus = isCurrentlyOffline ? "ONLINE" : "OFFLINE";
       await fetch("/api/sensors/toggle", {
         method: "POST",

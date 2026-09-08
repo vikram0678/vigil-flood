@@ -22,7 +22,7 @@ export const DeepDiveAnalysis: React.FC = () => {
   const floodPct = Math.min(100, Math.round(risk.risk_percentage * 0.95 + (tel.water_level_m ? tel.water_level_m * 8 : 0)));
   const slopePct = Math.min(100, Math.round(risk.risk_percentage * 0.85 + (v.slope_deg * 0.5) + (tel.soil_moisture * 0.2)));
 
-  const isWaterSensorOffline = health.sensors.find(s => s.type.includes("WATER"))?.status === "OFFLINE";
+  const isWaterSensorOffline = health?.sensors?.find(s => (s.sensor_type || '').toLowerCase().includes("water"))?.status === "OFFLINE";
 
   return (
     <aside className="panel">
@@ -152,17 +152,19 @@ export const DeepDiveAnalysis: React.FC = () => {
           </div>
 
           <div className="sensor-grid">
-            {health.sensors.map((s, idx) => (
+            {health?.sensors?.map((s, idx) => (
               <div key={idx} className="sensor-item">
-                <span style={{ color: 'var(--text-secondary)' }}>{s.type}</span>
+                <span style={{ color: 'var(--text-secondary)', textTransform: 'capitalize' }}>
+                  {(s.sensor_type || s.sensor_id || 'Sensor').replace(/_/g, ' ')}
+                </span>
                 <span className={`sensor-state-badge ${s.status}`}>{s.status}</span>
               </div>
             ))}
           </div>
 
-          {health.is_fallback_active && (
+          {health?.fallback_active && (
             <div style={{ fontSize: '0.7rem', color: '#fbbf24', marginTop: '6px', lineHeight: 1.4 }}>
-              ⚠️ Sensor fault detected: Dispatched <b>{health.model_dispatched}</b> (Rainfall + Soil Infiltration proxy).
+              ⚠️ Sensor fault detected: Dispatched <b>{health.model_dispatched || 'FALLBACK_ML_MODEL'}</b> (Rainfall + Soil Infiltration proxy).
             </div>
           )}
         </div>

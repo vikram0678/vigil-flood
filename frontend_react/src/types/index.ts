@@ -88,16 +88,19 @@ export interface LeadTime {
 
 export interface SensorStatus {
   sensor_id: string;
-  type: string;
+  sensor_type: string;
   status: "ONLINE" | "OFFLINE" | "DEGRADED";
-  health_score: number;
+  value?: number | null;
+  is_usable?: boolean;
+  note?: string;
 }
 
 export interface SensorHealth {
   sensors: SensorStatus[];
   data_health_pct: number;
-  is_fallback_active: boolean;
-  model_dispatched: string;
+  fallback_active: boolean;
+  water_sensor_usable?: boolean;
+  model_dispatched?: string;
 }
 
 export interface ActionPlan {
