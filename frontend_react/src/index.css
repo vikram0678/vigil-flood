@@ -1318,25 +1318,25 @@ input[type="range"] {
   0% {
     box-shadow: 0 0 12px rgba(0, 0, 0, 0.9);
     border-color: #38bdf8;
-    transform: translateY(0);
+    opacity: 0.92;
   }
   100% {
-    box-shadow: 0 0 35px rgba(56, 189, 248, 1);
+    box-shadow: 0 0 30px rgba(56, 189, 248, 1);
     border-color: #ffffff;
-    transform: translateY(-4px);
+    opacity: 1;
   }
 }
 
 @keyframes arrow-slide {
-  0% { transform: translateX(-4px); opacity: 0.5; }
-  50% { transform: translateX(4px); opacity: 1.0; }
-  100% { transform: translateX(-4px); opacity: 0.5; }
+  0% { opacity: 0.5; }
+  50% { opacity: 1.0; }
+  100% { opacity: 0.5; }
 }
 
 @keyframes pulse-stream-dot {
-  0% { transform: scale(0.95); }
-  50% { transform: scale(1.15); box-shadow: 0 0 22px rgba(56, 189, 248, 1); }
-  100% { transform: scale(0.95); }
+  0% { box-shadow: 0 0 8px rgba(0, 0, 0, 0.9); }
+  50% { box-shadow: 0 0 20px rgba(56, 189, 248, 1); }
+  100% { box-shadow: 0 0 8px rgba(0, 0, 0, 0.9); }
 }
 
 /* Moving River Flow Pulses on Blue Stream Line */

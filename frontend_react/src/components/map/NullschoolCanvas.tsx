@@ -30,6 +30,8 @@ export const NullschoolCanvas: React.FC = () => {
   const { layers, viewMode, villages } = useFlood();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animFrameRef = useRef<number | null>(null);
+  const villagesRef = useRef(villages);
+  villagesRef.current = villages;
 
   useEffect(() => {
     if (viewMode !== '2d' || !layers.particles) {
@@ -51,7 +53,8 @@ export const NullschoolCanvas: React.FC = () => {
     window.addEventListener('resize', resize);
 
     // Collect valid streams from all monitored villages
-    const validStreams = villages
+    const currentVillages = villagesRef.current;
+    const validStreams = currentVillages
       .filter(v => v.river_stream && v.river_stream.length > 1)
       .map(v => v.river_stream as [number, number][]);
 
@@ -149,7 +152,7 @@ export const NullschoolCanvas: React.FC = () => {
       window.removeEventListener('resize', resize);
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
-  }, [viewMode, layers.particles, villages]);
+  }, [viewMode, layers.particles]);
 
   if (viewMode !== '2d' || !layers.particles) return null;
 

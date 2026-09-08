@@ -206,10 +206,13 @@ export const GISMap3D: React.FC = () => {
     }
   }, [basemap3D]);
 
-  // 3. Render 3D Village Markers & Shelters
+  // 3. Render 3D Village Markers & Shelters ONCE
+  const rendered3DCountRef = useRef<number>(0);
   useEffect(() => {
     const map3d = map3dInstanceRef.current;
     if (!map3d || villages.length === 0) return;
+    if (rendered3DCountRef.current === villages.length && markers3DRef.current.length > 0) return;
+    rendered3DCountRef.current = villages.length;
 
     // Clear previous markers
     markers3DRef.current.forEach(m => m.remove());

@@ -42,14 +42,14 @@ function getDownhillFlowArrowPoints(streamCoords: [number, number][]) {
 }
 
 export const GISMap2D: React.FC = () => {
-  const { 
-    villages, 
-    selectedVillageId, 
-    selectedVillageData, 
-    selectVillage, 
+  const {
+    villages,
+    selectedVillageId,
+    selectedVillageData,
+    selectVillage,
     viewMode,
     basemap2D,
-    layers 
+    layers
   } = useFlood();
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -64,6 +64,7 @@ export const GISMap2D: React.FC = () => {
   const routeLayerRef = useRef<L.LayerGroup>(L.layerGroup());
   const sensorLayerRef = useRef<L.LayerGroup>(L.layerGroup());
   const markersRef = useRef<Record<string, L.CircleMarker>>({});
+  const hexPolygonsRef = useRef<Record<string, L.Polygon>>({});
 
   // Auto-invalidateSize whenever viewMode switches to 2D
   useEffect(() => {
@@ -236,35 +237,47 @@ export const GISMap2D: React.FC = () => {
       }
     });
 
-    // Render Hexagonal Risk Grid (Google Flood Hub Style)
-    hexGridLayerRef.current.clearLayers();
+    // Render Hexagonal Risk Grid (Google Flood Hub Style) in-place
     villages.forEach(v => {
-      const cellRadius = 0.015;
-      const hexPoints: [number, number][] = [];
-      for (let i = 0; i < 6; i++) {
-        const angle = (Math.PI / 3) * i + (Math.PI / 6);
-        hexPoints.push([
-          v.lat + cellRadius * Math.sin(angle),
-          v.lng + cellRadius * Math.cos(angle) * 1.15
-        ]);
-      }
       const color = RISK_COLORS[v.risk_level] || RISK_COLORS.LOW;
-      L.polygon(hexPoints, {
-        color: color,
-        weight: 1.5,
-        opacity: 0.7,
-        fillColor: color,
-        fillOpacity: 0.22,
-        dashArray: '4, 4'
-      }).addTo(hexGridLayerRef.current);
+      if (!hexPolygonsRef.current[v.id]) {
+        const cellRadius = 0.015;
+        const hexPoints: [number, number][] = [];
+        for (let i = 0; i < 6; i++) {
+          const angle = (Math.PI / 3) * i + (Math.PI / 6);
+          hexPoints.push([
+            v.lat + cellRadius * Math.sin(angle),
+            v.lng + cellRadius * Math.cos(angle) * 1.15
+          ]);
+        }
+        const poly = L.polygon(hexPoints, {
+          color: color,
+          weight: 1.5,
+          opacity: 0.7,
+          fillColor: color,
+          fillOpacity: 0.22,
+          dashArray: '4, 4'
+        }).addTo(hexGridLayerRef.current);
+        hexPolygonsRef.current[v.id] = poly;
+      } else {
+        hexPolygonsRef.current[v.id].setStyle({
+          color: color,
+          fillColor: color
+        });
+      }
     });
   }, [villages, selectVillage]);
 
   // 4. Update Overlays for Selected Village (Hazard Zones, Shelters, Routes, Streams, Sensors)
+  const renderedVillageIdRef = useRef<string | null>(null);
   useEffect(() => {
     if (!selectedVillageData) return;
     const v = selectedVillageData.village;
     const isCritical = selectedVillageData.risk_analysis?.risk_level === 'CRITICAL' || selectedVillageData.risk_analysis?.risk_level === 'EXTREME';
+
+    // Only rebuild layers when selected village changes, not on every telemetry pulse
+    if (renderedVillageIdRef.current === v.id) return;
+    renderedVillageIdRef.current = v.id;
 
     hazardLayerRef.current.clearLayers();
     streamLayerRef.current.clearLayers();
@@ -512,9 +525,9 @@ export const GISMap2D: React.FC = () => {
   }, [layers]);
 
   return (
-    <div 
-      ref={mapContainerRef} 
-      id="gis-map" 
+    <div
+      ref={mapContainerRef}
+      id="gis-map"
       style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
     />
   );
