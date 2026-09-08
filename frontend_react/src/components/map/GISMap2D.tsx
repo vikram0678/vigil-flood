@@ -101,15 +101,34 @@ export const GISMap2D: React.FC = () => {
     mapInstanceRef.current = map;
     (window as any).leafletMap = map;
 
-    // Attach layer groups
-    hexGridLayerRef.current.addTo(map);
-    hazardLayerRef.current.addTo(map);
-    streamLayerRef.current.addTo(map);
-    shelterLayerRef.current.addTo(map);
-    routeLayerRef.current.addTo(map);
-    sensorLayerRef.current.addTo(map);
+    // Reset and attach fresh layer groups to active map
+    hexGridLayerRef.current = L.layerGroup().addTo(map);
+    hazardLayerRef.current = L.layerGroup().addTo(map);
+    streamLayerRef.current = L.layerGroup().addTo(map);
+    shelterLayerRef.current = L.layerGroup().addTo(map);
+    routeLayerRef.current = L.layerGroup().addTo(map);
+    sensorLayerRef.current = L.layerGroup().addTo(map);
+    markersRef.current = {};
+    hexPolygonsRef.current = {};
+    renderedVillageIdRef.current = null;
+    lastFlownVillageIdRef.current = null;
+
+    // Set initial basemap tile layer
+    const initialCfg = BASEMAP_2D_TILES[basemap2D] || BASEMAP_2D_TILES.google_floodhub;
+    baseLayerRef.current = L.tileLayer(initialCfg.url, initialCfg.options).addTo(map);
 
     L.control.scale({ position: 'bottomleft' }).addTo(map);
+
+    // Continuous container resize observer to prevent blank/grey map on layout shifts
+    let resizeObserver: ResizeObserver | null = null;
+    if (mapContainerRef.current && typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+        }
+      });
+      resizeObserver.observe(mapContainerRef.current);
+    }
 
     setTimeout(() => {
       if (mapInstanceRef.current) {
@@ -166,8 +185,14 @@ export const GISMap2D: React.FC = () => {
     });
 
     return () => {
+      if (resizeObserver) resizeObserver.disconnect();
       map.remove();
       mapInstanceRef.current = null;
+      baseLayerRef.current = null;
+      markersRef.current = {};
+      hexPolygonsRef.current = {};
+      renderedVillageIdRef.current = null;
+      lastFlownVillageIdRef.current = null;
     };
   }, []);
 

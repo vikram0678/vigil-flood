@@ -95,6 +95,20 @@ export const GISMap3D: React.FC = () => {
     });
 
     map3dInstanceRef.current = map3d;
+    markers3DRef.current = [];
+    rendered3DCountRef.current = 0;
+    lastFlown3DVillageIdRef.current = null;
+
+    // ResizeObserver for 3D Map
+    let resizeObserver3d: ResizeObserver | null = null;
+    if (mapContainerRef.current && typeof ResizeObserver !== 'undefined') {
+      resizeObserver3d = new ResizeObserver(() => {
+        if (map3dInstanceRef.current) {
+          map3dInstanceRef.current.resize();
+        }
+      });
+      resizeObserver3d.observe(mapContainerRef.current);
+    }
 
     setTimeout(() => {
       if (map3dInstanceRef.current) {
@@ -163,10 +177,14 @@ export const GISMap3D: React.FC = () => {
     });
 
     return () => {
+      if (resizeObserver3d) resizeObserver3d.disconnect();
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
       if (droneTimerRef.current) clearTimeout(droneTimerRef.current);
       map3d.remove();
       map3dInstanceRef.current = null;
+      markers3DRef.current = [];
+      rendered3DCountRef.current = 0;
+      lastFlown3DVillageIdRef.current = null;
     };
   }, []);
 
