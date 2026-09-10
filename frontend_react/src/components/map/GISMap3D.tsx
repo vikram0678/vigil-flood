@@ -3,17 +3,27 @@ import maplibregl from 'maplibre-gl';
 import { useFlood } from '../../context/FloodContext';
 import { BASEMAP_3D_SOURCES, DRONE_WAYPOINTS } from '../../constants';
 
+// Helper: Stream browser map events directly to Python terminal
+const sendTerminalLog = (level: 'INFO' | 'WARN' | 'ERROR', message: string) => {
+  fetch('/api/logs/client', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ level, module: '3D_MAP', message })
+  }).catch(() => { });
+};
+
+
 export const GISMap3D: React.FC = () => {
-  const { 
-    villages, 
-    selectedVillageId, 
-    selectedVillageData, 
+  const {
+    villages,
+    selectedVillageId,
+    selectedVillageData,
     selectVillage,
     viewMode,
-    basemap3D, 
-    isDroneFlying, 
+    basemap3D,
+    isDroneFlying,
     toggleDroneFlying,
-    simulation 
+    simulation
   } = useFlood();
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -95,6 +105,7 @@ export const GISMap3D: React.FC = () => {
     });
 
     map3dInstanceRef.current = map3d;
+    (window as any).map3dInstance = map3d;
     markers3DRef.current = [];
     rendered3DCountRef.current = 0;
     lastFlown3DVillageIdRef.current = null;
@@ -118,28 +129,39 @@ export const GISMap3D: React.FC = () => {
 
     // Logging MapLibre GL Lifecycle & WebGL Status
     map3d.on('load', () => {
+      sendTerminalLog('INFO', '✅ MapLibre 3D Style & Terrain Mesh initialized successfully!');
       console.log("🏔️ [3D-MAP] MapLibre Style, Satellite Raster & 3D Terrain Loaded Successfully!");
     });
 
     map3d.on('error', (e) => {
+      sendTerminalLog('ERROR', `🚨 MapLibre Engine Error: ${e.error?.message || JSON.stringify(e)}`);
+
       console.error("🚨 [3D-MAP ERROR]:", e.error || e);
     });
 
     map3d.on('sourcedata', (e) => {
       if (e.isSourceLoaded) {
+        const sourceType = e.source?.type || 'geojson';
+        sendTerminalLog('INFO', `📡 Source "${e.sourceId}" (Format: ${sourceType}) loaded into GPU memory.`);
+        sendTerminalLog('INFO', `📡 Source "${e.sourceId}" (${e.sourceDataType || 'raster'}) loaded into GPU memory.`);
         console.log(`📡 [3D-MAP SOURCE] Source "${e.sourceId}" (dataType: ${e.sourceDataType}) loaded.`);
       }
     });
 
     map3d.on('tileerror', (e: any) => {
+      const coord = e.tile?.tileID?.canonical ? `z:${e.tile.tileID.canonical.z} x:${e.tile.tileID.canonical.x} y:${e.tile.tileID.canonical.y}` : 'Unknown';
+      sendTerminalLog('WARN', `⚠️ Tile load failed at [${coord}] - Error: ${e.error?.message || e.error || 'Network/CORS block'}`);
       console.warn("⚠️ [3D-MAP TILE ERROR]:", e.tile?.tileID?.canonical, e.error);
     });
 
     map3d.on('webglcontextlost', (e) => {
+      sendTerminalLog('ERROR', '🚨 WebGL GPU Context Lost! Graphics card reset or out of memory.');
       console.error("🚨 [3D-MAP WEBGL CONTEXT LOST]:", e);
     });
 
     map3d.on('webglcontextrestored', () => {
+      sendTerminalLog('INFO', '✅ WebGL GPU Context Restored.');
+
       console.log("✅ [3D-MAP WEBGL CONTEXT RESTORED]");
     });
 
@@ -184,19 +206,20 @@ export const GISMap3D: React.FC = () => {
         paint: {
           'line-color': '#ffffff',
           'line-width': 3.5,
-          'line-opacity': 0.95,
-          'line-dasharray': [0, 4, 3]
+          'line-opacity': 0.8,
+          'line-dasharray': [2, 3]
         }
       });
 
       // Continuous 3D flow pulse animation
-      let step = 0;
+      let pulseStep = 0;
       const animatePulse = () => {
         if (map3d.getLayer('3d-stream-pulse-layer')) {
-          step = (step + 0.08) % 8;
+          pulseStep += 0.05;
+          const opacity = 0.55 + 0.4 * Math.sin(pulseStep); // Smooth wave between 0.15 and 0.95
           try {
-            map3d.setPaintProperty('3d-stream-pulse-layer', 'line-dasharray', [step, Math.max(0.1, 4 - step), 4]);
-          } catch (_) {}
+            map3d.setPaintProperty('3d-stream-pulse-layer', 'line-opacity', opacity);
+          } catch (_) { }
         }
         animFrameRef.current = requestAnimationFrame(animatePulse);
       };
@@ -221,6 +244,7 @@ export const GISMap3D: React.FC = () => {
     if (!map3d || !map3d.isStyleLoaded()) return;
 
     const cfg = BASEMAP_3D_SOURCES[basemap3D] || BASEMAP_3D_SOURCES.google_hybrid;
+    console.log(`🗺️ [3D BASEMAP SWITCH] Switching to "${basemap3D}" (${cfg.name})`, cfg.tiles);
 
     try {
       if (map3d.getLayer('hybrid-satellite-layer')) {
@@ -368,25 +392,88 @@ export const GISMap3D: React.FC = () => {
     }
   }, [selectedVillageId, villages, selectedVillageData, isDroneFlying, viewMode]);
 
-  // 5. Drone Flythrough Sequence
+  // 5. Dynamic Village-Specific Drone Flythrough Sequence
   useEffect(() => {
     const map3d = map3dInstanceRef.current;
     if (!map3d) return;
 
     if (isDroneFlying) {
+      const v = selectedVillageData?.village || villages.find(x => x.id === selectedVillageId) || villages[0];
+      if (!v) return;
+
+      const shelters = v.safe_shelters || v.shelters || [];
+      const primaryShelter = shelters[0];
+      const stream = v.river_stream || [];
+      const upstreamPt = stream.length > 0 ? stream[0] : null;
+      const downstreamPt = stream.length > 0 ? stream[stream.length - 1] : null;
+
+      const dynamicWaypoints: Array<{ center: [number, number]; zoom: number; pitch: number; bearing: number; desc: string }> = [];
+
+      // 1. Upstream River Inflow & Mountain Gorge Approach
+      if (upstreamPt && typeof upstreamPt[0] === 'number' && typeof upstreamPt[1] === 'number') {
+        dynamicWaypoints.push({
+          center: [upstreamPt[1], upstreamPt[0]],
+          zoom: 14.2,
+          pitch: 65,
+          bearing: -25,
+          desc: `Upstream Gorge Inflow (${v.name})`
+        });
+      }
+
+      // 2. Direct Village Core & Riverside Inundation Zone Focus
+      dynamicWaypoints.push({
+        center: [v.lng, v.lat],
+        zoom: 15.0,
+        pitch: 62,
+        bearing: 15,
+        desc: `Village Center (${v.name}) Threat Zone`
+      });
+
+      // 3. Primary Safe Relief Shelter (Elevated Mountain Ridge Haven)
+      if (primaryShelter && typeof primaryShelter.lng === 'number' && typeof primaryShelter.lat === 'number') {
+        dynamicWaypoints.push({
+          center: [primaryShelter.lng, primaryShelter.lat],
+          zoom: 15.2,
+          pitch: 52,
+          bearing: 45,
+          desc: `Safe Relief Shelter (${primaryShelter.name})`
+        });
+      }
+
+      // 4. Downstream Runoff Gorge & Basin Overview
+      if (downstreamPt && typeof downstreamPt[0] === 'number' && typeof downstreamPt[1] === 'number') {
+        dynamicWaypoints.push({
+          center: [downstreamPt[1], downstreamPt[0]],
+          zoom: 13.8,
+          pitch: 60,
+          bearing: -65,
+          desc: `Downstream Runoff Gorge (${v.name})`
+        });
+      } else {
+        dynamicWaypoints.push({
+          center: [v.lng, v.lat],
+          zoom: 13.6,
+          pitch: 55,
+          bearing: 180,
+          desc: `360° Tactical Valley Overview (${v.name})`
+        });
+      }
+
       let wpIdx = 0;
       const flyNext = () => {
-        if (!isDroneFlying) return;
-        const wp = DRONE_WAYPOINTS[wpIdx];
-        map3d.flyTo({
-          center: wp.center as [number, number],
-          zoom: wp.zoom,
-          pitch: wp.pitch,
-          bearing: wp.bearing,
-          duration: 4500,
-          essential: true
-        });
-        wpIdx = (wpIdx + 1) % DRONE_WAYPOINTS.length;
+        if (!isDroneFlying || !map3dInstanceRef.current) return;
+        const wp = dynamicWaypoints[wpIdx];
+        if (wp) {
+          map3d.flyTo({
+            center: wp.center,
+            zoom: wp.zoom,
+            pitch: wp.pitch,
+            bearing: wp.bearing,
+            duration: 4500,
+            essential: true
+          });
+        }
+        wpIdx = (wpIdx + 1) % dynamicWaypoints.length;
         droneTimerRef.current = setTimeout(flyNext, 5000);
       };
       flyNext();
@@ -397,13 +484,21 @@ export const GISMap3D: React.FC = () => {
     return () => {
       if (droneTimerRef.current) clearTimeout(droneTimerRef.current);
     };
-  }, [isDroneFlying]);
+  }, [isDroneFlying, selectedVillageId, selectedVillageData, villages]);
 
   return (
-    <div 
-      ref={mapContainerRef} 
-      id="gis-map-3d" 
+    <div
+      ref={mapContainerRef}
+      id="gis-map-3d"
       style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
     />
   );
 };
+
+
+
+
+// hey if we implement this 
+// how the solution will be improveed 
+// is that ok to do ??
+// what do u say about this

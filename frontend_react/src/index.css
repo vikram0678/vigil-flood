@@ -35,6 +35,40 @@
   --shadow-critical: 0 0 30px rgba(239, 68, 68, 0.4);
 }
 
+/* ==========================================================
+   ☀️ LIGHT THEME DESIGN SYSTEM TOKENS
+   ========================================================== */
+:root[data-theme="light"], body.light-theme {
+  --bg-primary: #f1f5f9;
+  --bg-secondary: #ffffff;
+  --bg-card: rgba(255, 255, 255, 0.96);
+  --bg-card-hover: #f8fafc;
+  --border-color: rgba(203, 213, 225, 0.85);
+  --border-highlight: rgba(2, 132, 199, 0.35);
+  
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  
+  --accent-cyan: #0284c7;
+  --accent-blue: #2563eb;
+  --accent-indigo: #4f46e5;
+  
+  --risk-low: #059669;
+  --risk-low-bg: rgba(16, 185, 129, 0.12);
+  --risk-moderate: #d97706;
+  --risk-moderate-bg: rgba(245, 158, 11, 0.12);
+  --risk-high: #ea580c;
+  --risk-high-bg: rgba(249, 115, 22, 0.12);
+  --risk-critical: #dc2626;
+  --risk-critical-bg: rgba(239, 68, 68, 0.14);
+  
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-glow: 0 0 20px rgba(2, 132, 199, 0.15);
+  --shadow-critical: 0 0 25px rgba(220, 38, 38, 0.2);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -47,9 +81,209 @@ body {
   font-family: var(--font-family);
   min-height: 100vh;
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
   background-image: 
     radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.05) 0%, transparent 40%),
     radial-gradient(circle at 90% 80%, rgba(99, 102, 241, 0.05) 0%, transparent 40%);
+}
+
+body.light-theme {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(2, 132, 199, 0.04) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(79, 70, 229, 0.03) 0%, transparent 40%);
+}
+
+/* Light Theme Component Overrides */
+body.light-theme .navbar {
+  background: rgba(255, 255, 255, 0.94);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
+}
+
+body.light-theme .brand-title {
+  background: linear-gradient(to right, #0f172a, #0284c7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+body.light-theme .village-card {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+}
+
+body.light-theme .village-card:hover {
+  background: #f8fafc;
+  border-color: var(--accent-cyan);
+}
+
+body.light-theme .village-card.selected {
+  background: rgba(2, 132, 199, 0.07);
+  border-color: var(--accent-cyan);
+}
+
+body.light-theme .village-rank-badge {
+  background: #e2e8f0;
+  color: #334155;
+  border-color: #cbd5e1;
+}
+
+body.light-theme .view-mode-bar,
+body.light-theme .role-switcher {
+  background: #f1f5f9;
+  border: 1px solid rgba(203, 213, 225, 0.8);
+}
+
+body.light-theme .basemap-btn,
+body.light-theme .basemap-3d-btn,
+body.light-theme .preset-btn {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+}
+
+body.light-theme .basemap-btn:hover,
+body.light-theme .basemap-3d-btn:hover,
+body.light-theme .preset-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+body.light-theme .basemap-btn.active,
+body.light-theme .basemap-3d-btn.active,
+body.light-theme .preset-btn.active {
+  background: linear-gradient(135deg, #0284c7, #2563eb);
+  color: #ffffff;
+}
+
+body.light-theme .map-controls-panel,
+body.light-theme .map-nav-controls {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+body.light-theme .map-nav-btn {
+  color: #334155;
+}
+
+body.light-theme .map-nav-btn:hover {
+  background: rgba(2, 132, 199, 0.1);
+  color: var(--accent-cyan);
+}
+
+body.light-theme .map-nav-divider {
+  background: rgba(203, 213, 225, 0.6);
+}
+
+body.light-theme .map-panel-tab-bar {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+}
+
+body.light-theme .sensor-item,
+body.light-theme .xai-bar-row,
+body.light-theme .action-item,
+body.light-theme .gauge-card,
+body.light-theme .hazard-bar-box,
+body.light-theme .sms-preview-card {
+  background: #f8fafc;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+body.light-theme .lead-time-box {
+  background: rgba(2, 132, 199, 0.08);
+  border: 1px solid rgba(2, 132, 199, 0.2);
+}
+
+body.light-theme input[type="range"] {
+  background: #e2e8f0;
+}
+
+body.light-theme .elevation-popup-card {
+  background: rgba(255, 255, 255, 0.98);
+  border: 1.5px solid rgba(203, 213, 225, 0.95);
+  color: #0f172a;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.14);
+}
+
+body.light-theme .elev-popup-header {
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+body.light-theme .elev-close-btn {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #64748b;
+}
+
+body.light-theme .elev-close-btn:hover {
+  background: #fee2e2;
+  color: #ef4444;
+  border-color: #fca5a5;
+}
+
+body.light-theme .elev-popup-val {
+  color: #0f172a;
+}
+
+body.light-theme .elev-popup-coords {
+  color: #475569;
+}
+
+body.light-theme .modal-content {
+  background: #ffffff;
+  color: #0f172a;
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+}
+
+/* Theme Toggle Button in Navbar */
+.theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  user-select: none;
+}
+
+.theme-toggle-btn:hover {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: var(--accent-cyan);
+  transform: translateY(-1px);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+}
+
+body.light-theme .theme-toggle-btn {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+body.light-theme .theme-toggle-btn:hover {
+  background: #e2e8f0;
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15);
+}
+
+.theme-toggle-icon {
+  font-size: 0.95rem;
+  transition: transform 0.3s ease;
+}
+
+.theme-toggle-btn:hover .theme-toggle-icon {
+  transform: rotate(20deg) scale(1.15);
 }
 
 /* Custom Scrollbar */
@@ -501,25 +735,48 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 6px;
+  padding-bottom: 8px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
-.map-panel-header-title {
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: #f8fafc;
+.map-panel-tab-bar {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  background: #090d16;
+  padding: 3px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 3px;
+}
+
+.map-panel-tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.map-panel-tab-btn:hover {
+  color: #ffffff;
+}
+
+.map-panel-tab-btn.active {
+  background: linear-gradient(135deg, #0284c7, #2563eb);
+  color: #ffffff;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.35);
 }
 
 .map-panel-slide-close-btn {
   background: rgba(30, 41, 59, 0.85);
   border: 1px solid rgba(56, 189, 248, 0.4);
   color: var(--accent-cyan);
-  padding: 3px 8px;
+  padding: 4px 8px;
   border-radius: var(--radius-sm);
   font-size: 0.72rem;
   font-weight: 700;
@@ -536,6 +793,109 @@ body {
   border-color: #ffffff;
   transform: translateX(2px);
   box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+}
+
+/* ==========================================================
+   🧭 FLOATING MAP NAVIGATION CONTROLS (TOP-LEFT)
+   ========================================================== */
+.map-nav-controls {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 750;
+  display: flex;
+  flex-direction: column;
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1.5px solid rgba(56, 189, 248, 0.35);
+  border-radius: var(--radius-md);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6), 0 0 12px rgba(56, 189, 248, 0.25);
+  overflow: hidden;
+  user-select: none;
+  animation: fadeInNav 0.3s ease;
+}
+
+@keyframes fadeInNav {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.map-nav-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: #f8fafc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.map-nav-btn:hover {
+  background: rgba(56, 189, 248, 0.2);
+  color: var(--accent-cyan);
+  box-shadow: inset 0 0 8px rgba(56, 189, 248, 0.3);
+}
+
+.map-nav-btn:active {
+  transform: scale(0.92);
+}
+
+.map-nav-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  width: 75%;
+  margin: 0 auto;
+}
+
+/* Compass Specific Styling */
+.compass-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.compass-needle-ring {
+  width: 22px;
+  height: 22px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease-out;
+}
+
+.compass-pointer-north {
+  width: 0;
+  height: 0;
+  border-left: 3.5px solid transparent;
+  border-right: 3.5px solid transparent;
+  border-bottom: 9px solid #ef4444; /* Vivid Red North Pointer */
+  filter: drop-shadow(0 0 3px rgba(239, 68, 68, 0.8));
+}
+
+.compass-pointer-south {
+  width: 0;
+  height: 0;
+  border-left: 3.5px solid transparent;
+  border-right: 3.5px solid transparent;
+  border-top: 9px solid #94a3b8; /* White/Slate South Pointer */
+}
+
+.compass-north-letter {
+  position: absolute;
+  top: 1px;
+  font-size: 0.55rem;
+  font-weight: 900;
+  color: #f8fafc;
+  pointer-events: none;
 }
 
 .map-slide-toggle-floating {

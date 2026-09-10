@@ -104,7 +104,7 @@ export const GISMap2D: React.FC = () => {
 
     const mandiCoords: [number, number] = [31.74, 77.10];
     const map = L.map(mapContainerRef.current, {
-      zoomControl: true,
+      zoomControl: false,
       attributionControl: false
     }).setView(mandiCoords, 11);
 
@@ -152,7 +152,7 @@ export const GISMap2D: React.FC = () => {
       const popup = L.popup({
         closeButton: false,
         autoClose: true,
-        closeOnClick: false,
+        closeOnClick: true,
         className: 'custom-elevation-popup'
       })
         .setLatLng([lat, lng])
@@ -160,7 +160,7 @@ export const GISMap2D: React.FC = () => {
           <div class="elevation-popup-card">
             <div class="elev-popup-header">
               <div class="elev-popup-title">📡 Querying 30m DEM...</div>
-              <button onclick="document.querySelector('.leaflet-popup-close-button')?.click();" class="elev-close-btn">&times;</button>
+              <button onclick="window.leafletMap?.closePopup();" class="elev-close-btn" title="Close Popup">&times;</button>
             </div>
             <div style="font-size:0.75rem; color:var(--text-muted); padding:4px 0;">📍 ${lat.toFixed(4)}°N, ${lng.toFixed(4)}°E</div>
           </div>
@@ -174,6 +174,7 @@ export const GISMap2D: React.FC = () => {
           <div class="elevation-popup-card">
             <div class="elev-popup-header">
               <div class="elev-popup-title">⛰️ Topographic Spot Analysis</div>
+              <button onclick="window.leafletMap?.closePopup();" class="elev-close-btn" title="Close Popup">&times;</button>
             </div>
             <div class="elev-popup-grid">
               <div>

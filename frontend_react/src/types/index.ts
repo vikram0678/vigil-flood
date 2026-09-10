@@ -2,6 +2,8 @@ export type RiskLevel = "LOW" | "MODERATE" | "HIGH" | "CRITICAL" | "EXTREME" | "
 
 export type RoleMode = "authority" | "citizen";
 
+export type ThemeMode = "dark" | "light";
+
 export type ViewMode = "2d" | "3d";
 
 export type Basemap2D = "google_floodhub" | "google_terrain" | "google_satellite" | "google_dark" | "topo";

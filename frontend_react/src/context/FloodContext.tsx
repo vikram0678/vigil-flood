@@ -3,6 +3,7 @@ import {
   Village, 
   VillageDetailResponse, 
   RoleMode, 
+  ThemeMode,
   ViewMode, 
   Basemap2D, 
   Basemap3D 
@@ -20,6 +21,7 @@ interface FloodContextType {
   isHydrographOpen: boolean;
   hydrographVillageId: string | null;
   isDroneFlying: boolean;
+  theme: ThemeMode;
   
   // Layer visibility toggles
   layers: {
@@ -42,6 +44,7 @@ interface FloodContextType {
 
   // Actions
   setRole: (role: RoleMode) => void;
+  toggleTheme: () => void;
   setViewMode: (mode: ViewMode) => void;
   setBasemap2D: (basemap: Basemap2D) => void;
   setBasemap3D: (basemap: Basemap3D) => void;
@@ -71,6 +74,20 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [isHydrographOpen, setHydrographOpenState] = useState<boolean>(false);
   const [hydrographVillageId, setHydrographVillageId] = useState<string | null>(null);
   const [isDroneFlying, setIsDroneFlying] = useState<boolean>(false);
+  const [theme, setTheme] = useState<ThemeMode>(() => {
+    const saved = localStorage.getItem('vigil_theme') as ThemeMode;
+    return saved === 'light' ? 'light' : 'dark';
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.className = theme === 'light' ? 'light-theme' : '';
+    localStorage.setItem('vigil_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = useCallback(() => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  }, []);
 
   const [layers, setLayers] = useState({
     hazardZones: true,
@@ -221,9 +238,11 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     isHydrographOpen,
     hydrographVillageId,
     isDroneFlying,
+    theme,
     layers,
     simulation,
     setRole,
+    toggleTheme,
     setViewMode,
     setBasemap2D,
     setBasemap3D,
@@ -249,8 +268,10 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     isHydrographOpen,
     hydrographVillageId,
     isDroneFlying,
+    theme,
     layers,
     simulation,
+    toggleTheme,
     selectVillage,
     setHydrographOpen,
     toggleDroneFlying,

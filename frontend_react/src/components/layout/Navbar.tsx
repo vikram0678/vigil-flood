@@ -2,7 +2,7 @@ import React from 'react';
 import { useFlood } from '../../context/FloodContext';
 
 export const Navbar: React.FC = () => {
-  const { role, setRole, setMethodologyOpen } = useFlood();
+  const { role, setRole, setMethodologyOpen, theme, toggleTheme } = useFlood();
 
   return (
     <nav className="navbar">
@@ -25,6 +25,18 @@ export const Navbar: React.FC = () => {
           onClick={() => setMethodologyOpen(true)}
         >
           <span>ℹ️</span> Scientific Methodology
+        </button>
+
+        {/* Theme Mode Toggle (Dark / Light) */}
+        <button 
+          id="btn-theme-toggle" 
+          className="theme-toggle-btn"
+          onClick={toggleTheme}
+          title={theme === 'dark' ? "Switch to Light Theme" : "Switch to Dark Theme"}
+          aria-label="Toggle Theme Mode"
+        >
+          <span className="theme-toggle-icon">{theme === 'dark' ? '☀️' : '🌙'}</span>
+          <span className="theme-toggle-label">{theme === 'dark' ? 'Light' : 'Dark'}</span>
         </button>
 
         <div className="status-pill">
