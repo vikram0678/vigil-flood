@@ -188,3 +188,16 @@ def get_map_tile(provider: str, z: int, x: int, y: str):
         }
     )
 
+# ==========================================
+# 🛰️ REAL-TIME FRONTEND TO TERMINAL LOG BRIDGE
+# ==========================================
+class ClientLogRequest(BaseModel):
+    level: str = "INFO"
+    module: str = "3D_MAP"
+    message: str
+
+@router.post("/logs/client")
+def log_client_message(req: ClientLogRequest):
+    prefix = "🚨 [ERROR]" if req.level == "ERROR" else "⚠️ [WARN]" if req.level == "WARN" else "🏔️ [INFO]"
+    print(f"\n{prefix} [{req.module}] {req.message}")
+    return {"status": "ok"}

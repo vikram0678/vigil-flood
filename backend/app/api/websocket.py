@@ -40,7 +40,7 @@ async def websocket_telemetry_stream(websocket: WebSocket):
                 "villages": summary
             }
             await websocket.send_text(json.dumps(payload))
-            await asyncio.sleep(3.0)
+            await asyncio.sleep(60.0)
     except WebSocketDisconnect:
         manager.disconnect(websocket)
     except Exception:

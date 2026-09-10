@@ -9,6 +9,7 @@ from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_sco
 
 from backend.app.config import SAVED_MODELS_DIR, RISK_THRESHOLDS
 
+
 FULL_FEATURES = [
     "rain_1h", "rain_3h", "rain_6h", "rain_24h", "forecast_rain_3h",
     "soil_moisture", "water_level_m", "water_level_rise_rate",
@@ -60,6 +61,7 @@ class MLEngine:
         joblib.dump(self.full_landslide_model, SAVED_MODELS_DIR / "full_landslide_model.pkl")
         joblib.dump(self.fallback_flood_model, SAVED_MODELS_DIR / "fallback_flood_model.pkl")
         joblib.dump(self.fallback_landslide_model, SAVED_MODELS_DIR / "fallback_landslide_model.pkl")
+        
         
         self.is_loaded = True
         return {"status": "success", "models_saved": True, "samples_trained": len(df)}
