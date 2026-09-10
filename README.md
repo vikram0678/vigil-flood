@@ -165,25 +165,30 @@ vigil-flood/
 
 ### Where Does the Data Come From?
 
-| Source | Type | What It Provides | Update Frequency |
-|--------|------|------------------|-----------------|
-| **IMD AWS/Radar** | Government API | Rainfall intensity, weather forecasts | Every 15 min |
-| **NASA GPM IMERG** | Satellite | Global precipitation estimates (0.1° grid) | Every 30 min |
-| **ISRO MOSDAC** | Satellite | Soil Wetness Index, vegetation moisture | Daily |
-| **SRTM DEM (30m)** | Satellite | Elevation, slope angle, drainage networks | Static |
-| **ISRO Landslide Atlas** | Historical | Past landslide/flood event inventory | Updated yearly |
-| **GSI Bhukosh** | Geological | Geological vulnerability maps | Static |
-| **IoT LoRaWAN Sensors** | Ground-level | Rain gauge, soil moisture, river level, tilt | Real-time (5 sec) |
+| Source | Type | What It Provides | Access Link |
+|--------|------|------------------|-------------|
+| **IMD AWS/Radar** | Government API | Rainfall intensity, weather forecasts | [mausam.imd.gov.in](https://mausam.imd.gov.in/) |
+| **NASA GPM IMERG** | Satellite | Global precipitation estimates (0.1° grid) | [gpm.nasa.gov](https://gpm.nasa.gov/data/imerg) |
+| **ISRO MOSDAC** | Satellite | Soil Wetness Index, vegetation moisture | [mosdac.gov.in](https://www.mosdac.gov.in/) |
+| **SRTM DEM (30m)** | Satellite | Elevation, slope angle, drainage networks | [earthexplorer.usgs.gov](https://earthexplorer.usgs.gov/) |
+| **ISRO Landslide Atlas** | Historical | Past landslide/flood event inventory | [bhukosh.gsi.gov.in](https://bhukosh.gsi.gov.in/Bhukosh/Public) |
+| **GSI Bhukosh** | Geological | Geological vulnerability maps | [bhukosh.gsi.gov.in](https://bhukosh.gsi.gov.in/Bhukosh/Public) |
+| **Google Flood Hub** | AI Forecast | River flood forecasting (Google AI) | [sites.research.google/floods](https://sites.research.google/floods/) |
+| **IoT LoRaWAN Sensors** | Ground-level | Rain gauge, soil moisture, river level, tilt | Custom hardware deployment |
 
 ### Training Data
 
-Our ML model is trained on **99,000+ multi-source samples** covering:
-- Rainfall accumulation (1h, 3h, 6h, 24h windows)
-- Soil moisture saturation percentage
-- River water stage levels
-- Slope angle and terrain elevation
-- Historical flood event labels
-- Seasonal and temporal patterns
+Our ML model is trained on **99,000+ multi-source samples** generated from real-world distributions of the Beas River Basin:
+
+| Feature | Source | Range |
+|---------|--------|-------|
+| Rainfall (1h, 3h, 6h, 24h) | IMD AWS + NASA GPM | 0–200 mm |
+| Soil Moisture | ISRO MOSDAC SWI | 10–95% |
+| River Water Stage | IoT ultrasonic sensor | 0.5–8.0 m |
+| Slope Angle | SRTM DEM 30m | 5–45° |
+| Elevation | SRTM DEM 30m | 800–3500 m |
+| Antecedent Precipitation Index | Computed (7-day decay) | 0–300 |
+| Season / Hour | Temporal encoding | Monsoon-weighted |
 
 **Pilot Region:** Beas River Basin, Mandi District, Himachal Pradesh — covering 6 villages: Pandoh, Aut, Thalot, Hanogi, Larji, Banjar.
 
@@ -241,6 +246,26 @@ npm install
 cp .env.example .env
 
 # Edit .env with your API keys (all optional — system works without them)
+```
+
+### 🔑 API Keys (All Optional — System works 100% without them)
+
+> The dashboard runs fully out of the box using **free open-source basemaps**. These keys unlock additional features:
+
+| Service | What It Unlocks | Free Tier | Get Your Key |
+|---------|----------------|-----------|-------------|
+| **OpenWeatherMap** | Live weather forecasts & rainfall data | 1,000 calls/day | [Sign up here →](https://home.openweathermap.org/users/sign_up) |
+| **Mapbox** | Premium satellite map tiles | 50,000 loads/month | [Sign up here →](https://account.mapbox.com/auth/signup/) |
+| **Twilio** | SMS & WhatsApp emergency alerts | $15 free credit | [Sign up here →](https://www.twilio.com/try-twilio) |
+| **IMD API** | Official India weather data | Government access | [Request here →](https://mausam.imd.gov.in/) |
+
+After signing up, paste your keys in the `.env` file:
+```env
+OPENWEATHER_API_KEY=your_key_here
+MAPBOX_ACCESS_TOKEN=your_token_here
+TWILIO_ACCOUNT_SID=your_sid_here
+TWILIO_AUTH_TOKEN=your_token_here
+TWILIO_PHONE_NUMBER=+1234567890
 ```
 
 ### Step 6: Train the ML Models
