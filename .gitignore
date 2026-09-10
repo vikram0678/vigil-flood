@@ -58,3 +58,7 @@ Thumbs.db
 *.csv
 *.h5
 *.pkl
+
+
+zapi.txt
+zlist.md
