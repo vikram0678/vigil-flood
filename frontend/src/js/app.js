@@ -388,6 +388,7 @@ function init3DMap() {
       });
 
       // 6. 3D Animated Downhill River Flow Pulse Layer
+
       map3d.addLayer({
         id: "3d-stream-pulse-layer",
         type: "line",
@@ -395,8 +396,8 @@ function init3DMap() {
         paint: {
           "line-color": "#ffffff",
           "line-width": 3.5,
-          "line-opacity": 0.95,
-          "line-dasharray": [0, 4, 3]
+          "line-opacity": 0.8,
+          "line-dasharray": [2, 3]
         }
       });
 
@@ -409,19 +410,17 @@ function init3DMap() {
   }
 }
 
-// 3D River Stream Continuous Flow Animation Loop
+// 3D River Stream Continuous Flow Animation Loop (GPU Opacity Animation)
 let streamAnimFrame = null;
-let streamDashStep = 0;
+let streamPulseStep = 0;
 function start3DStreamFlowAnimation() {
   if (streamAnimFrame) cancelAnimationFrame(streamAnimFrame);
   function animate() {
     if (map3d && map3d.getLayer("3d-stream-pulse-layer")) {
-      streamDashStep = (streamDashStep + 0.08) % 8;
-      const d1 = streamDashStep;
-      const d2 = Math.max(0.1, 4 - d1);
-      const d3 = 4;
+      streamPulseStep += 0.05;
+      const opacity = 0.55 + 0.4 * Math.sin(streamPulseStep);
       try {
-        map3d.setPaintProperty("3d-stream-pulse-layer", "line-dasharray", [d1, d2, d3]);
+        map3d.setPaintProperty("3d-stream-pulse-layer", "line-opacity", opacity);
       } catch (err) { }
     }
     streamAnimFrame = requestAnimationFrame(animate);
