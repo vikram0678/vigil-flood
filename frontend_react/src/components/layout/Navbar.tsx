@@ -10,7 +10,7 @@ export const Navbar: React.FC = () => {
         <div className="logo-badge">🌊</div>
         <div>
           <div className="brand-title">
-            VIGIL-FLOOD <span style={{ fontSize: '0.8rem', opacity: 0.8, fontWeight: 500 }}>| SIH 26192</span>
+            VIGIL-FLOOD <span style={{ fontSize: '0.8rem', opacity: 0.8, fontWeight: 500 }}>| Flash Flood Early Warning</span>
           </div>
           <div className="brand-subtitle">
             Hyper-Local Flash Flood Early Warning System • Pilot: Beas Basin, Mandi (HP)

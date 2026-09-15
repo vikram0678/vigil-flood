@@ -12,7 +12,7 @@ export const MethodologyModal: React.FC = () => {
       <div className="modal-card" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <div className="modal-title">
-            <span>🔬 SIH 26192 — Scientific Methodology & Dual-Hazard AI Architecture</span>
+            <span>🔬 VIGIL-FLOOD — Scientific Methodology & Dual-Hazard AI Architecture</span>
             <span className="modal-tag">MHA / NDRF</span>
           </div>
           <button className="modal-close-btn" onClick={() => setMethodologyOpen(false)}>&times;</button>
