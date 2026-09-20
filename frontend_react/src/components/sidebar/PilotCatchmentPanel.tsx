@@ -51,7 +51,14 @@ export const PilotCatchmentPanel: React.FC = () => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <div className="village-rank-badge">#{idx + 1}</div>
                   <div className="village-info">
-                    <h4>{v.name}</h4>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <h4>{v.name}</h4>
+                      {isSelected && (
+                        <span className="active-village-pill">
+                          ● ACTIVE
+                        </span>
+                      )}
+                    </div>
                     <div className="village-meta">Elev: {v.elevation_m}m | Slope: {v.slope_deg}°</div>
                     <div className="village-shelter-preview">
                       <span>⏳ {v.lead_time_display || '10-30 min'}</span>

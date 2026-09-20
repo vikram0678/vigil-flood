@@ -120,8 +120,12 @@ body.light-theme .village-card:hover {
 }
 
 body.light-theme .village-card.selected {
-  background: rgba(2, 132, 199, 0.07);
-  border-color: var(--accent-cyan);
+  background: rgba(2, 132, 199, 0.12) !important;
+  border-color: #0284c7 !important;
+  border-left: 5px solid #0284c7 !important;
+  box-shadow: 0 0 16px rgba(2, 132, 199, 0.25) !important;
+  outline: 2px solid #0284c7 !important;
+  outline-offset: 1px;
 }
 
 body.light-theme .village-rank-badge {
@@ -437,6 +441,17 @@ body.light-theme .theme-toggle-btn:hover {
   gap: 16px;
   padding: 16px;
   height: calc(100vh - 72px);
+  width: 100%;
+  max-width: 100vw;
+  box-sizing: border-box;
+}
+
+.mobile-tab-bar {
+  display: none;
+}
+
+.col-wrapper {
+  display: contents;
 }
 
 @media (max-width: 1400px) {
@@ -445,12 +460,82 @@ body.light-theme .theme-toggle-btn:hover {
   }
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 1024px) {
   .dashboard-container {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     height: auto;
-    overflow-y: auto;
+    overflow-y: visible;
+    padding: 12px;
+    gap: 12px;
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
   }
+
+  .mobile-tab-bar {
+    display: flex;
+    width: 100%;
+    gap: 6px;
+    background: rgba(15, 23, 42, 0.96);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 5px;
+    position: sticky;
+    top: 60px;
+    z-index: 850;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    box-sizing: border-box;
+  }
+
+  .mobile-tab-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 8px;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .mobile-tab-btn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .mobile-tab-btn.active {
+    background: linear-gradient(135deg, #0284c7, #2563eb);
+    color: #ffffff;
+    box-shadow: 0 2px 10px rgba(56, 189, 248, 0.35);
+  }
+
+  .col-wrapper {
+    display: none;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .col-wrapper.mobile-visible {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 12px;
+    animation: fadeInTab 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+@keyframes fadeInTab {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Panel Containers */
@@ -555,14 +640,54 @@ body.light-theme .theme-toggle-btn:hover {
 }
 
 .village-card.selected {
-  border-color: var(--accent-cyan);
-  background: rgba(2, 132, 199, 0.18);
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+  border-color: #38bdf8 !important;
+  border-left: 5px solid #38bdf8 !important;
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.35) 0%, rgba(15, 23, 42, 0.95) 100%) !important;
+  box-shadow: 0 0 22px rgba(56, 189, 248, 0.6), inset 0 0 10px rgba(56, 189, 248, 0.25) !important;
+  outline: 2px solid #38bdf8 !important;
+  outline-offset: 1px;
+  animation: none !important;
+  transform: translateY(-1px);
+}
+
+.village-card.selected .village-rank-badge {
+  background: #0284c7 !important;
+  color: #ffffff !important;
+  border-color: #38bdf8 !important;
+  font-weight: 800 !important;
+  box-shadow: 0 0 10px #38bdf8 !important;
+}
+
+.village-card.selected h4 {
+  color: #38bdf8 !important;
+  text-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
+}
+
+.active-village-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(56, 189, 248, 0.25);
+  border: 1px solid #38bdf8;
+  color: #38bdf8;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
+  animation: pulse-active-pill 1.8s infinite;
+}
+
+@keyframes pulse-active-pill {
+  0% { transform: scale(0.96); box-shadow: 0 0 4px rgba(56, 189, 248, 0.3); }
+  50% { transform: scale(1.04); box-shadow: 0 0 10px rgba(56, 189, 248, 0.7); }
+  100% { transform: scale(0.96); box-shadow: 0 0 4px rgba(56, 189, 248, 0.3); }
 }
 
 .village-card.critical-pulse-card {
-  border-color: #ef4444 !important;
-  background: rgba(239, 68, 68, 0.15) !important;
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.15);
   box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
   animation: pulse-card-danger 2s infinite alternate;
 }
@@ -2465,4 +2590,265 @@ input:checked + .gfh-slider:before {
 .gfh-dot.dot-warning { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
 .gfh-dot.dot-nodata { background: #94a3b8; }
 .gfh-dot.dot-normal { background: #10b981; }
+
+/* ==========================================================
+   📱 COMPREHENSIVE MOBILE & TABLET RESPONSIVE SYSTEM
+   ========================================================== */
+
+/* Global Mobile Viewport Guardrails */
+html, body, #root {
+  max-width: 100vw;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+@media (max-width: 768px) {
+  /* 1. Mobile Navbar */
+  .navbar {
+    padding: 8px 12px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
+    position: sticky;
+    top: 0;
+  }
+
+  .brand-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .logo-badge {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+    border-radius: var(--radius-sm);
+  }
+
+  .brand-title {
+    font-size: 1.05rem;
+    line-height: 1.2;
+  }
+
+  .brand-tagline {
+    display: none;
+  }
+
+  .brand-subtitle {
+    display: none;
+  }
+
+  .nav-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .nav-action-btn {
+    padding: 5px 8px;
+    font-size: 0.7rem;
+    gap: 4px;
+  }
+
+  .theme-toggle-btn {
+    padding: 5px 8px;
+    font-size: 0.7rem;
+  }
+
+  .status-pill {
+    padding: 4px 8px;
+    font-size: 0.68rem;
+    gap: 5px;
+  }
+
+  .status-pill .pulse-dot {
+    width: 6px;
+    height: 6px;
+  }
+
+  .role-switcher {
+    padding: 2px;
+  }
+
+  .role-btn {
+    padding: 4px 10px;
+    font-size: 0.7rem;
+  }
+
+  /* 2. Mobile Dashboard Layout */
+  .dashboard-container {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .mobile-tab-bar {
+    top: 96px;
+    padding: 3px;
+    gap: 4px;
+  }
+
+  .mobile-tab-btn {
+    padding: 8px 4px;
+    font-size: 0.75rem;
+    gap: 4px;
+  }
+
+  /* 3. Mobile GIS Map */
+  .map-wrapper {
+    height: 46vh;
+    min-height: 320px;
+    max-height: 480px;
+    border-radius: var(--radius-md);
+  }
+
+  .map-controls-panel {
+    max-width: calc(100% - 20px);
+    width: calc(100% - 20px);
+    right: 10px;
+    top: 10px;
+    max-height: 80%;
+    overflow-y: auto;
+    padding: 10px 12px;
+  }
+
+  .map-slide-toggle-floating {
+    top: 10px;
+    right: 10px;
+    font-size: 0.72rem;
+    padding: 6px 10px;
+  }
+
+  .map-nav-controls {
+    top: 10px;
+    left: 10px;
+  }
+
+  .map-nav-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  /* 4. Mobile What-If Simulation Sandbox */
+  .sandbox-card {
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+  }
+
+  .sandbox-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .sandbox-title {
+    font-size: 0.82rem;
+  }
+
+  .preset-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .preset-btn {
+    text-align: center;
+    padding: 6px 4px;
+    font-size: 0.7rem;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .sandbox-sliders-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  /* 5. Mobile Panels & Telemetry */
+  .panel {
+    border-radius: var(--radius-md);
+  }
+
+  .panel-header {
+    padding: 10px 12px;
+  }
+
+  .panel-body {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .threat-meter-card {
+    padding: 10px 12px;
+  }
+
+  .village-card {
+    padding: 10px 12px;
+  }
+
+  .banner-risk {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .lead-time-box {
+    width: 100%;
+    text-align: left;
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-left: 0;
+    padding-top: 8px;
+  }
+
+  .dual-hazard-card {
+    padding: 10px 12px;
+  }
+
+  .telemetry-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .health-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  /* 6. Modals on Mobile */
+  .modal-backdrop {
+    padding: 8px;
+  }
+
+  .modal-card, .hydrograph-card {
+    width: 100%;
+    max-width: calc(100vw - 16px);
+    max-height: 90vh;
+    padding: 14px;
+    border-radius: var(--radius-md);
+  }
+
+  /* 7. Citizen View on Mobile */
+  .citizen-container {
+    padding: 10px;
+    margin: 8px auto;
+    width: 100%;
+    max-width: 100vw;
+  }
+}
+
 

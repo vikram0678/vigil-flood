@@ -8,12 +8,12 @@ export const Navbar: React.FC = () => {
     <nav className="navbar">
       <div className="brand-wrapper">
         <div className="logo-badge">🌊</div>
-        <div>
+        <div className="brand-text-container">
           <div className="brand-title">
-            VIGIL-FLOOD <span style={{ fontSize: '0.8rem', opacity: 0.8, fontWeight: 500 }}>| Flash Flood Early Warning</span>
+            VIGIL-FLOOD <span className="brand-tagline">| Early Warning</span>
           </div>
           <div className="brand-subtitle">
-            Hyper-Local Flash Flood Early Warning System • Pilot: Beas Basin, Mandi (HP)
+            Hyper-Local Flash Flood Early Warning • Pilot: Beas Basin, Mandi (HP)
           </div>
         </div>
       </div>
@@ -23,8 +23,9 @@ export const Navbar: React.FC = () => {
           id="btn-open-methodology" 
           className="nav-action-btn"
           onClick={() => setMethodologyOpen(true)}
+          title="View Scientific Methodology"
         >
-          <span>ℹ️</span> Scientific Methodology
+          <span>ℹ️</span> <span className="btn-text">Methodology</span>
         </button>
 
         {/* Theme Mode Toggle (Dark / Light) */}
@@ -41,7 +42,7 @@ export const Navbar: React.FC = () => {
 
         <div className="status-pill">
           <span className="pulse-dot"></span>
-          <span>LIVE SENSOR TELEMETRY</span>
+          <span className="status-text">LIVE TELEMETRY</span>
         </div>
 
         <div className="role-switcher">
@@ -49,13 +50,13 @@ export const Navbar: React.FC = () => {
             className={`role-btn ${role === 'authority' ? 'active' : ''}`}
             onClick={() => setRole('authority')}
           >
-            Disaster Authority
+            Authority
           </button>
           <button 
             className={`role-btn ${role === 'citizen' ? 'active' : ''}`}
             onClick={() => setRole('citizen')}
           >
-            Citizen View
+            Citizen
           </button>
         </div>
       </div>

@@ -1,0 +1,89 @@
+name: VIGIL-FLOOD CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # 1. FRONTEND CI: TypeScript Type-check & Production Build
+  frontend-ci:
+    name: 🎨 Frontend (React + TSX Build)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend_react/package-lock.json
+
+      - name: 📦 Install Frontend Dependencies
+        working-directory: ./frontend_react
+        run: npm ci || npm install
+
+      - name: 🏗️ Verify TypeScript & Vite Build
+        working-directory: ./frontend_react
+        run: npm run build
+
+      - name: 📤 Upload Compiled Dist Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend_react/dist/
+          retention-days: 2
+
+  # 2. BACKEND CI: Python ML Models & Core Engine Verification
+  backend-ci:
+    name: 🧠 Backend (FastAPI + AI/ML Test Suite)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: 'pip'
+
+      - name: 📦 Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 🧪 Run Automated Core Unit & Pipeline Tests
+        run: |
+          python -m unittest backend/tests/test_pipeline.py
+
+  # 3. CONTINUOUS DEPLOYMENT (CD): Auto-Deploy to Production Cloud
+  deploy-cd:
+    name: 🚀 Deploy to Production Cloud (Render)
+    needs: [frontend-ci, backend-ci]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🌐 Trigger Cloud Deployment (Render Webhook)
+        env:
+          DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -n "$DEPLOY_HOOK" ]; then
+            echo "🚀 Triggering Render Automated Production Deployment..."
+            curl -s -f -X POST "$DEPLOY_HOOK"
+            echo "✅ Render deployment webhook successfully dispatched!"
+          else
+            echo "ℹ️ Note: 'RENDER_DEPLOY_HOOK' secret is not set yet in GitHub Repository Secrets."
+            echo "👉 If you connect Render directly to GitHub, Render auto-deploys every push automatically!"
+          fi

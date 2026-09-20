@@ -51,7 +51,17 @@ class ErrorBoundary extends React.Component<
 
 const DashboardContent: React.FC = () => {
   useWebSocket();
-  const { role } = useFlood();
+  const { role, villages, selectedVillageId } = useFlood();
+  const [mobileTab, setMobileTab] = React.useState<'map' | 'villages' | 'telemetry'>('map');
+
+  // Auto-switch to map on mobile when a village is selected
+  const prevVillageRef = React.useRef(selectedVillageId);
+  React.useEffect(() => {
+    if (prevVillageRef.current !== selectedVillageId && typeof window !== 'undefined' && window.innerWidth <= 1024) {
+      prevVillageRef.current = selectedVillageId;
+      setMobileTab('map');
+    }
+  }, [selectedVillageId]);
 
   return (
     <>
@@ -60,17 +70,43 @@ const DashboardContent: React.FC = () => {
       {/* Authority Command Center View */}
       {role === 'authority' && (
         <main className="dashboard-container">
+          {/* Mobile Navigation Tabs (Shown on screens <= 1024px) */}
+          <div className="mobile-tab-bar">
+            <button 
+              className={`mobile-tab-btn ${mobileTab === 'map' ? 'active' : ''}`}
+              onClick={() => setMobileTab('map')}
+            >
+              🗺️ <span>Live Map & Sim</span>
+            </button>
+            <button 
+              className={`mobile-tab-btn ${mobileTab === 'villages' ? 'active' : ''}`}
+              onClick={() => setMobileTab('villages')}
+            >
+              📍 <span>Villages ({villages.length})</span>
+            </button>
+            <button 
+              className={`mobile-tab-btn ${mobileTab === 'telemetry' ? 'active' : ''}`}
+              onClick={() => setMobileTab('telemetry')}
+            >
+              🛡️ <span>AI Telemetry</span>
+            </button>
+          </div>
+
           {/* Left Column: Monitored Catchments */}
-          <PilotCatchmentPanel />
+          <div className={`col-wrapper col-villages ${mobileTab === 'villages' ? 'mobile-visible' : ''}`}>
+            <PilotCatchmentPanel />
+          </div>
 
           {/* Center Column: GIS Map & What-If Simulation Sandbox */}
-          <section className="center-panel">
+          <section className={`center-panel col-wrapper col-map ${mobileTab === 'map' ? 'mobile-visible' : ''}`}>
             <MapContainer />
             <WhatIfSandbox />
           </section>
 
           {/* Right Column: Deep-Dive AI Telemetry, XAI, & Action Directives */}
-          <DeepDiveAnalysis />
+          <div className={`col-wrapper col-telemetry ${mobileTab === 'telemetry' ? 'mobile-visible' : ''}`}>
+            <DeepDiveAnalysis />
+          </div>
         </main>
       )}
 
