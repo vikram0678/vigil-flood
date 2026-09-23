@@ -282,6 +282,7 @@ export const AapdaMitraBot: React.FC = () => {
           </div>
           <button 
             className="aapda-mitra-circle-launcher"
+            id="tour-aapda-btn"
             onClick={() => setIsOpen(true)}
             title="Open Aapda Mitra AI Disaster Decision Assistant"
             aria-label="Open Aapda Mitra AI"
