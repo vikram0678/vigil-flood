@@ -66,6 +66,22 @@ export const AapdaMitraBot: React.FC = () => {
     }
   }, [messages, isOpen]);
 
+  // Listen for programmatic tour / quick demo triggers
+  useEffect(() => {
+    const handleTourQuery = (e: any) => {
+      const q = e?.detail?.query;
+      setIsOpen(true);
+      if (q) {
+        setTimeout(() => {
+          handleSendMessage(q);
+        }, 300);
+      }
+    };
+
+    window.addEventListener('aapda-open-query', handleTourQuery);
+    return () => window.removeEventListener('aapda-open-query', handleTourQuery);
+  }, []);
+
   // Build the complete dashboard state snapshot to send to the backend
   const buildDashboardSnapshot = () => {
     return {

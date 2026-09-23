@@ -42,6 +42,14 @@ interface FloodContextType {
     activePreset: string;
   };
 
+  isTourOpen: boolean;
+  tourStep: number;
+  startTour: () => void;
+  closeTour: () => void;
+  nextTourStep: () => void;
+  prevTourStep: () => void;
+  setTourStep: (step: number) => void;
+
   // Actions
   setRole: (role: RoleMode) => void;
   toggleTheme: () => void;
@@ -74,6 +82,27 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [isHydrographOpen, setHydrographOpenState] = useState<boolean>(false);
   const [hydrographVillageId, setHydrographVillageId] = useState<string | null>(null);
   const [isDroneFlying, setIsDroneFlying] = useState<boolean>(false);
+  const [isTourOpen, setIsTourOpen] = useState<boolean>(false);
+  const [tourStep, setTourStep] = useState<number>(0);
+
+  const startTour = useCallback(() => {
+    setRole('authority');
+    setTourStep(0);
+    setIsTourOpen(true);
+  }, []);
+
+  const closeTour = useCallback(() => {
+    setIsTourOpen(false);
+    setTourStep(0);
+  }, []);
+
+  const nextTourStep = useCallback(() => {
+    setTourStep(prev => prev + 1);
+  }, []);
+
+  const prevTourStep = useCallback(() => {
+    setTourStep(prev => Math.max(0, prev - 1));
+  }, []);
   const [theme, setTheme] = useState<ThemeMode>(() => {
     const saved = localStorage.getItem('vigil_theme') as ThemeMode;
     return saved === 'light' ? 'light' : 'dark';
@@ -238,6 +267,13 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     isHydrographOpen,
     hydrographVillageId,
     isDroneFlying,
+    isTourOpen,
+    tourStep,
+    startTour,
+    closeTour,
+    nextTourStep,
+    prevTourStep,
+    setTourStep,
     theme,
     layers,
     simulation,
@@ -268,6 +304,12 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     isHydrographOpen,
     hydrographVillageId,
     isDroneFlying,
+    isTourOpen,
+    tourStep,
+    startTour,
+    closeTour,
+    nextTourStep,
+    prevTourStep,
     theme,
     layers,
     simulation,
