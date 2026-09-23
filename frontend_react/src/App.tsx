@@ -9,6 +9,7 @@ import { DeepDiveAnalysis } from './components/analysis/DeepDiveAnalysis';
 import { HydrographModal } from './components/modals/HydrographModal';
 import { MethodologyModal } from './components/modals/MethodologyModal';
 import { CitizenView } from './components/citizen/CitizenView';
+import { AapdaMitraBot } from './components/aapda_mitra/AapdaMitraBot';
 
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
@@ -118,6 +119,9 @@ const DashboardContent: React.FC = () => {
       {/* Modals */}
       <HydrographModal />
       <MethodologyModal />
+
+      {/* Aapda Mitra AI Disaster Decision Assistant */}
+      <AapdaMitraBot />
     </>
   );
 };

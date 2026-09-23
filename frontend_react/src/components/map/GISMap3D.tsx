@@ -63,7 +63,7 @@ export const GISMap3D: React.FC = () => {
     const map3d = new maplibregl.Map({
       container: mapContainerRef.current,
       maxZoom: 18.5,
-      minZoom: 2,
+      minZoom: 6, // 1000 km absolute maximum zoom-out limit (mouse wheel & gestures)
       maxPitch: 65,
       maxTileCacheSize: 250,
       style: {
@@ -109,6 +109,14 @@ export const GISMap3D: React.FC = () => {
     markers3DRef.current = [];
     rendered3DCountRef.current = 0;
     lastFlown3DVillageIdRef.current = null;
+
+    // Add unified distance scale controls (metric & imperial)
+    try {
+      const scaleCtrl = new maplibregl.ScaleControl({ maxWidth: 100, unit: 'metric' });
+      map3d.addControl(scaleCtrl, 'bottom-left');
+    } catch (e) {
+      console.warn("ScaleControl metric add error:", e);
+    }
 
     // ResizeObserver for 3D Map
     let resizeObserver3d: ResizeObserver | null = null;

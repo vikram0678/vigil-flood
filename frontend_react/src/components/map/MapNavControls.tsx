@@ -35,17 +35,50 @@ export const MapNavControls: React.FC = () => {
     }
   };
 
+  // Normal minus button: Max zoom-out limit capped at ~100km district basin level (zoom level 8)
   const handleZoomOut = () => {
     if (viewMode === '2d') {
       const map2d = (window as any).leafletMap;
-      if (map2d) map2d.zoomOut();
+      if (map2d) {
+        const currentZoom = map2d.getZoom();
+        if (currentZoom > 8) {
+          map2d.setZoom(Math.max(8, currentZoom - 1));
+        }
+      }
     } else {
       const map3d = (window as any).map3dInstance;
-      if (map3d) map3d.zoomOut({ duration: 300 });
+      if (map3d) {
+        const currentZoom = map3d.getZoom();
+        if (currentZoom > 8) {
+          map3d.easeTo({ zoom: Math.max(8, currentZoom - 1), duration: 300 });
+        }
+      }
     }
   };
 
-  // Single Click: Reset to True North (0°) and standard horizon pitch
+  // Single-click direct zoom out to Full Map (~1000 km Regional Overview)
+  const handleFullMap1000km = () => {
+    if (viewMode === '2d') {
+      const map2d = (window as any).leafletMap;
+      if (map2d) {
+        map2d.flyTo([31.8, 77.2], 6, { duration: 1.2 });
+      }
+    } else {
+      const map3d = (window as any).map3dInstance;
+      if (map3d) {
+        map3d.flyTo({
+          center: [77.2, 31.8],
+          zoom: 6,
+          pitch: 30,
+          bearing: 0,
+          duration: 1200
+        });
+        setBearing(0);
+      }
+    }
+  };
+
+  // Single Click: Reset to True North (0°) and standard horizon pitch / Village Center
   const handleCompassClick = () => {
     if (hasMovedRef.current) {
       hasMovedRef.current = false;
@@ -132,14 +165,14 @@ export const MapNavControls: React.FC = () => {
 
   return (
     <div className="map-nav-controls" role="group" aria-label="Map Navigation Controls">
-      {/* 🧭 Interactive Compass Button with Drag-to-Rotate & Double-Click 90° Spin */}
+      {/* 🧭 Interactive Compass Button */}
       <button 
         ref={compassRef}
         className="map-nav-btn compass-btn" 
         onClick={handleCompassClick}
         onDoubleClick={handleCompassDoubleClick}
         onMouseDown={handleMouseDown}
-        title={viewMode === '3d' ? "Click: Reset North | Double Click: Rotate 90° | Drag: Rotate 360°" : "Reset Center to Village"}
+        title={viewMode === '3d' ? "Click: Reset North | Double Click: Rotate 90° | Drag: Rotate 360°" : "Reset Focus to Village Center"}
         aria-label="Compass Navigation"
       >
         <div 
@@ -158,7 +191,7 @@ export const MapNavControls: React.FC = () => {
       <button 
         className="map-nav-btn" 
         onClick={handleZoomIn}
-        title="Zoom In"
+        title="Zoom In (+)"
         aria-label="Zoom In"
       >
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -167,15 +200,31 @@ export const MapNavControls: React.FC = () => {
         </svg>
       </button>
 
-      {/* ➖ Zoom Out Button */}
+      {/* ➖ Zoom Out Button (Capped at 50 km Limit) */}
       <button 
         className="map-nav-btn" 
         onClick={handleZoomOut}
-        title="Zoom Out"
+        title="Zoom Out (Max 100 km limit)"
         aria-label="Zoom Out"
       >
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+      </button>
+
+      <div className="map-nav-divider" />
+
+      {/* 🌍 1000 km Full Regional Map Button */}
+      <button 
+        className="map-nav-btn full-map-btn" 
+        onClick={handleFullMap1000km}
+        title="Full Map (Direct zoom-out to 1000 km regional overview)"
+        aria-label="Full Map 1000km View"
+      >
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="2" y1="12" x2="22" y2="12"></line>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
         </svg>
       </button>
     </div>

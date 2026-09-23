@@ -1,0 +1,521 @@
+/* Aapda Mitra AI Floating Disaster Decision Assistant Styles */
+
+/* Floating Circular Launcher & Attention Wrapper */
+.aapda-launcher-wrapper {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9990;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: aapda-float 3.5s ease-in-out infinite;
+}
+
+@keyframes aapda-float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.aapda-launcher-tooltip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  background: rgba(10, 15, 29, 0.95);
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  padding: 6px 12px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55), 0 0 12px rgba(56, 189, 248, 0.3);
+  backdrop-filter: blur(10px);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(10px);
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.aapda-launcher-wrapper:hover .aapda-launcher-tooltip {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.aapda-tooltip-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.3px;
+}
+
+.aapda-tooltip-sub {
+  font-size: 9.5px;
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+/* Circular Floating Bot Button */
+.aapda-mitra-circle-launcher {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #0284c7 0%, #0369a1 45%, #081225 100%);
+  border: 2px solid #38bdf8;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(2, 132, 199, 0.45), 0 0 16px rgba(56, 189, 248, 0.3);
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.aapda-mitra-circle-launcher:hover {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 12px 32px rgba(2, 132, 199, 0.65), 0 0 24px rgba(56, 189, 248, 0.6);
+  border-color: #7dd3fc;
+}
+
+.aapda-circle-icon {
+  font-size: 27px;
+  line-height: 1;
+  user-select: none;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+  transition: transform 0.25s ease;
+}
+
+.aapda-mitra-circle-launcher:hover .aapda-circle-icon {
+  transform: scale(1.15);
+}
+
+/* Pulsing Radar Waves around circle */
+.aapda-radar-wave {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(56, 189, 248, 0.65);
+  animation: radar-pulse 2.8s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
+.aapda-radar-wave.wave-2 {
+  animation-delay: 1.2s;
+}
+
+@keyframes radar-pulse {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.55);
+    opacity: 0;
+  }
+}
+
+.aapda-launcher-dot {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #10b981;
+  border: 2px solid #090d16;
+  box-shadow: 0 0 8px #10b981;
+  animation: pulse-dot 2s infinite;
+  z-index: 2;
+}
+
+@keyframes pulse-dot {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.8; }
+}
+
+/* Language Filter Segmented Bar */
+.aapda-language-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: rgba(15, 23, 42, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.aapda-lang-label {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.aapda-lang-pills {
+  display: flex;
+  gap: 5px;
+}
+
+.aapda-lang-pill {
+  padding: 3px 9px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(30, 41, 59, 0.6);
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: inherit;
+}
+
+.aapda-lang-pill:hover {
+  background: rgba(51, 65, 85, 0.8);
+  color: #f1f5f9;
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.aapda-lang-pill.active {
+  background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+  color: #ffffff;
+  border-color: #38bdf8;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.45);
+}
+
+/* Chat Container Window */
+.aapda-mitra-window {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 390px;
+  max-width: calc(100vw - 32px);
+  height: 560px;
+  max-height: calc(100vh - 48px);
+  z-index: 9995;
+  background: rgba(10, 15, 29, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1.5px solid rgba(56, 189, 248, 0.3);
+  border-radius: 18px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(2, 132, 199, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: inherit;
+  animation: slide-up 0.25s ease-out;
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Header */
+.aapda-chat-header {
+  padding: 14px 16px;
+  background: linear-gradient(90deg, #0f172a 0%, #1e293b 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.aapda-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.aapda-avatar-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(2, 132, 199, 0.2);
+  border: 1px solid #0284c7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.aapda-header-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f8fafc;
+  line-height: 1.2;
+}
+
+.aapda-header-sub {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.aapda-header-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.aapda-btn-icon {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.aapda-btn-icon:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+}
+
+/* Synced State Pill Banner */
+.aapda-synced-banner {
+  background: rgba(2, 132, 199, 0.12);
+  border-bottom: 1px solid rgba(2, 132, 199, 0.2);
+  padding: 6px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+}
+
+.aapda-synced-left {
+  color: #38bdf8;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.aapda-synced-right {
+  color: #cbd5e1;
+  font-weight: 500;
+}
+
+/* Clean Right-Aligned Suggestion Pills (Image 1 Style) */
+.aapda-suggestions-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 7px;
+  margin-top: 6px;
+  margin-bottom: 4px;
+  animation: aapda-fade-in 0.25s ease-out;
+}
+
+@keyframes aapda-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.aapda-suggestion-pill {
+  background: #0284c7;
+  color: #ffffff;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  border-radius: 18px;
+  border-bottom-right-radius: 4px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: inherit;
+  text-align: right;
+  max-width: 90%;
+  word-break: break-word;
+}
+
+.aapda-suggestion-pill:hover {
+  background: #0369a1;
+  border-color: #38bdf8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.5), 0 0 8px rgba(56, 189, 248, 0.4);
+}
+
+.aapda-suggestion-pill:active {
+  transform: scale(0.97);
+}
+
+/* Messages Body */
+.aapda-messages-area {
+  flex: 1;
+  padding: 14px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scroll-behavior: smooth;
+}
+
+.aapda-msg {
+  display: flex;
+  flex-direction: column;
+  max-width: 88%;
+  font-size: 12.5px;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.aapda-msg.user {
+  align-self: flex-end;
+}
+
+.aapda-msg.assistant {
+  align-self: flex-start;
+}
+
+.aapda-msg-bubble {
+  padding: 10px 14px;
+  border-radius: 14px;
+}
+
+.aapda-msg.user .aapda-msg-bubble {
+  background: #0284c7;
+  color: #ffffff;
+  border-bottom-right-radius: 4px;
+}
+
+.aapda-msg.assistant .aapda-msg-bubble {
+  background: rgba(30, 41, 59, 0.85);
+  color: #f1f5f9;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom-left-radius: 4px;
+}
+
+.aapda-msg-time {
+  font-size: 9.5px;
+  color: #64748b;
+  margin-top: 3px;
+  padding: 0 4px;
+}
+
+.aapda-msg.user .aapda-msg-time {
+  text-align: right;
+}
+
+.aapda-msg-bubble p {
+  margin: 0 0 6px 0;
+}
+
+.aapda-msg-bubble p:last-child {
+  margin-bottom: 0;
+}
+
+.aapda-msg-bubble ul {
+  margin: 4px 0 6px 16px;
+  padding: 0;
+}
+
+.aapda-msg-bubble li {
+  margin-bottom: 3px;
+}
+
+.aapda-msg-bubble strong {
+  color: #38bdf8;
+}
+
+/* Input Area */
+.aapda-input-form {
+  padding: 10px 14px;
+  background: #0f172a;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.aapda-input-field {
+  flex: 1;
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f8fafc;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.aapda-input-field:focus {
+  border-color: #0284c7;
+}
+
+.aapda-input-field::placeholder {
+  color: #64748b;
+}
+
+.aapda-btn-send {
+  background: #0284c7;
+  color: #ffffff;
+  border: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.aapda-btn-send:hover:not(:disabled) {
+  background: #0369a1;
+}
+
+.aapda-btn-send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Typing Indicator */
+.aapda-typing {
+  display: flex;
+  gap: 4px;
+  padding: 10px 14px;
+  background: rgba(30, 41, 59, 0.85);
+  border-radius: 14px;
+  width: fit-content;
+}
+
+.aapda-typing-dot {
+  width: 6px;
+  height: 6px;
+  background: #38bdf8;
+  border-radius: 50%;
+  animation: typing-bounce 1.4s infinite ease-in-out;
+}
+
+.aapda-typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.aapda-typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing-bounce {
+  0%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-5px); }
+}
+
+@media (max-width: 768px) {
+  .aapda-mitra-launcher {
+    bottom: 74px;
+    right: 16px;
+    padding: 8px 14px;
+    font-size: 12.5px;
+  }
+  .aapda-mitra-window {
+    bottom: 74px;
+    right: 12px;
+    width: calc(100vw - 24px);
+    height: 480px;
+  }
+}

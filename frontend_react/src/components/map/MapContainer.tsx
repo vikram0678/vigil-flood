@@ -20,12 +20,8 @@ export const MapContainer: React.FC = () => {
     toggleDroneFlying
   } = useFlood();
 
-  const [isControlsOpen, setIsControlsOpen] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      return window.innerWidth > 768;
-    }
-    return true;
-  });
+  // Default map filter drawer to closed as requested
+  const [isControlsOpen, setIsControlsOpen] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<'layers' | 'floodhub'>('layers');
   const [floodHubSubTab, setFloodHubSubTab] = useState<'flood' | 'coverage'>('flood');
   const [showNormal, setShowNormal] = useState<boolean>(true);

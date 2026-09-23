@@ -19,6 +19,7 @@ from fastapi.responses import FileResponse
 from backend.app.config import APP_NAME, APP_VERSION
 from backend.app.api.routes import router as api_router
 from backend.app.api.websocket import ws_router
+from backend.app.aapda_mitra.router import router as aapda_mitra_router
 from backend.app.core.ml_engine import ml_engine
 
 app = FastAPI(
@@ -39,6 +40,7 @@ app.add_middleware(
 # Include Routers
 app.include_router(api_router)
 app.include_router(ws_router)
+app.include_router(aapda_mitra_router)
 
 # Intelligent Dual-Engine Frontend Serving (React TSX Build with Seamless Vanilla Fallback)
 FRONTEND_REACT_DIST = PROJECT_ROOT / "frontend_react" / "dist"

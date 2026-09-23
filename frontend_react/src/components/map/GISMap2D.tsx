@@ -105,7 +105,9 @@ export const GISMap2D: React.FC = () => {
     const mandiCoords: [number, number] = [31.74, 77.10];
     const map = L.map(mapContainerRef.current, {
       zoomControl: false,
-      attributionControl: false
+      attributionControl: false,
+      minZoom: 6, // 1000 km absolute maximum zoom-out limit (mouse wheel & gestures)
+      maxZoom: 18
     }).setView(mandiCoords, 11);
 
     mapInstanceRef.current = map;
@@ -127,7 +129,7 @@ export const GISMap2D: React.FC = () => {
     const initialCfg = BASEMAP_2D_TILES[basemap2D] || BASEMAP_2D_TILES.google_floodhub;
     baseLayerRef.current = L.tileLayer(initialCfg.url, initialCfg.options).addTo(map);
 
-    L.control.scale({ position: 'bottomleft' }).addTo(map);
+    L.control.scale({ position: 'bottomleft', metric: true, imperial: true, maxWidth: 100 }).addTo(map);
 
     // Continuous container resize observer to prevent blank/grey map on layout shifts
     let resizeObserver: ResizeObserver | null = null;
@@ -422,8 +424,8 @@ export const GISMap2D: React.FC = () => {
         icon: L.divIcon({
           className: "flow-badge-wrapper",
           html: `<div class="flow-direction-2d-badge"><span>🌊 FLOOD FLOW: DOWNHILL GORGE</span><span class="flow-arrow-icon">➤➤➤</span></div>`,
-          iconSize: [210, 30],
-          iconAnchor: [105, 15]
+          iconSize: [280, 34],
+          iconAnchor: [140, 17]
         }),
         zIndexOffset: 1000
       });
