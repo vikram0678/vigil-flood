@@ -17,7 +17,7 @@ interface TourStep {
 const TOUR_STEPS: TourStep[] = [
   {
     id: 'step-villages',
-    targetSelector: '.col-villages',
+    targetSelector: '#tour-villages-panel, .pilot-catchment-panel',
     title: '📍 Monitored Villages & Catchments',
     subtitle: 'Active Village Risk & Ward Status',
     content: 'Select high-risk Himalayan pilot villages (Pandoh, Aut, Larji). Instantly inspect real-time flood hazard percentages, alert badges, and actionable evacuation lead times.',
@@ -26,16 +26,16 @@ const TOUR_STEPS: TourStep[] = [
   },
   {
     id: 'step-map',
-    targetSelector: '.map-wrapper',
+    targetSelector: '#tour-gis-map, .map-wrapper',
     title: '🗺️ 2D & 3D Tactical GIS Map',
     subtitle: 'Satellite Inundation & Terrain Contours',
     content: 'Explore live flood inundation contours, 3D mountain elevation terrain mesh, downstream river flow vectors, and blocked road alerts.',
     tip: '💡 Tip: Use the compass to reset North, the 1000 km globe button for regional overview, or slide open Map Controls for layers.',
-    preferredPosition: 'bottom'
+    preferredPosition: 'right'
   },
   {
     id: 'step-sandbox',
-    targetSelector: '.what-if-sandbox',
+    targetSelector: '#tour-sandbox-card, .sandbox-card',
     title: '⚡ What-If Simulation Sandbox',
     subtitle: 'Crisis Scenario Testing & Hazard Sliders',
     content: 'Simulate extreme weather events (Cloudburst, Heavy Monsoon, Baseline) or interactively adjust rainfall, soil moisture, and river water stage sliders to evaluate flash flood impacts.',
@@ -44,7 +44,7 @@ const TOUR_STEPS: TourStep[] = [
   },
   {
     id: 'step-telemetry',
-    targetSelector: '.col-telemetry',
+    targetSelector: '#tour-telemetry-panel, .deep-dive-panel',
     title: '📡 Real-Time IoT Telemetry & Health',
     subtitle: 'Multi-Sensor Streams & Hardware Watchdog',
     content: 'Live sensor streams from river water stage gauges, rain gauges, and soil moisture probes. If a physical sensor disconnects, the system automatically engages the fallback hydrological physics model with zero downtime.',
@@ -53,7 +53,7 @@ const TOUR_STEPS: TourStep[] = [
   },
   {
     id: 'step-xai-shelter',
-    targetSelector: '.deep-dive-panel',
+    targetSelector: '#tour-telemetry-panel, .deep-dive-panel',
     title: '🧠 TreeSHAP Risk Drivers & Action Plan',
     subtitle: 'Explainable AI & High-Ground Shelters',
     content: 'Transparent AI explainability reveals which environmental factors (steep slopes, saturated soil) are driving flood danger, alongside designated high-ground shelters and dry evacuation routes.',
@@ -62,7 +62,7 @@ const TOUR_STEPS: TourStep[] = [
   },
   {
     id: 'step-aapda-mitra',
-    targetSelector: '.aapda-launcher-wrapper',
+    targetSelector: '#tour-aapda-launcher, .aapda-launcher-wrapper, .aapda-mitra-circle-launcher',
     title: '🛡️ Aapda Mitra AI Decision Assistant',
     subtitle: '24/7 Multi-Language Disaster Copilot',
     content: 'Your tactical disaster decision assistant. Ask for instant situation reports (SITREPs), nearest shelters, or run emergency drills in English, हिंदी, or Hinglish.',
@@ -92,13 +92,11 @@ export const ProductTourModal: React.FC = () => {
     const current = TOUR_STEPS[tourStep];
     if (!current) return;
 
-    let el = document.querySelector(current.targetSelector);
-    if (!el && current.targetSelector === '.col-villages') {
-      el = document.querySelector('.pilot-catchment-panel');
-    } else if (!el && current.targetSelector === '.what-if-sandbox') {
-      el = document.querySelector('.sandbox-container') || document.querySelector('.simulation-sandbox');
-    } else if (!el && current.targetSelector === '.aapda-launcher-wrapper') {
-      el = document.querySelector('.aapda-mitra-circle-launcher') || document.querySelector('.aapda-launcher-wrapper');
+    let el: Element | null = null;
+    const selectors = current.targetSelector.split(',').map(s => s.trim());
+    for (const sel of selectors) {
+      el = document.querySelector(sel);
+      if (el) break;
     }
 
     if (el) {
@@ -109,7 +107,6 @@ export const ProductTourModal: React.FC = () => {
         // Safe fallback
       }
 
-      // Allow a short tick for smooth scroll positioning to settle before measuring rect
       const rect = el.getBoundingClientRect();
       setTargetRect(rect);
     } else {
@@ -124,10 +121,16 @@ export const ProductTourModal: React.FC = () => {
 
   useEffect(() => {
     updateTargetRect();
+    // Re-check after 80ms animation/scroll settlement
+    const timer = setTimeout(() => {
+      updateTargetRect();
+    }, 80);
+
     const handleResize = () => updateTargetRect();
     window.addEventListener('resize', handleResize);
     window.addEventListener('scroll', handleResize, true);
     return () => {
+      clearTimeout(timer);
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('scroll', handleResize, true);
     };
@@ -155,18 +158,17 @@ export const ProductTourModal: React.FC = () => {
 
   // Calculate card position & directional arrow
   const calculatePositionAndArrow = () => {
-    if (!targetRect) {
+    if (!targetRect || targetRect.width === 0 || targetRect.height === 0) {
       return {
         cardStyle: { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' },
-        arrowDirection: 'none' as const,
-        arrowStyle: {}
+        arrowDirection: 'none' as const
       };
     }
 
     const { width: winW, height: winH } = windowSize;
     const cardW = Math.min(410, winW - 32);
     const cardH = 290;
-    const margin = 18;
+    const margin = 20;
 
     let top = targetRect.top;
     let left = targetRect.left;
@@ -174,36 +176,40 @@ export const ProductTourModal: React.FC = () => {
 
     const pref = currentStepData.preferredPosition;
 
-    if (pref === 'right' && targetRect.right + cardW + margin < winW) {
+    if (pref === 'right' && targetRect.right + cardW + margin <= winW) {
       arrowDir = 'left';
       left = targetRect.right + margin;
-      top = Math.max(16, Math.min(winH - cardH - 16, targetRect.top + (targetRect.height - cardH) / 2));
-    } else if (pref === 'left' && targetRect.left - cardW - margin > 0) {
+      top = Math.max(20, Math.min(winH - cardH - 20, targetRect.top + Math.min(60, (targetRect.height - cardH) / 2)));
+    } else if (pref === 'left' && targetRect.left - cardW - margin >= 0) {
       arrowDir = 'right';
       left = targetRect.left - cardW - margin;
-      top = Math.max(16, Math.min(winH - cardH - 16, targetRect.top + (targetRect.height - cardH) / 2));
-    } else if (pref === 'top' && targetRect.top - cardH - margin > 0) {
+      top = Math.max(20, Math.min(winH - cardH - 20, targetRect.top + (tourStep === 4 ? 120 : 30)));
+    } else if (pref === 'top' && targetRect.top - cardH - margin >= 0) {
       arrowDir = 'bottom';
       top = targetRect.top - cardH - margin;
-      left = Math.max(16, Math.min(winW - cardW - 16, targetRect.left + (targetRect.width - cardW) / 2));
-    } else if (pref === 'bottom' && targetRect.bottom + cardH + margin < winH) {
+      left = Math.max(20, Math.min(winW - cardW - 20, targetRect.left + (targetRect.width - cardW) / 2));
+    } else if (pref === 'bottom' && targetRect.bottom + cardH + margin <= winH) {
       arrowDir = 'top';
       top = targetRect.bottom + margin;
-      left = Math.max(16, Math.min(winW - cardW - 16, targetRect.left + (targetRect.width - cardW) / 2));
+      left = Math.max(20, Math.min(winW - cardW - 20, targetRect.left + (targetRect.width - cardW) / 2));
     } else {
-      // Automatic best fit
-      if (targetRect.right + cardW + margin < winW) {
-        arrowDir = 'left';
-        left = targetRect.right + margin;
-        top = Math.max(16, Math.min(winH - cardH - 16, targetRect.top));
-      } else if (targetRect.left - cardW - margin > 0) {
+      // Automatic best fit fallback
+      if (targetRect.left - cardW - margin >= 0) {
         arrowDir = 'right';
         left = targetRect.left - cardW - margin;
-        top = Math.max(16, Math.min(winH - cardH - 16, targetRect.top));
+        top = Math.max(20, Math.min(winH - cardH - 20, targetRect.top + 30));
+      } else if (targetRect.right + cardW + margin <= winW) {
+        arrowDir = 'left';
+        left = targetRect.right + margin;
+        top = Math.max(20, Math.min(winH - cardH - 20, targetRect.top + 30));
+      } else if (targetRect.top - cardH - margin >= 0) {
+        arrowDir = 'bottom';
+        top = targetRect.top - cardH - margin;
+        left = Math.max(20, Math.min(winW - cardW - 20, targetRect.left + (targetRect.width - cardW) / 2));
       } else {
         arrowDir = 'none';
-        top = Math.max(16, (winH - cardH) / 2);
-        left = Math.max(16, (winW - cardW) / 2);
+        top = Math.max(20, (winH - cardH) / 2);
+        left = Math.max(20, (winW - cardW) / 2);
       }
     }
 

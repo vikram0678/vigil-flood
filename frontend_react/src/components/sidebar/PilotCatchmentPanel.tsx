@@ -10,7 +10,7 @@ export const PilotCatchmentPanel: React.FC = () => {
     : 0;
 
   return (
-    <aside className="panel">
+    <aside className="panel pilot-catchment-panel" id="tour-villages-panel">
       <div className="panel-header">
         <div className="panel-title">📍 Pilot Catchment</div>
         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>

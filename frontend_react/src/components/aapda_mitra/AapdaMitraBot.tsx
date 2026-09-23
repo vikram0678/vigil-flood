@@ -275,7 +275,7 @@ export const AapdaMitraBot: React.FC = () => {
     <>
       {/* Animated Floating Circular Launcher Button */}
       {!isOpen && (
-        <div className="aapda-launcher-wrapper">
+        <div className="aapda-launcher-wrapper" id="tour-aapda-launcher">
           <div className="aapda-launcher-tooltip">
             <span className="aapda-tooltip-title">Ask Aapda Mitra AI 🛡️</span>
             <span className="aapda-tooltip-sub">आपदा मित्र • 24/7 AI Sync</span>

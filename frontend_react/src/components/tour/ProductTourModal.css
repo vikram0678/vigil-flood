@@ -220,7 +220,8 @@
 /* Pointing Top (Card is Below the Target) */
 .tour-arrow-beak.top {
   top: -12px;
-  left: 42px;
+  left: 50%;
+  transform: translateX(-50%);
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
   border-bottom: 12px solid rgba(10, 15, 29, 0.96);
@@ -245,7 +246,8 @@
 /* Pointing Bottom (Card is Above the Target) */
 .tour-arrow-beak.bottom {
   bottom: -12px;
-  left: 42px;
+  left: 50%;
+  transform: translateX(-50%);
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
   border-top: 12px solid rgba(10, 15, 29, 0.96);

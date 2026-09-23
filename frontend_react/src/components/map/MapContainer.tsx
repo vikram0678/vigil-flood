@@ -39,7 +39,7 @@ export const MapContainer: React.FC = () => {
   const isGfhHybridActive = basemap2D === 'google_satellite';
 
   return (
-    <div className="map-wrapper">
+    <div className="map-wrapper" id="tour-gis-map">
       {/* 2D Leaflet Tactical Map & Nullschool particles */}
       <div style={{ width: '100%', height: '100%', display: viewMode === '2d' ? 'block' : 'none', position: 'absolute', top: 0, left: 0 }}>
         <GISMap2D />
