@@ -2,7 +2,7 @@ import React from 'react';
 import { useFlood } from '../../context/FloodContext';
 
 export const Navbar: React.FC = () => {
-  const { role, setRole, setMethodologyOpen, theme, toggleTheme } = useFlood();
+  const { role, setRole, setMethodologyOpen, theme, toggleTheme, startTour } = useFlood();
 
   return (
     <nav className="navbar">
@@ -19,6 +19,17 @@ export const Navbar: React.FC = () => {
       </div>
 
       <div className="nav-actions">
+        {/* ✨ Interactive Guided Product Tour */}
+        <button 
+          id="btn-start-tour" 
+          className="nav-action-btn tour-nav-btn"
+          onClick={startTour}
+          title="Take a 60-Second Guided Tour"
+          aria-label="Start Guided Product Tour"
+        >
+          <span>✨</span> <span className="btn-text">Quick Tour</span>
+        </button>
+
         <button 
           id="btn-open-methodology" 
           className="nav-action-btn"

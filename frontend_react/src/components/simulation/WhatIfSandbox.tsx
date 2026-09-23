@@ -54,7 +54,7 @@ export const WhatIfSandbox: React.FC = () => {
   )?.status === "OFFLINE";
 
   return (
-    <div className="sandbox-card">
+    <div className="sandbox-card" id="tour-sandbox-card">
       <div className="sandbox-header">
         <div className="sandbox-title">⚡ Interactive "What-If" Simulation Sandbox</div>
         <div className="preset-buttons">

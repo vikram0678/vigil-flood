@@ -10,6 +10,7 @@ import { HydrographModal } from './components/modals/HydrographModal';
 import { MethodologyModal } from './components/modals/MethodologyModal';
 import { CitizenView } from './components/citizen/CitizenView';
 import { AapdaMitraBot } from './components/aapda_mitra/AapdaMitraBot';
+import { ProductTourModal } from './components/tour/ProductTourModal';
 
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
@@ -122,6 +123,9 @@ const DashboardContent: React.FC = () => {
 
       {/* Aapda Mitra AI Disaster Decision Assistant */}
       <AapdaMitraBot />
+
+      {/* Interactive Guided Product Tour */}
+      <ProductTourModal />
     </>
   );
 };

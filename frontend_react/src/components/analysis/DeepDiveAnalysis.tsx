@@ -25,7 +25,7 @@ export const DeepDiveAnalysis: React.FC = () => {
   const isWaterSensorOffline = health?.sensors?.find(s => (s.sensor_type || '').toLowerCase().includes("water"))?.status === "OFFLINE";
 
   return (
-    <aside className="panel">
+    <aside className="panel deep-dive-panel" id="tour-telemetry-panel">
       <div className="panel-header">
         <div className="panel-title">🛡️ Decision Support & XAI</div>
         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>

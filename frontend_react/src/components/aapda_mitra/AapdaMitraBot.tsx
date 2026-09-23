@@ -66,6 +66,22 @@ export const AapdaMitraBot: React.FC = () => {
     }
   }, [messages, isOpen]);
 
+  // Listen for programmatic tour / quick demo triggers
+  useEffect(() => {
+    const handleTourQuery = (e: any) => {
+      const q = e?.detail?.query;
+      setIsOpen(true);
+      if (q) {
+        setTimeout(() => {
+          handleSendMessage(q);
+        }, 300);
+      }
+    };
+
+    window.addEventListener('aapda-open-query', handleTourQuery);
+    return () => window.removeEventListener('aapda-open-query', handleTourQuery);
+  }, []);
+
   // Build the complete dashboard state snapshot to send to the backend
   const buildDashboardSnapshot = () => {
     return {
@@ -259,13 +275,14 @@ export const AapdaMitraBot: React.FC = () => {
     <>
       {/* Animated Floating Circular Launcher Button */}
       {!isOpen && (
-        <div className="aapda-launcher-wrapper">
+        <div className="aapda-launcher-wrapper" id="tour-aapda-launcher">
           <div className="aapda-launcher-tooltip">
             <span className="aapda-tooltip-title">Ask Aapda Mitra AI 🛡️</span>
             <span className="aapda-tooltip-sub">आपदा मित्र • 24/7 AI Sync</span>
           </div>
           <button 
             className="aapda-mitra-circle-launcher"
+            id="tour-aapda-btn"
             onClick={() => setIsOpen(true)}
             title="Open Aapda Mitra AI Disaster Decision Assistant"
             aria-label="Open Aapda Mitra AI"
