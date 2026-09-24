@@ -544,12 +544,9 @@ export const GISMap2D: React.FC = () => {
     lastFlownVillageIdRef.current = selectedVillageId;
 
     if (!selectedVillageId) {
-      // Smooth cinematic zoom out to All-India National Overview
+      // Zoom out to All-India National Overview
       try {
-        map.flyTo([22.5, 78.9], 5, { 
-          duration: 1.8,
-          easeLinearity: 0.25
-        });
+        map.flyTo([22.5, 78.9], 5, { duration: 1.4 });
       } catch (err) {
         console.warn("Leaflet flyTo India overview error:", err);
       }
@@ -559,10 +556,7 @@ export const GISMap2D: React.FC = () => {
     const v = selectedVillageData?.village || villages.find(x => x.id === selectedVillageId);
     if (v && typeof v.lat === 'number' && typeof v.lng === 'number' && !isNaN(v.lat) && !isNaN(v.lng)) {
       try {
-        map.flyTo([v.lat, v.lng], 13.5, { 
-          duration: 2.0,
-          easeLinearity: 0.25
-        });
+        map.flyTo([v.lat, v.lng], 13.5, { duration: 1.2 });
       } catch (err) {
         console.warn("Leaflet flyTo village error:", err);
       }
