@@ -122,11 +122,11 @@ export const MapContainer: React.FC = () => {
                 <div className="basemap-toggle-grid">
                   {(['google_floodhub', 'google_terrain', 'google_satellite', 'google_dark', 'topo'] as Basemap2D[]).map((bm) => {
                     const labels: Record<Basemap2D, string> = {
-                      google_floodhub: '🌐 Google Roads',
-                      google_terrain: '⛰️ G-Terrain',
-                      google_satellite: '🛰️ G-Satellite',
-                      google_dark: '🌑 Dark Mode',
-                      topo: '🗺️ Topo'
+                      google_floodhub: '🌐 Vector Roads',
+                      google_terrain: '⛰️ Terrain Topo',
+                      google_satellite: '🛰️ Satellite',
+                      google_dark: '🌑 Dark Tactical',
+                      topo: '🗺️ Open Topo'
                     };
                     return (
                       <button
@@ -152,7 +152,7 @@ export const MapContainer: React.FC = () => {
                 <div className="basemap-toggle-grid">
                   {(['google_hybrid', 'esri_satellite', 'topo_3d', 'dark_3d'] as Basemap3D[]).map((bm) => {
                     const labels: Record<Basemap3D, string> = {
-                      google_hybrid: '🗺️ Google Hybrid',
+                      google_hybrid: '🗺️ Satellite Hybrid',
                       esri_satellite: '🛰️ ESRI Satellite',
                       topo_3d: '⛰️ 3D Contours',
                       dark_3d: '🌑 3D Dark'
@@ -207,7 +207,7 @@ export const MapContainer: React.FC = () => {
                   checked={layers.hexGrid} 
                   onChange={(e) => toggleLayer('hexGrid', e.target.checked)} 
                 />
-                <span>⬡ Risk Grid (Google Flood Hub)</span>
+                <span>⬡ Hydrological Threat Grid</span>
               </label>
               <label className="layer-checkbox-label">
                 <input 

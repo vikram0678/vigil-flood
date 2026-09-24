@@ -16,31 +16,31 @@ export const RISK_COLORS: Record<string, string> = {
 
 export const BASEMAP_2D_TILES = {
   google_floodhub: {
-    name: "Google Roads",
+    name: "Vector Road",
     url: `https://{s}.google.com/vt/lyrs=m&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`,
-    options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Google Maps' },
+    options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Cartography Services' },
     isDarkFilter: false
   },
   google_terrain: {
-    name: "G-Terrain",
+    name: "Terrain Topo",
     url: `https://{s}.google.com/vt/lyrs=p&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`,
-    options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Google Maps' },
+    options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Cartography Services' },
     isDarkFilter: false
   },
   google_satellite: {
-    name: "G-Satellite",
+    name: "Satellite Imagery",
     url: `https://{s}.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`,
-    options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Google Maps' },
+    options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Satellite Imagery' },
     isDarkFilter: false
   },
   google_dark: {
-    name: "Dark Mode",
+    name: "Dark Tactical",
     url: `https://{s}.google.com/vt/lyrs=m&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`,
-    options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Google Maps' },
+    options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Cartography Services' },
     isDarkFilter: true
   },
   topo: {
-    name: "Topo",
+    name: "Open Topo",
     url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
     options: { maxZoom: 17, subdomains: ['a', 'b', 'c'], attribution: '&copy; OpenStreetMap contributors, SRTM' },
     isDarkFilter: false
@@ -49,7 +49,7 @@ export const BASEMAP_2D_TILES = {
 
 export const BASEMAP_3D_SOURCES = {
   google_hybrid: {
-    name: "Google Hybrid 3D",
+    name: "Satellite Hybrid 3D",
     tiles: [
       `https://mt0.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`,
       `https://mt1.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`,
@@ -58,7 +58,7 @@ export const BASEMAP_3D_SOURCES = {
     ],
     tileSize: 256,
     maxzoom: 19,
-    attribution: "&copy; Google Maps"
+    attribution: "&copy; Satellite Imagery"
   },
   esri_satellite: {
     name: "ESRI Satellite",

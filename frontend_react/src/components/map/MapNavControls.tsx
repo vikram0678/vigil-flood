@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useFlood } from '../../context/FloodContext';
 
 export const MapNavControls: React.FC = () => {
-  const { viewMode, selectedVillageData, selectedVillageId, villages } = useFlood();
+  const { viewMode, selectedVillageData, selectedVillageId, villages, selectVillage } = useFlood();
   const [bearing, setBearing] = useState<number>(0);
   const compassRef = useRef<HTMLButtonElement>(null);
   const isDraggingRef = useRef<boolean>(false);
@@ -35,43 +35,44 @@ export const MapNavControls: React.FC = () => {
     }
   };
 
-  // Normal minus button: Max zoom-out limit capped at ~100km district basin level (zoom level 8)
+  // Minus button: Zoom-out down to full All-India national map limit (zoom level 4)
   const handleZoomOut = () => {
     if (viewMode === '2d') {
       const map2d = (window as any).leafletMap;
       if (map2d) {
         const currentZoom = map2d.getZoom();
-        if (currentZoom > 8) {
-          map2d.setZoom(Math.max(8, currentZoom - 1));
+        if (currentZoom > 4) {
+          map2d.setZoom(Math.max(4, currentZoom - 1));
         }
       }
     } else {
       const map3d = (window as any).map3dInstance;
       if (map3d) {
         const currentZoom = map3d.getZoom();
-        if (currentZoom > 8) {
-          map3d.easeTo({ zoom: Math.max(8, currentZoom - 1), duration: 300 });
+        if (currentZoom > 4) {
+          map3d.easeTo({ zoom: Math.max(4, currentZoom - 1), duration: 300 });
         }
       }
     }
   };
 
-  // Single-click direct zoom out to Full Map (~1000 km Regional Overview)
+  // Single-click direct zoom out to All-India National Overview (Globe Button)
   const handleFullMap1000km = () => {
+    selectVillage(null);
     if (viewMode === '2d') {
       const map2d = (window as any).leafletMap;
       if (map2d) {
-        map2d.flyTo([31.8, 77.2], 6, { duration: 1.2 });
+        map2d.flyTo([22.5, 78.9], 5, { duration: 1.3 });
       }
     } else {
       const map3d = (window as any).map3dInstance;
       if (map3d) {
         map3d.flyTo({
-          center: [77.2, 31.8],
-          zoom: 6,
-          pitch: 30,
+          center: [78.9, 22.5],
+          zoom: 4.8,
+          pitch: 20,
           bearing: 0,
-          duration: 1200
+          duration: 1500
         });
         setBearing(0);
       }
@@ -214,12 +215,12 @@ export const MapNavControls: React.FC = () => {
 
       <div className="map-nav-divider" />
 
-      {/* 🌍 1000 km Full Regional Map Button */}
+      {/* 🇮🇳 All-India National Overview Button */}
       <button 
         className="map-nav-btn full-map-btn" 
         onClick={handleFullMap1000km}
-        title="Full Map (Direct zoom-out to 1000 km regional overview)"
-        aria-label="Full Map 1000km View"
+        title="🇮🇳 All-India National Overview (Click to zoom out)"
+        aria-label="All-India National Overview"
       >
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="12" r="10"></circle>
