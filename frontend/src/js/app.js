@@ -27,8 +27,8 @@ let isDroneFlying = false;
 let droneFlightTimer = null;
 let hydroParticles = [];
 
-// Google Maps Platform API Key (Provided & Authenticated)
-const GOOGLE_MAPS_API_KEY = "AIzaSyAPMWF9BlkHHfGbhX02kATKW2DkfDt3CDo";
+// Google Maps Platform API Key (Loaded from environment or fallback)
+const GOOGLE_MAPS_API_KEY = (typeof window !== 'undefined' && window.ENV?.VITE_MAPS_API_KEY) || "";
 
 // Google Flood Hub 5-Tier Severity Color Constants
 const RISK_COLORS = {
@@ -43,27 +43,27 @@ const RISK_COLORS = {
   NO_DATA: "#94a3b8"
 };
 
-// Basemap Tile Configurations (Direct CDN with Multi-threading & API Key)
+// Basemap Tile Configurations (Direct CDN with Multi-threading)
 const BASEMAP_TILES = {
   google_floodhub: {
-    url: `https://{s}.google.com/vt/lyrs=m&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`,
-    options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Google Maps' },
-    isDarkFilter: false // Clean Google Roads & Street Names with English + Hindi place names
+    url: "https://{s}.google.com/vt/lyrs=m&hl=en&gl=IN&x={x}&y={y}&z={z}",
+    options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Cartography Services' },
+    isDarkFilter: false // Clean Vector Roads & Street Names
   },
   google_terrain: {
-    url: `https://{s}.google.com/vt/lyrs=p&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`,
-    options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Google Maps' },
-    isDarkFilter: false // Real Google Mountain Elevation Shading & Contours
+    url: "https://{s}.google.com/vt/lyrs=p&hl=en&gl=IN&x={x}&y={y}&z={z}",
+    options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Cartography Services' },
+    isDarkFilter: false // Real Mountain Elevation Shading & Contours
   },
   google_satellite: {
-    url: `https://{s}.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`,
-    options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Google Maps' },
-    isDarkFilter: false // High-Res Google Satellite with Village Labels & Roads
+    url: "https://{s}.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}",
+    options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Satellite Imagery' },
+    isDarkFilter: false // High-Res Satellite with Village Labels & Roads
   },
   google_dark: {
-    url: `https://{s}.google.com/vt/lyrs=m&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`,
-    options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Google Maps' },
-    isDarkFilter: true // Google Roads in Dark Command Mode
+    url: "https://{s}.google.com/vt/lyrs=m&hl=en&gl=IN&x={x}&y={y}&z={z}",
+    options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Cartography Services' },
+    isDarkFilter: true // Dark Command Mode
   },
   topo: {
     url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
@@ -72,19 +72,19 @@ const BASEMAP_TILES = {
   }
 };
 
-// 3D Mountain Mesh Tile Sources (Direct CDN + Subdomain Rotation + API Key)
+// 3D Mountain Mesh Tile Sources (Direct CDN + Subdomain Rotation)
 const BASEMAP_3D_SOURCES = {
   google_hybrid: {
-    name: "Google Hybrid 3D",
+    name: "Satellite Hybrid 3D",
     tiles: [
-      `https://mt0.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`,
-      `https://mt1.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`,
-      `https://mt2.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`,
-      `https://mt3.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`
+      "https://mt0.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}",
+      "https://mt1.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}",
+      "https://mt2.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}",
+      "https://mt3.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}"
     ],
     tileSize: 256,
     maxzoom: 20,
-    attribution: "&copy; Google Maps"
+    attribution: "&copy; Satellite Imagery"
   },
   esri_satellite: {
     name: "High-Res 3D Satellite",
