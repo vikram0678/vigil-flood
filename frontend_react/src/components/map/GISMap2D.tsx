@@ -322,43 +322,82 @@ export const GISMap2D: React.FC = () => {
     routeLayerRef.current.clearLayers();
     sensorLayerRef.current.clearLayers();
 
-    // A. Hazard Area Inundation & Slope Polygons (Red, Orange, Green Zones)
+    // A. Concentric 3-Tier Catchment Hazard Buffer Zones (🔴 Core, 🟠 Buffer, 🟡 Watch/🟢 Refuge)
     const zones = v.hazard_zones;
     if (zones) {
-      // 🔴 Red Inundation Zone
+      // 🔴 RED ZONE: Core Inundation & Direct Debris Impact Zone
       if (zones.red_inundation_polygon && zones.red_inundation_polygon.length > 0) {
         const redPoly = L.polygon(zones.red_inundation_polygon, {
           color: "#ef4444",
           fillColor: "#ef4444",
-          fillOpacity: isCritical ? 0.55 : 0.35,
-          weight: isCritical ? 3 : 2,
-          dashArray: isCritical ? "4, 6" : undefined
+          fillOpacity: isCritical ? 0.60 : 0.40,
+          weight: isCritical ? 3.5 : 2.5,
+          dashArray: isCritical ? "4, 6" : undefined,
+          className: "hazard-polygon-red"
         });
-        redPoly.bindTooltip("<b>🔴 Red Hazard Zone</b><br>High Flash Flood & Inundation Risk", { sticky: true });
+        redPoly.bindTooltip(`
+          <div style="font-family:'Outfit',sans-serif; min-width:210px; padding:2px;">
+            <div style="display:flex; align-items:center; gap:6px; font-weight:800; font-size:0.85rem; color:#ef4444; border-bottom:1px solid rgba(239,68,68,0.3); padding-bottom:3px; margin-bottom:4px;">
+              <span>🔴</span> <span>CORE INUNDATION ZONE</span>
+            </div>
+            <div style="font-size:0.75rem; color:#cbd5e1; margin-bottom:4px;">
+              <b>Direct Riverine Submergence & Active Landslide Footprint</b>
+            </div>
+            <div style="font-size:0.72rem; color:#fca5a5; background:rgba(239,68,68,0.15); padding:4px 6px; border-radius:4px; border-left:3px solid #ef4444;">
+              🚨 <b>DIRECTIVE:</b> Compulsory immediate evacuation to designated high-ground refuge.
+            </div>
+          </div>
+        `, { sticky: true });
         hazardLayerRef.current.addLayer(redPoly);
       }
 
-      // 🟠 Orange Slope Zone
+      // 🟠 ORANGE ZONE: Vulnerability & Access Road Cutoff Buffer (200m–500m)
       if (zones.orange_slope_polygon && zones.orange_slope_polygon.length > 0) {
         const orangePoly = L.polygon(zones.orange_slope_polygon, {
           color: "#f97316",
           fillColor: "#f97316",
-          fillOpacity: 0.25,
-          weight: 1.5
+          fillOpacity: 0.28,
+          weight: 2,
+          className: "hazard-polygon-orange"
         });
-        orangePoly.bindTooltip("<b>🟠 Orange Buffer Zone</b><br>Steep Slope & Debris Flow Risk", { sticky: true });
+        orangePoly.bindTooltip(`
+          <div style="font-family:'Outfit',sans-serif; min-width:210px; padding:2px;">
+            <div style="display:flex; align-items:center; gap:6px; font-weight:800; font-size:0.85rem; color:#f97316; border-bottom:1px solid rgba(249,115,22,0.3); padding-bottom:3px; margin-bottom:4px;">
+              <span>🟠</span> <span>VULNERABILITY BUFFER (200m–500m)</span>
+            </div>
+            <div style="font-size:0.75rem; color:#cbd5e1; margin-bottom:4px;">
+              <b>Steep Gorge Shoulder & Secondary Debris / Cutoff Alert</b>
+            </div>
+            <div style="font-size:0.72rem; color:#fdba74; background:rgba(249,115,22,0.15); padding:4px 6px; border-radius:4px; border-left:3px solid #f97316;">
+              ⚠️ <b>DIRECTIVE:</b> Prepare grab-bags, move vulnerable residents, avoid riverbanks.
+            </div>
+          </div>
+        `, { sticky: true });
         hazardLayerRef.current.addLayer(orangePoly);
       }
 
-      // 🟢 Green Safe Ridge Zone
+      // 🟢 GREEN / 🟡 YELLOW ZONE: Catchment Watch & Evacuation Staging Corridor (500m–1.5km)
       if (zones.green_safe_polygon && zones.green_safe_polygon.length > 0) {
         const greenPoly = L.polygon(zones.green_safe_polygon, {
           color: "#10b981",
           fillColor: "#10b981",
-          fillOpacity: 0.3,
-          weight: 2
+          fillOpacity: 0.25,
+          weight: 2,
+          className: "hazard-polygon-green"
         });
-        greenPoly.bindTooltip("<b>🟢 Green Safe Zone</b><br>Elevated Ground / Safe Relief Area", { sticky: true });
+        greenPoly.bindTooltip(`
+          <div style="font-family:'Outfit',sans-serif; min-width:210px; padding:2px;">
+            <div style="display:flex; align-items:center; gap:6px; font-weight:800; font-size:0.85rem; color:#10b981; border-bottom:1px solid rgba(16,185,129,0.3); padding-bottom:3px; margin-bottom:4px;">
+              <span>🟢</span> <span>SAFE REFUGE & WATCH CORRIDOR</span>
+            </div>
+            <div style="font-size:0.75rem; color:#cbd5e1; margin-bottom:4px;">
+              <b>Elevated Ridge Refuge Ground (&gt;950m ASL)</b>
+            </div>
+            <div style="font-size:0.72rem; color:#86efac; background:rgba(16,185,129,0.15); padding:4px 6px; border-radius:4px; border-left:3px solid #10b981;">
+              ✅ <b>DIRECTIVE:</b> Designated relief shelter & transit staging corridor.
+            </div>
+          </div>
+        `, { sticky: true });
         hazardLayerRef.current.addLayer(greenPoly);
       }
     } else if (v.inundation_polygon && v.inundation_polygon.length > 0) {

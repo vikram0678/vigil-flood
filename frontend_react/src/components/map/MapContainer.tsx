@@ -68,28 +68,38 @@ export const MapContainer: React.FC = () => {
 
       {/* Unified Tabbed GIS Control Drawer (Option A: Layers & 3D + Google Flood Hub) */}
       <div className={`map-controls-panel ${isControlsOpen ? '' : 'collapsed'}`}>
-        {/* Drawer Header: Dual Tabs + Slide/Close Button */}
+        {/* Drawer Header: Title + Dedicated Close Button */}
         <div className="map-panel-header-row">
-          <div className="map-panel-tab-bar">
-            <button 
-              className={`map-panel-tab-btn ${activeTab === 'layers' ? 'active' : ''}`}
-              onClick={() => setActiveTab('layers')}
-            >
-              🗺️ Layers & 3D
-            </button>
-            <button 
-              className={`map-panel-tab-btn ${activeTab === 'floodhub' ? 'active' : ''}`}
-              onClick={() => setActiveTab('floodhub')}
-            >
-              🗂️ Flood Hub
-            </button>
+          <div className="map-panel-header-title">
+            <span style={{ fontSize: '0.95rem' }}>🗂️</span>
+            <span style={{ fontWeight: 800, fontSize: '0.78rem', letterSpacing: '0.6px', color: '#f8fafc' }}>
+              TACTICAL MAP CONTROLS
+            </span>
           </div>
           <button 
-            className="map-panel-slide-close-btn"
+            className="map-panel-close-btn"
             onClick={() => setIsControlsOpen(false)}
-            title="Slide & Close Panel"
+            title="Close Drawer (Esc)"
+            aria-label="Close Drawer"
           >
-            <span>Slide</span> <span>▶</span>
+            <span className="close-icon">&times;</span>
+            <span className="close-text">CLOSE</span>
+          </button>
+        </div>
+
+        {/* Tab Switcher: Layers & 3D vs Hazard Buffer Zones */}
+        <div className="map-panel-tab-bar">
+          <button 
+            className={`map-panel-tab-btn ${activeTab === 'layers' ? 'active' : ''}`}
+            onClick={() => setActiveTab('layers')}
+          >
+            🗺️ Layers &amp; 3D
+          </button>
+          <button 
+            className={`map-panel-tab-btn ${activeTab === 'floodhub' ? 'active' : ''}`}
+            onClick={() => setActiveTab('floodhub')}
+          >
+            🛡️ Hazard Buffer Zones
           </button>
         </div>
 
@@ -199,7 +209,7 @@ export const MapContainer: React.FC = () => {
                   checked={layers.hazardZones} 
                   onChange={(e) => toggleLayer('hazardZones', e.target.checked)} 
                 />
-                <span><span className="legend-dot" style={{ background: '#ef4444' }}></span> Inundation Zones</span>
+                <span><span className="legend-dot" style={{ background: '#ef4444' }}></span> 🔴🟠🟡 Catchment Buffer Zones</span>
               </label>
               <label className="layer-checkbox-label">
                 <input 
@@ -207,7 +217,7 @@ export const MapContainer: React.FC = () => {
                   checked={layers.hexGrid} 
                   onChange={(e) => toggleLayer('hexGrid', e.target.checked)} 
                 />
-                <span>⬡ Hydrological Threat Grid</span>
+                <span>⬡ Hydrological Catchment Grid</span>
               </label>
               <label className="layer-checkbox-label">
                 <input 
@@ -215,7 +225,7 @@ export const MapContainer: React.FC = () => {
                   checked={layers.particles} 
                   onChange={(e) => toggleLayer('particles', e.target.checked)} 
                 />
-                <span>🌀 Fluid Particles (Earth Nullschool)</span>
+                <span>🌀 Fluid Velocity Stream (Hydro-Mesh)</span>
               </label>
               <label className="layer-checkbox-label">
                 <input 
@@ -245,54 +255,54 @@ export const MapContainer: React.FC = () => {
           </div>
         )}
 
-        {/* ================= TAB 2: GOOGLE FLOOD HUB VIEW OPTIONS ================= */}
+        {/* ================= TAB 2: CATCHMENT RISK BUFFER ZONES ================= */}
         {activeTab === 'floodhub' && (
-          <div className="map-panel-tab-content gfh-tab-view">
-            {/* Map / Hybrid Pill Toggle */}
-            <div className="gfh-pill-switcher">
+          <div className="map-panel-tab-content hazard-buffer-tab-view">
+            {/* Map / Hybrid Style Switcher */}
+            <div className="buffer-pill-switcher">
               <button 
-                className={`gfh-pill-btn ${!isGfhHybridActive ? 'active' : ''}`}
+                className={`buffer-pill-btn ${!isGfhHybridActive ? 'active' : ''}`}
                 onClick={() => handleGfhMapToggle('map')}
               >
-                {!isGfhHybridActive ? '✓ Map' : 'Map'}
+                {!isGfhHybridActive ? '✓ Topo Map' : 'Topo Map'}
               </button>
               <button 
-                className={`gfh-pill-btn ${isGfhHybridActive ? 'active' : ''}`}
+                className={`buffer-pill-btn ${isGfhHybridActive ? 'active' : ''}`}
                 onClick={() => handleGfhMapToggle('hybrid')}
               >
-                {isGfhHybridActive ? '✓ Hybrid' : 'Hybrid'}
+                {isGfhHybridActive ? '✓ Satellite' : 'Satellite'}
               </button>
             </div>
 
-            {/* Flood Data / Coverage Map Tabs */}
-            <div className="gfh-tab-bar">
+            {/* View Mode Tabs */}
+            <div className="buffer-tab-bar">
               <button 
-                className={`gfh-tab-btn ${floodHubSubTab === 'flood' ? 'active' : ''}`}
+                className={`buffer-tab-btn ${floodHubSubTab === 'flood' ? 'active' : ''}`}
                 onClick={() => {
                   setFloodHubSubTab('flood');
                   toggleLayer('hazardZones', true);
                 }}
               >
-                Flood data
+                Catchment Contours
               </button>
               <button 
-                className={`gfh-tab-btn ${floodHubSubTab === 'coverage' ? 'active' : ''}`}
+                className={`buffer-tab-btn ${floodHubSubTab === 'coverage' ? 'active' : ''}`}
                 onClick={() => {
                   setFloodHubSubTab('coverage');
                   toggleLayer('hexGrid', true);
                 }}
               >
-                Coverage map
+                Catchment Grid
               </button>
             </div>
 
-            {/* Floods Master Switch */}
-            <div className="gfh-toggle-row master-toggle">
-              <div className="gfh-row-left">
-                <span className="gfh-icon-wave">🌊</span>
-                <span className="gfh-row-text">Floods (riverine & flash)</span>
+            {/* Master Buffer Switch */}
+            <div className="buffer-toggle-row master-toggle">
+              <div className="buffer-row-left">
+                <span className="buffer-icon-wave">🌊</span>
+                <span className="buffer-row-text">Active Hazard Buffer Layers</span>
               </div>
-              <label className="gfh-switch">
+              <label className="buffer-switch">
                 <input 
                   type="checkbox" 
                   checked={layers.hazardZones}
@@ -301,46 +311,72 @@ export const MapContainer: React.FC = () => {
                     toggleLayer('hexGrid', e.target.checked);
                   }}
                 />
-                <span className="gfh-slider"></span>
+                <span className="buffer-slider"></span>
               </label>
             </div>
 
-            {/* Riverine Floods Expected Severity Legend */}
-            <div className="gfh-section">
-              <div className="gfh-section-title">Riverine floods</div>
-              <div className="gfh-section-subtitle">Expected severity</div>
+            {/* NDMA Standard Hazard Buffer Breakdown */}
+            <div className="buffer-section">
+              <div className="buffer-section-title">NDMA / CWC Hazard Gradation</div>
+              <div className="buffer-section-subtitle">Concentric Buffer Zones</div>
 
-              <div className="gfh-severity-list">
-                <div className="gfh-severity-item"><span className="gfh-dot dot-extreme"></span> Extreme</div>
-                <div className="gfh-severity-item"><span className="gfh-dot dot-danger"></span> Danger</div>
-                <div className="gfh-severity-item"><span className="gfh-dot dot-warning"></span> Warning</div>
-                <div className="gfh-severity-item"><span className="gfh-dot dot-nodata"></span> No data</div>
-                <div className="gfh-severity-item with-switch">
-                  <span><span className="gfh-dot dot-normal"></span> Normal</span>
-                  <label className="gfh-switch small">
+              <div className="buffer-severity-list">
+                <div className="buffer-severity-item">
+                  <span className="buffer-dot dot-extreme"></span>
+                  <div>
+                    <div style={{ fontWeight: 700, color: '#ef4444' }}>🔴 Core Inundation Zone</div>
+                    <div style={{ fontSize: '0.64rem', color: 'var(--text-muted)' }}>Direct submergence | Compulsory evacuation</div>
+                  </div>
+                </div>
+
+                <div className="buffer-severity-item">
+                  <span className="buffer-dot dot-danger"></span>
+                  <div>
+                    <div style={{ fontWeight: 700, color: '#f97316' }}>🟠 Vulnerability Buffer (200m–500m)</div>
+                    <div style={{ fontSize: '0.64rem', color: 'var(--text-muted)' }}>Debris slippage & road cutoff alert</div>
+                  </div>
+                </div>
+
+                <div className="buffer-severity-item">
+                  <span className="buffer-dot dot-warning"></span>
+                  <div>
+                    <div style={{ fontWeight: 700, color: '#eab308' }}>🟡 Catchment Watch (500m–1.5km)</div>
+                    <div style={{ fontSize: '0.64rem', color: 'var(--text-muted)' }}>Staging periphery & safe transit corridor</div>
+                  </div>
+                </div>
+
+                <div className="buffer-severity-item with-switch">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span className="buffer-dot dot-normal"></span>
+                    <div>
+                      <div style={{ fontWeight: 700, color: '#10b981' }}>🟢 Safe Ridge Refuges</div>
+                      <div style={{ fontSize: '0.64rem', color: 'var(--text-muted)' }}>High-ground shelters (&gt;950m)</div>
+                    </div>
+                  </div>
+                  <label className="buffer-switch small">
                     <input 
                       type="checkbox" 
                       checked={showNormal}
                       onChange={(e) => setShowNormal(e.target.checked)}
                     />
-                    <span className="gfh-slider"></span>
+                    <span className="buffer-slider"></span>
                   </label>
                 </div>
               </div>
             </div>
 
-            {/* Urban Flash Floods Beta Switch */}
-            <div className="gfh-toggle-row">
-              <div className="gfh-row-left">
-                <span className="gfh-row-text">Urban flash floods <span className="gfh-badge-beta">Beta</span></span>
+            {/* Basin Hydrological Grid Switch */}
+            <div className="buffer-toggle-row">
+              <div className="buffer-row-left">
+                <span className="buffer-row-text">Beas Catchment Threat Grid</span>
               </div>
-              <label className="gfh-switch">
+              <label className="buffer-switch">
                 <input 
                   type="checkbox" 
                   checked={layers.hexGrid}
                   onChange={(e) => toggleLayer('hexGrid', e.target.checked)}
                 />
-                <span className="gfh-slider"></span>
+                <span className="buffer-slider"></span>
               </label>
             </div>
           </div>

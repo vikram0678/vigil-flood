@@ -169,12 +169,40 @@ export const GISMap3D: React.FC = () => {
 
     map3d.on('webglcontextrestored', () => {
       sendTerminalLog('INFO', '✅ WebGL GPU Context Restored.');
-
-      console.log("✅ [3D-MAP WEBGL CONTEXT RESTORED]");
     });
 
     map3d.on('load', () => {
-      // 3D Flood water polygon source
+      // 3D Green Safe Ridge Zone Layer
+      map3d.addSource('3d-green-safe-source', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] }
+      });
+      map3d.addLayer({
+        id: '3d-green-safe-fill',
+        type: 'fill',
+        source: '3d-green-safe-source',
+        paint: {
+          'fill-color': '#10b981',
+          'fill-opacity': 0.30
+        }
+      });
+
+      // 3D Orange Slope / Vulnerability Buffer Zone Layer
+      map3d.addSource('3d-orange-slope-source', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] }
+      });
+      map3d.addLayer({
+        id: '3d-orange-slope-fill',
+        type: 'fill',
+        source: '3d-orange-slope-source',
+        paint: {
+          'fill-color': '#f97316',
+          'fill-opacity': 0.35
+        }
+      });
+
+      // 3D Flood water / Red Core Inundation Polygon Source
       map3d.addSource('3d-flood-water-source', {
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] }
@@ -186,7 +214,7 @@ export const GISMap3D: React.FC = () => {
         source: '3d-flood-water-source',
         paint: {
           'fill-color': '#ef4444',
-          'fill-opacity': 0.65
+          'fill-opacity': 0.60
         }
       });
 
@@ -357,6 +385,18 @@ export const GISMap3D: React.FC = () => {
           features: []
         });
       }
+      if (map3d.getSource('3d-orange-slope-source')) {
+        (map3d.getSource('3d-orange-slope-source') as maplibregl.GeoJSONSource).setData({
+          type: 'FeatureCollection',
+          features: []
+        });
+      }
+      if (map3d.getSource('3d-green-safe-source')) {
+        (map3d.getSource('3d-green-safe-source') as maplibregl.GeoJSONSource).setData({
+          type: 'FeatureCollection',
+          features: []
+        });
+      }
       return;
     }
 
@@ -376,16 +416,44 @@ export const GISMap3D: React.FC = () => {
       });
     }
 
-    // Update Inundation Polygon
-    const inundationPts = v.hazard_zones?.red_inundation_polygon || v.inundation_polygon;
-    if (inundationPts && map3d.getSource('3d-flood-water-source')) {
-      const polyGeoJson = [inundationPts.map(pt => [pt[1], pt[0]])];
+    // 1. Update 🔴 Red Inundation / Core Disaster Polygon
+    const redPts = v.hazard_zones?.red_inundation_polygon || v.inundation_polygon;
+    if (redPts && map3d.getSource('3d-flood-water-source')) {
+      const polyGeoJson = [redPts.map(pt => [pt[1], pt[0]])];
       (map3d.getSource('3d-flood-water-source') as maplibregl.GeoJSONSource).setData({
         type: 'FeatureCollection',
         features: [{
           type: 'Feature',
           geometry: { type: 'Polygon', coordinates: polyGeoJson },
           properties: { water_level: simulation.water }
+        }]
+      });
+    }
+
+    // 2. Update 🟠 Orange Vulnerability & Slope Buffer Polygon
+    const orangePts = v.hazard_zones?.orange_slope_polygon;
+    if (orangePts && map3d.getSource('3d-orange-slope-source')) {
+      const orangeGeoJson = [orangePts.map(pt => [pt[1], pt[0]])];
+      (map3d.getSource('3d-orange-slope-source') as maplibregl.GeoJSONSource).setData({
+        type: 'FeatureCollection',
+        features: [{
+          type: 'Feature',
+          geometry: { type: 'Polygon', coordinates: orangeGeoJson },
+          properties: { buffer_type: 'slope_vulnerability' }
+        }]
+      });
+    }
+
+    // 3. Update 🟢 Green / 🟡 Watch Refuge Polygon
+    const greenPts = v.hazard_zones?.green_safe_polygon;
+    if (greenPts && map3d.getSource('3d-green-safe-source')) {
+      const greenGeoJson = [greenPts.map(pt => [pt[1], pt[0]])];
+      (map3d.getSource('3d-green-safe-source') as maplibregl.GeoJSONSource).setData({
+        type: 'FeatureCollection',
+        features: [{
+          type: 'Feature',
+          geometry: { type: 'Polygon', coordinates: greenGeoJson },
+          properties: { buffer_type: 'safe_refuge' }
         }]
       });
     }
@@ -533,11 +601,3 @@ export const GISMap3D: React.FC = () => {
     />
   );
 };
-
-
-
-
-// hey if we implement this 
-// how the solution will be improveed 
-// is that ok to do ??
-// what do u say about this
