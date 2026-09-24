@@ -1,6 +1,6 @@
 // SIH 26192 - Application Constants
 
-export const GOOGLE_MAPS_API_KEY = "AIzaSyAPMWF9BlkHHfGbhX02kATKW2DkfDt3CDo";
+export const GOOGLE_MAPS_API_KEY = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_MAPS_API_KEY) || "";
 
 export const RISK_COLORS: Record<string, string> = {
   EXTREME: "#8b0000",
@@ -17,25 +17,25 @@ export const RISK_COLORS: Record<string, string> = {
 export const BASEMAP_2D_TILES = {
   google_floodhub: {
     name: "Vector Road",
-    url: `https://{s}.google.com/vt/lyrs=m&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`,
+    url: "https://{s}.google.com/vt/lyrs=m&hl=en&gl=IN&x={x}&y={y}&z={z}",
     options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Cartography Services' },
     isDarkFilter: false
   },
   google_terrain: {
     name: "Terrain Topo",
-    url: `https://{s}.google.com/vt/lyrs=p&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`,
+    url: "https://{s}.google.com/vt/lyrs=p&hl=en&gl=IN&x={x}&y={y}&z={z}",
     options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Cartography Services' },
     isDarkFilter: false
   },
   google_satellite: {
     name: "Satellite Imagery",
-    url: `https://{s}.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`,
+    url: "https://{s}.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}",
     options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Satellite Imagery' },
     isDarkFilter: false
   },
   google_dark: {
     name: "Dark Tactical",
-    url: `https://{s}.google.com/vt/lyrs=m&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`,
+    url: "https://{s}.google.com/vt/lyrs=m&hl=en&gl=IN&x={x}&y={y}&z={z}",
     options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Cartography Services' },
     isDarkFilter: true
   },
@@ -51,10 +51,10 @@ export const BASEMAP_3D_SOURCES = {
   google_hybrid: {
     name: "Satellite Hybrid 3D",
     tiles: [
-      `https://mt0.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`,
-      `https://mt1.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`,
-      `https://mt2.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`,
-      `https://mt3.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_API_KEY}`
+      "https://mt0.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}",
+      "https://mt1.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}",
+      "https://mt2.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}",
+      "https://mt3.google.com/vt/lyrs=y&hl=en&gl=IN&x={x}&y={y}&z={z}"
     ],
     tileSize: 256,
     maxzoom: 19,
