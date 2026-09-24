@@ -127,7 +127,7 @@ export const HydrographModal: React.FC = () => {
         <div className="modal-header">
           <div className="modal-title">
             <span>📈 Real-Time River Gauge Hydrograph & Forecast Peak</span>
-            <span className="modal-tag">Google Flood Hub Model</span>
+            <span className="modal-tag">Hydrology Model • CWC Aligned</span>
           </div>
           <button className="modal-close-btn" onClick={handleClose}>&times;</button>
         </div>

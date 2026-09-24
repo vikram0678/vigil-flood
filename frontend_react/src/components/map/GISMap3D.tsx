@@ -63,7 +63,7 @@ export const GISMap3D: React.FC = () => {
     const map3d = new maplibregl.Map({
       container: mapContainerRef.current,
       maxZoom: 18.5,
-      minZoom: 6, // 1000 km absolute maximum zoom-out limit (mouse wheel & gestures)
+      minZoom: 4, // Full India subcontinent overview allowed
       maxPitch: 65,
       maxTileCacheSize: 250,
       style: {
@@ -98,10 +98,10 @@ export const GISMap3D: React.FC = () => {
           exaggeration: 1.5
         }
       },
-      center: [77.0560, 31.6702],
-      zoom: 13,
-      pitch: 58,
-      bearing: -25
+      center: [78.9, 22.5],
+      zoom: 4.8,
+      pitch: 20,
+      bearing: 0
     });
 
     map3dInstanceRef.current = map3d;
@@ -344,8 +344,23 @@ export const GISMap3D: React.FC = () => {
     const map3d = map3dInstanceRef.current;
     if (!map3d || !map3d.isStyleLoaded()) return;
 
-    const v = selectedVillageData?.village || villages.find(x => x.id === selectedVillageId);
-    if (!v) return;
+    if (!selectedVillageData) {
+      if (map3d.getSource('3d-stream-source')) {
+        (map3d.getSource('3d-stream-source') as maplibregl.GeoJSONSource).setData({
+          type: 'FeatureCollection',
+          features: []
+        });
+      }
+      if (map3d.getSource('3d-flood-water-source')) {
+        (map3d.getSource('3d-flood-water-source') as maplibregl.GeoJSONSource).setData({
+          type: 'FeatureCollection',
+          features: []
+        });
+      }
+      return;
+    }
+
+    const v = selectedVillageData.village;
 
     // Update Stream
     if (v.river_stream && map3d.getSource('3d-stream-source')) {
@@ -376,16 +391,32 @@ export const GISMap3D: React.FC = () => {
     }
   }, [selectedVillageData, selectedVillageId, simulation, villages]);
 
-  // 4b. Camera fly-to ONLY when selected village explicitly changes in 3D view
+  // 4b. Camera fly-to for village selection and deselect to All-India view
   const lastFlown3DVillageIdRef = useRef<string | null>(null);
   useEffect(() => {
     const map3d = map3dInstanceRef.current;
-    if (!map3d || !selectedVillageId || isDroneFlying || viewMode !== '3d') return;
+    if (!map3d || isDroneFlying || viewMode !== '3d') return;
     if (lastFlown3DVillageIdRef.current === selectedVillageId) return;
+
+    lastFlown3DVillageIdRef.current = selectedVillageId;
+
+    if (!selectedVillageId) {
+      try {
+        map3d.flyTo({
+          center: [78.9, 22.5],
+          zoom: 4.8,
+          pitch: 20,
+          bearing: 0,
+          duration: 1800
+        });
+      } catch (err) {
+        console.warn("MapLibre flyTo India overview error:", err);
+      }
+      return;
+    }
 
     const v = selectedVillageData?.village || villages.find(x => x.id === selectedVillageId);
     if (v && typeof v.lng === 'number' && typeof v.lat === 'number' && !isNaN(v.lng) && !isNaN(v.lat)) {
-      lastFlown3DVillageIdRef.current = selectedVillageId;
       try {
         map3d.flyTo({
           center: [v.lng, v.lat],

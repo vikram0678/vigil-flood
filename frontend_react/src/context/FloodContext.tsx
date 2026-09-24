@@ -11,7 +11,7 @@ import {
 
 interface FloodContextType {
   villages: Village[];
-  selectedVillageId: string;
+  selectedVillageId: string | null;
   selectedVillageData: VillageDetailResponse | null;
   role: RoleMode;
   viewMode: ViewMode;
@@ -48,7 +48,7 @@ interface FloodContextType {
   setViewMode: (mode: ViewMode) => void;
   setBasemap2D: (basemap: Basemap2D) => void;
   setBasemap3D: (basemap: Basemap3D) => void;
-  selectVillage: (id: string, fly?: boolean) => Promise<void>;
+  selectVillage: (id: string | null, fly?: boolean) => Promise<void>;
   setMethodologyOpen: (open: boolean) => void;
   setHydrographOpen: (open: boolean, villageId?: string | null) => void;
   toggleDroneFlying: (flying?: boolean) => void;
@@ -64,7 +64,7 @@ const FloodContext = createContext<FloodContextType | undefined>(undefined);
 
 export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [villages, setVillages] = useState<Village[]>([]);
-  const [selectedVillageId, setSelectedVillageId] = useState<string>("VIL-01");
+  const [selectedVillageId, setSelectedVillageId] = useState<string | null>(null);
   const [selectedVillageData, setSelectedVillageData] = useState<VillageDetailResponse | null>(null);
   const [role, setRole] = useState<RoleMode>("authority");
   const [viewMode, setViewMode] = useState<ViewMode>("2d");
@@ -146,7 +146,14 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   }, []);
 
-  const selectVillage = useCallback(async (villageId: string) => {
+  const selectVillage = useCallback(async (villageId: string | null) => {
+    // If null or clicking already selected village -> deselect back to All-India mode!
+    if (!villageId || villageId === selectedVillageId) {
+      setSelectedVillageId(null);
+      setSelectedVillageData(null);
+      return;
+    }
+
     setSelectedVillageId(villageId);
     try {
       const res = await fetch(`/api/villages/${villageId}`);
@@ -163,18 +170,19 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     } catch (err) {
       console.error(`Failed to load details for ${villageId}:`, err);
     }
-  }, []);
+  }, [selectedVillageId]);
 
   useEffect(() => {
-    refreshData().then(() => {
-      selectVillage("VIL-01");
-    });
-  }, [refreshData, selectVillage]);
+    refreshData();
+    // Default starts at All-India National View
+    setSelectedVillageId(null);
+    setSelectedVillageData(null);
+  }, [refreshData]);
 
   const setHydrographOpen = useCallback((open: boolean, villageId: string | null = null) => {
     setHydrographOpenState(open);
     if (villageId) setHydrographVillageId(villageId);
-    else if (open) setHydrographVillageId(selectedVillageId);
+    else if (open) setHydrographVillageId(selectedVillageId || 'VIL-01');
   }, [selectedVillageId]);
 
   const toggleDroneFlying = useCallback((flying?: boolean) => {

@@ -35,7 +35,38 @@ export const PilotCatchmentPanel: React.FC = () => {
           </div>
         </div>
 
-        <div className="village-list-header">MONITORED VILLAGES / WARDS</div>
+        {/* All-India National View Switcher */}
+        <div 
+          className={`village-card national-overview-card ${selectedVillageId === null ? 'selected' : ''}`}
+          onClick={() => selectVillage(null)}
+          style={{ 
+            marginBottom: '4px',
+            border: selectedVillageId === null ? '1px solid var(--accent-cyan)' : '1px dashed var(--border-color)',
+            background: selectedVillageId === null ? 'rgba(56, 189, 248, 0.12)' : 'rgba(255, 255, 255, 0.02)'
+          }}
+          title="Click to view full All-India National Map overview"
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '1.1rem' }}>🇮🇳</span>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-primary)' }}>
+                  All-India National View
+                </div>
+                <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
+                  {selectedVillageId === null ? '● Active Overview • 1 Pilot Basin' : 'Click to zoom out to India'}
+                </div>
+              </div>
+            </div>
+            {selectedVillageId === null && (
+              <span className="active-village-pill" style={{ background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8' }}>
+                ● OVERVIEW
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="village-list-header">BEAS BASIN PILOT WARDS (CLICK TO FOCUS)</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {villages.map((v, idx) => {
             const isSelected = v.id === selectedVillageId;

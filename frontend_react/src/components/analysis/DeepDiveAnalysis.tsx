@@ -8,10 +8,51 @@ export const DeepDiveAnalysis: React.FC = () => {
     return (
       <aside className="panel">
         <div className="panel-header">
-          <div className="panel-title">🛡️ Decision Support</div>
+          <div className="panel-title">🛡️ Decision Support & XAI</div>
+          <span style={{ fontSize: '0.75rem', color: 'var(--accent-cyan)' }}>🇮🇳 National View</span>
         </div>
-        <div className="panel-body" style={{ alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Loading Telemetry...</div>
+        <div className="panel-body">
+          <div style={{ background: 'rgba(56, 189, 248, 0.08)', border: '1px solid rgba(56, 189, 248, 0.25)', borderRadius: '8px', padding: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              <span style={{ fontSize: '1.2rem' }}>📡</span>
+              <div>
+                <h4 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-primary)' }}>National Early Warning Status</h4>
+                <div style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: 600 }}>● ALL SYSTEMS OPERATIONAL</div>
+              </div>
+            </div>
+            <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+              VIGIL-FLOOD is continuously monitoring multi-source atmospheric, hydrological, and IoT telemetry across vulnerable mountain valleys.
+            </div>
+          </div>
+
+          <div className="threat-meter-card" style={{ marginTop: '10px' }}>
+            <div className="threat-header">
+              <span>Primary Live Pilot Basin</span>
+              <span style={{ fontWeight: 700, color: '#f59e0b' }}>Beas Valley (HP)</span>
+            </div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px', lineHeight: 1.4 }}>
+              • <b>Active Wards:</b> Pandoh, Aut, Thalot, Nagwain, Hanogi<br/>
+              • <b>Monitoring Stack:</b> 3D Elevation Mesh, LoRa IoT Nodes & CWC Gauges<br/>
+              • <b>Current Peak Threat:</b> Pandoh Gorge (61% Hazard Index)
+            </div>
+          </div>
+
+          <div style={{ 
+            marginTop: '12px', 
+            padding: '12px', 
+            background: 'rgba(255, 255, 255, 0.03)', 
+            border: '1px dashed var(--border-color)', 
+            borderRadius: '8px',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '1.4rem', marginBottom: '4px' }}>🎯</div>
+            <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+              Hyper-Local Drill-Down Available
+            </div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+              Click any village from the left sidebar or the map radar marker to inspect real-time IoT sensors, TreeSHAP XAI drivers, and dynamic evacuation paths.
+            </div>
+          </div>
         </div>
       </aside>
     );

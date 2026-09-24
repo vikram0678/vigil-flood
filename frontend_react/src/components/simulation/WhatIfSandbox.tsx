@@ -28,14 +28,14 @@ export const WhatIfSandbox: React.FC = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            village_id: selectedVillageId,
+            village_id: selectedVillageId || 'VIL-01',
             rain_1h: newRain,
             soil_moisture: newSoil,
             water_level_m: newWater,
             water_level_rise_rate: (newWater - 1.0) * 0.4
           })
         });
-        await selectVillage(selectedVillageId);
+        await selectVillage(selectedVillageId || 'VIL-01');
       } catch (err) {
         console.error("Custom simulation error:", err);
       }
