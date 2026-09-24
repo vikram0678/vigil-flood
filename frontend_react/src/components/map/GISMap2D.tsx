@@ -67,9 +67,9 @@ export const GISMap2D: React.FC = () => {
   const hexPolygonsRef = useRef<Record<string, L.Polygon>>({});
 
   // Auto-invalidateSize and center camera whenever viewMode switches to 2D
+  // Auto-invalidateSize when viewMode switches to 2D
   useEffect(() => {
     if (viewMode === '2d' && mapInstanceRef.current) {
-      const map = mapInstanceRef.current;
       const t1 = setTimeout(() => {
         if (mapInstanceRef.current) {
           mapInstanceRef.current.invalidateSize();
@@ -79,19 +79,6 @@ export const GISMap2D: React.FC = () => {
       const t2 = setTimeout(() => {
         if (mapInstanceRef.current) {
           mapInstanceRef.current.invalidateSize();
-          const v = selectedVillageData?.village || villages.find(x => x.id === selectedVillageId);
-          if (v && typeof v.lat === 'number' && typeof v.lng === 'number' && !isNaN(v.lat) && !isNaN(v.lng)) {
-            const s = mapInstanceRef.current.getSize();
-            if (s && s.x > 0 && s.y > 0) {
-              try {
-                mapInstanceRef.current.setView([v.lat, v.lng], 13);
-              } catch (_) {}
-            }
-          } else {
-            try {
-              mapInstanceRef.current.setView([22.5, 78.9], 5);
-            } catch (_) {}
-          }
         }
       }, 250);
 
@@ -100,7 +87,7 @@ export const GISMap2D: React.FC = () => {
         clearTimeout(t2);
       };
     }
-  }, [viewMode, selectedVillageId, selectedVillageData, villages]);
+  }, [viewMode]);
 
   // 1. Initialize Leaflet Map Instance ONCE
   useEffect(() => {
@@ -557,9 +544,12 @@ export const GISMap2D: React.FC = () => {
     lastFlownVillageIdRef.current = selectedVillageId;
 
     if (!selectedVillageId) {
-      // Zoom out to All-India National Overview
+      // Smooth cinematic zoom out to All-India National Overview
       try {
-        map.flyTo([22.5, 78.9], 5, { duration: 1.4 });
+        map.flyTo([22.5, 78.9], 5, { 
+          duration: 1.8,
+          easeLinearity: 0.25
+        });
       } catch (err) {
         console.warn("Leaflet flyTo India overview error:", err);
       }
@@ -569,7 +559,10 @@ export const GISMap2D: React.FC = () => {
     const v = selectedVillageData?.village || villages.find(x => x.id === selectedVillageId);
     if (v && typeof v.lat === 'number' && typeof v.lng === 'number' && !isNaN(v.lat) && !isNaN(v.lng)) {
       try {
-        map.flyTo([v.lat, v.lng], 13.5, { duration: 1.2 });
+        map.flyTo([v.lat, v.lng], 13.5, { 
+          duration: 2.0,
+          easeLinearity: 0.25
+        });
       } catch (err) {
         console.warn("Leaflet flyTo village error:", err);
       }

@@ -407,7 +407,8 @@ export const GISMap3D: React.FC = () => {
           zoom: 4.8,
           pitch: 20,
           bearing: 0,
-          duration: 1800
+          duration: 2000,
+          essential: true
         });
       } catch (err) {
         console.warn("MapLibre flyTo India overview error:", err);
@@ -423,7 +424,8 @@ export const GISMap3D: React.FC = () => {
           zoom: 13.5,
           pitch: 58,
           bearing: -25,
-          duration: 2000
+          duration: 2200,
+          essential: true
         });
       } catch (err) {
         console.warn("MapLibre flyTo error:", err);
