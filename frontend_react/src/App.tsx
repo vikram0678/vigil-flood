@@ -8,6 +8,8 @@ import { WhatIfSandbox } from './components/simulation/WhatIfSandbox';
 import { DeepDiveAnalysis } from './components/analysis/DeepDiveAnalysis';
 import { HydrographModal } from './components/modals/HydrographModal';
 import { MethodologyModal } from './components/modals/MethodologyModal';
+import { EmergencyBroadcastModal } from './components/modals/EmergencyBroadcastModal';
+import { StateAlertsTableModal } from './components/modals/StateAlertsTableModal';
 import { CitizenView } from './components/citizen/CitizenView';
 import { AapdaMitraBot } from './components/aapda_mitra/AapdaMitraBot';
 import { ProductTourModal } from './components/tour/ProductTourModal';
@@ -120,6 +122,8 @@ const DashboardContent: React.FC = () => {
       {/* Modals */}
       <HydrographModal />
       <MethodologyModal />
+      <EmergencyBroadcastModal />
+      <StateAlertsTableModal />
 
       {/* Aapda Mitra AI Disaster Decision Assistant */}
       <AapdaMitraBot />

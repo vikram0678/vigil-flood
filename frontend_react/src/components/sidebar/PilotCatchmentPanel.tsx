@@ -2,7 +2,15 @@ import React from 'react';
 import { useFlood } from '../../context/FloodContext';
 
 export const PilotCatchmentPanel: React.FC = () => {
-  const { villages, selectedVillageId, selectVillage } = useFlood();
+  const { 
+    villages, 
+    selectedVillageId, 
+    selectVillage,
+    basins,
+    activeBasinId,
+    activeBasin,
+    switchBasin
+  } = useFlood();
 
   // Compute District Hazard Index average
   const avgRisk = villages.length > 0 
@@ -12,17 +20,33 @@ export const PilotCatchmentPanel: React.FC = () => {
   return (
     <aside className="panel pilot-catchment-panel" id="tour-villages-panel">
       <div className="panel-header">
-        <div className="panel-title">📍 Pilot Catchment</div>
+        <div className="panel-title">
+          <span>📍 {activeBasin ? activeBasin.name : 'Pilot Catchment'}</span>
+        </div>
         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
           {villages.length} Wards
         </span>
       </div>
 
       <div className="panel-body">
+        {/* Basin Quick Switcher Pills */}
+        <div className="basin-quick-tabs">
+          {basins.map(b => (
+            <button
+              key={b.basin_id}
+              className={`basin-quick-tab-btn ${b.basin_id === activeBasinId ? 'active' : ''}`}
+              onClick={() => switchBasin(b.basin_id)}
+              title={`${b.name} (${b.state})`}
+            >
+              <span>{b.state.includes('Himachal') ? '🏔️ HP' : b.state.includes('Uttarakhand') ? '⛰️ UK' : b.state.includes('Sikkim') ? '🌊 SK' : '🌧️ KL'}</span>
+            </button>
+          ))}
+        </div>
+
         {/* District Threat Index Meter */}
         <div className="threat-meter-card">
           <div className="threat-header">
-            <span>District Hazard Index</span>
+            <span>{activeBasin ? activeBasin.state : 'District'} Hazard Index</span>
             <span style={{ fontWeight: 700, color: '#38bdf8' }}>{avgRisk}%</span>
           </div>
           <div className="threat-bar-container">
@@ -54,7 +78,7 @@ export const PilotCatchmentPanel: React.FC = () => {
                   All-India National View
                 </div>
                 <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
-                  {selectedVillageId === null ? '● Active Overview • 1 Pilot Basin' : 'Click to zoom out to India'}
+                  {selectedVillageId === null ? `● ${activeBasin?.name || 'Active Basin'} Overview` : 'Click to zoom out to India'}
                 </div>
               </div>
             </div>
@@ -66,7 +90,7 @@ export const PilotCatchmentPanel: React.FC = () => {
           </div>
         </div>
 
-        <div className="village-list-header">BEAS BASIN PILOT WARDS (CLICK TO FOCUS)</div>
+        <div className="village-list-header">{activeBasin ? `${activeBasin.name.toUpperCase()} WARDS` : 'PILOT WARDS (CLICK TO FOCUS)'}</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {villages.map((v, idx) => {
             const isSelected = v.id === selectedVillageId;

@@ -179,3 +179,40 @@ export interface WhatIfPreset {
   soil_moisture: number;
   water_level_m: number;
 }
+
+export interface BasinSummary {
+  basin_id: string;
+  name: string;
+  state: string;
+  region_type: string;
+  center_coords: [number, number];
+  default_zoom: number;
+  bounding_box: [[number, number], [number, number]];
+  total_villages: number;
+  active_threat_level: "BASELINE" | "WATCH" | "WARNING" | "CRITICAL";
+  primary_river: string;
+  hydrology_agency: string;
+  description: string;
+}
+
+export interface HazardSymbol {
+  id: string;
+  event: string;
+  event_type: "CLOUDBURST" | "FLASH_FLOOD" | "LANDSLIDE" | "HEAVY_RAIN" | "SWELL_SURGE" | "LIGHTNING" | "NORMAL";
+  severity: "CRITICAL" | "WARNING" | "WATCH" | "NORMAL";
+  color: string;
+  icon: string;
+  state: string;
+  district: string;
+  location_name: string;
+  coordinates: [number, number];
+  elevation_m: number;
+  rainfall_mmh: number;
+  soil_moisture_pct: number;
+  headline: string;
+  issued_by: string;
+  action_directive: string;
+  effective_until: string;
+}
+
+

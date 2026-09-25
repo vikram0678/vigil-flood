@@ -4,6 +4,9 @@ import { GISMap2D } from './GISMap2D';
 import { GISMap3D } from './GISMap3D';
 import { NullschoolCanvas } from './NullschoolCanvas';
 import { MapNavControls } from './MapNavControls';
+import { UniversalSearchBar } from './UniversalSearchBar';
+import { MapWeatherHazardSymbols } from '../weather/MapWeatherHazardSymbols';
+import { NationalAlertsDrawer } from '../weather/NationalAlertsDrawer';
 import { Basemap2D, Basemap3D } from '../../types';
 
 export const MapContainer: React.FC = () => {
@@ -50,6 +53,15 @@ export const MapContainer: React.FC = () => {
       <div style={{ width: '100%', height: '100%', display: viewMode === '3d' ? 'block' : 'none', position: 'absolute', top: 0, left: 0 }}>
         <GISMap3D />
       </div>
+
+      {/* 🌦️ Live National Meteorological & Hazard Map Symbols Layer */}
+      <MapWeatherHazardSymbols />
+
+      {/* 🔍 Universal Search Bar (Pan-India Coordinate & Village Spot Analysis) */}
+      <UniversalSearchBar />
+
+      {/* 📋 National Disaster Alert Feed Drawer (Right Side) */}
+      <NationalAlertsDrawer />
 
       {/* 🧭 Integrated Map Navigation Controls (Top-Left: Compass, Zoom In, Zoom Out) */}
       <MapNavControls />

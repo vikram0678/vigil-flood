@@ -1,8 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useFlood } from '../../context/FloodContext';
 
 export const DeepDiveAnalysis: React.FC = () => {
   const { selectedVillageData, toggleWaterSensor } = useFlood();
+
+  const [isXaiOpen, setIsXaiOpen] = useState<boolean>(true);
+  const [isSensorsOpen, setIsSensorsOpen] = useState<boolean>(true);
+  const [isDirectivesOpen, setIsDirectivesOpen] = useState<boolean>(true);
+  const [isNationalStatusOpen, setIsNationalStatusOpen] = useState<boolean>(true);
 
   if (!selectedVillageData) {
     return (
@@ -12,17 +17,34 @@ export const DeepDiveAnalysis: React.FC = () => {
           <span style={{ fontSize: '0.75rem', color: 'var(--accent-cyan)' }}>🇮🇳 National View</span>
         </div>
         <div className="panel-body">
-          <div style={{ background: 'rgba(56, 189, 248, 0.08)', border: '1px solid rgba(56, 189, 248, 0.25)', borderRadius: '8px', padding: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-              <span style={{ fontSize: '1.2rem' }}>📡</span>
-              <div>
-                <h4 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-primary)' }}>National Early Warning Status</h4>
-                <div style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: 600 }}>● ALL SYSTEMS OPERATIONAL</div>
+          <div 
+            style={{ 
+              background: 'rgba(56, 189, 248, 0.08)', 
+              border: '1px solid rgba(56, 189, 248, 0.25)', 
+              borderRadius: '8px', 
+              padding: '12px',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <div 
+              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+              onClick={() => setIsNationalStatusOpen(!isNationalStatusOpen)}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '1.2rem' }}>📡</span>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-primary)' }}>National Early Warning Status</h4>
+                  <div style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: 600 }}>● ALL SYSTEMS OPERATIONAL</div>
+                </div>
               </div>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{isNationalStatusOpen ? '▴' : '▾'}</span>
             </div>
-            <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
-              VIGIL-FLOOD is continuously monitoring multi-source atmospheric, hydrological, and IoT telemetry across vulnerable mountain valleys.
-            </div>
+            
+            {isNationalStatusOpen && (
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.4, marginTop: '8px' }}>
+                VIGIL-FLOOD is continuously monitoring multi-source atmospheric, hydrological, and IoT telemetry across vulnerable mountain valleys.
+              </div>
+            )}
           </div>
 
           <div className="threat-meter-card" style={{ marginTop: '10px' }}>
@@ -53,6 +75,15 @@ export const DeepDiveAnalysis: React.FC = () => {
               Click any village from the left sidebar or the map radar marker to inspect real-time IoT sensors, TreeSHAP XAI drivers, and dynamic evacuation paths.
             </div>
           </div>
+
+          {/* National View Direct Broadcast Launcher */}
+          <button
+            className="cap-broadcast-trigger-btn"
+            style={{ marginTop: '14px' }}
+            onClick={() => window.dispatchEvent(new CustomEvent('open-emergency-broadcast-modal'))}
+          >
+            <span>📢</span> Open CAP-SACHET &amp; Cell Broadcast Center
+          </button>
         </div>
       </aside>
     );
@@ -154,32 +185,45 @@ export const DeepDiveAnalysis: React.FC = () => {
 
         {/* TreeSHAP Explainable AI (XAI) Attribution */}
         <div className="xai-section">
-          <div className="xai-title">
+          <div 
+            className="xai-title" 
+            style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+            onClick={() => setIsXaiOpen(!isXaiOpen)}
+          >
             <span>🧠 Explainable AI (TreeSHAP Drivers)</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{isXaiOpen ? '▴' : '▾'}</span>
           </div>
-          {(risk.explainability || []).map((f: any, idx: number) => {
-            const factorName = f.factor || f.display_name || 'Hydrometeorological Factor';
-            const pct = f.contribution_pct !== undefined ? f.contribution_pct : (f.impact_percentage !== undefined ? f.impact_percentage : 0);
-            return (
-              <div key={idx} className="xai-bar-row">
-                <div className="xai-bar-label-row">
-                  <span>{factorName}</span>
-                  <span style={{ fontWeight: 700 }}>{pct}%</span>
-                </div>
-                <div className="xai-bar-track">
-                  <div className="xai-bar-fill" style={{ width: `${pct}%` }}></div>
-                </div>
-              </div>
-            );
-          })}
+          {isXaiOpen && (
+            <div style={{ marginTop: '6px' }}>
+              {(risk.explainability || []).map((f: any, idx: number) => {
+                const factorName = f.factor || f.display_name || 'Hydrometeorological Factor';
+                const pct = f.contribution_pct !== undefined ? f.contribution_pct : (f.impact_percentage !== undefined ? f.impact_percentage : 0);
+                return (
+                  <div key={idx} className="xai-bar-row">
+                    <div className="xai-bar-label-row">
+                      <span>{factorName}</span>
+                      <span style={{ fontWeight: 700 }}>{pct}%</span>
+                    </div>
+                    <div className="xai-bar-track">
+                      <div className="xai-bar-fill" style={{ width: `${pct}%` }}></div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Multi-Sensor Resilience & Fallback Matrix */}
         <div className="sensor-matrix-card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--accent-cyan)' }}>
-              📡 Multi-Sensor Health & Fallback
-            </span>
+            <div 
+              style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', fontWeight: 700, color: 'var(--accent-cyan)' }}
+              onClick={() => setIsSensorsOpen(!isSensorsOpen)}
+            >
+              <span>📡 Multi-Sensor Health & Fallback</span>
+              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{isSensorsOpen ? '▴' : '▾'}</span>
+            </div>
             <button
               style={{
                 fontSize: '0.68rem',
@@ -196,45 +240,66 @@ export const DeepDiveAnalysis: React.FC = () => {
             </button>
           </div>
 
-          <div className="sensor-grid">
-            {health?.sensors?.map((s, idx) => (
-              <div key={idx} className="sensor-item">
-                <span style={{ color: 'var(--text-secondary)', textTransform: 'capitalize' }}>
-                  {(s.sensor_type || s.sensor_id || 'Sensor').replace(/_/g, ' ')}
-                </span>
-                <span className={`sensor-state-badge ${s.status}`}>{s.status}</span>
+          {isSensorsOpen && (
+            <>
+              <div className="sensor-grid">
+                {health?.sensors?.map((s, idx) => (
+                  <div key={idx} className="sensor-item">
+                    <span style={{ color: 'var(--text-secondary)', textTransform: 'capitalize' }}>
+                      {(s.sensor_type || s.sensor_id || 'Sensor').replace(/_/g, ' ')}
+                    </span>
+                    <span className={`sensor-state-badge ${s.status}`}>{s.status}</span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
 
-          {health?.fallback_active && (
-            <div style={{ fontSize: '0.7rem', color: '#fbbf24', marginTop: '6px', lineHeight: 1.4 }}>
-              ⚠️ Sensor fault detected: Dispatched <b>{health.model_dispatched || 'FALLBACK_ML_MODEL'}</b> (Rainfall + Soil Infiltration proxy).
-            </div>
+              {health?.fallback_active && (
+                <div style={{ fontSize: '0.7rem', color: '#fbbf24', marginTop: '6px', lineHeight: 1.4 }}>
+                  ⚠️ Sensor fault detected: Dispatched <b>{health.model_dispatched || 'FALLBACK_ML_MODEL'}</b> (Rainfall + Soil Infiltration proxy).
+                </div>
+              )}
+            </>
           )}
         </div>
 
         {/* Action & Evacuation Directives */}
         <div className="action-box">
-          <div className="action-title">
+          <div 
+            className="action-title" 
+            style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+            onClick={() => setIsDirectivesOpen(!isDirectivesOpen)}
+          >
             <span>🚨 NDRF Evacuation Directives</span>
-          </div>
-          <div className="action-item">
-            • <b>Tier:</b> {action?.escalation_tier || action?.ndrf_response_tier || action?.alert_level || 'TIER 1 WATCH'}
-          </div>
-          <div className="action-item">
-            • <b>Primary Safe Shelter:</b> {typeof action?.primary_shelter === 'object' && action.primary_shelter !== null ? action.primary_shelter.name : (typeof action?.primary_shelter === 'string' ? action.primary_shelter : 'Govt Senior Secondary School (Upper Ridge)')}
-          </div>
-          <div className="action-item">
-            • <b>Evacuation Path:</b> {typeof action?.recommended_route === 'object' && action.recommended_route !== null ? action.recommended_route.name : (typeof action?.recommended_route === 'string' ? action.recommended_route : 'Route A (Upper Hill Road via SH-13)')}
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{isDirectivesOpen ? '▴' : '▾'}</span>
           </div>
 
-          <div className="sms-preview-card">
-            <div style={{ color: 'var(--accent-cyan)', marginBottom: '2px', fontWeight: 700 }}>
-              📢 Citizen SMS Broadcast:
+          {isDirectivesOpen && (
+            <div style={{ marginTop: '6px' }}>
+              <div className="action-item">
+                • <b>Tier:</b> {action?.escalation_tier || action?.ndrf_response_tier || action?.alert_level || 'TIER 1 WATCH'}
+              </div>
+              <div className="action-item">
+                • <b>Primary Safe Shelter:</b> {typeof action?.primary_shelter === 'object' && action.primary_shelter !== null ? action.primary_shelter.name : (typeof action?.primary_shelter === 'string' ? action.primary_shelter : 'Govt Senior Secondary School (Upper Ridge)')}
+              </div>
+              <div className="action-item">
+                • <b>Evacuation Path:</b> {typeof action?.recommended_route === 'object' && action.recommended_route !== null ? action.recommended_route.name : (typeof action?.recommended_route === 'string' ? action.recommended_route : 'Route A (Upper Hill Road via SH-13)')}
+              </div>
+
+              <div className="sms-preview-card">
+                <div style={{ color: 'var(--accent-cyan)', marginBottom: '2px', fontWeight: 700 }}>
+                  📢 Citizen SMS Broadcast:
+                </div>
+                "{action?.simulated_sms_broadcast || action?.public_broadcast || 'Emergency weather advisory active for catchment zone.'}"
+              </div>
+
+              <button
+                className="cap-broadcast-trigger-btn"
+                onClick={() => window.dispatchEvent(new CustomEvent('open-emergency-broadcast-modal'))}
+              >
+                <span>📢</span> Open CAP-SACHET &amp; Cell Broadcast Center
+              </button>
             </div>
-            "{action?.simulated_sms_broadcast || action?.public_broadcast || 'Emergency weather advisory active for catchment zone.'}"
-          </div>
+          )}
         </div>
       </div>
     </aside>

@@ -49,7 +49,9 @@ export const GISMap2D: React.FC = () => {
     selectVillage,
     viewMode,
     basemap2D,
-    layers
+    layers,
+    activeBasin,
+    activeBasinId
   } = useFlood();
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -563,12 +565,13 @@ export const GISMap2D: React.FC = () => {
     });
   }, [selectedVillageData]);
 
-  // Camera fly-to for village selection and deselect to All-India view
+  // Camera fly-to for village selection and basin switching
   const lastFlownVillageIdRef = useRef<string | null>(null);
+  const lastFlownBasinIdRef = useRef<string | null>(null);
+
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map || viewMode !== '2d') return;
-    if (lastFlownVillageIdRef.current === selectedVillageId) return;
 
     // Check if map container has valid rendered pixel dimensions
     try {
@@ -580,27 +583,42 @@ export const GISMap2D: React.FC = () => {
       return;
     }
 
-    lastFlownVillageIdRef.current = selectedVillageId;
-
-    if (!selectedVillageId) {
-      // Zoom out to All-India National Overview
-      try {
-        map.flyTo([22.5, 78.9], 5, { duration: 1.4 });
-      } catch (err) {
-        console.warn("Leaflet flyTo India overview error:", err);
+    // 1. Village Selection FlyTo
+    if (selectedVillageId && lastFlownVillageIdRef.current !== selectedVillageId) {
+      lastFlownVillageIdRef.current = selectedVillageId;
+      const v = selectedVillageData?.village || villages.find(x => x.id === selectedVillageId);
+      if (v && typeof v.lat === 'number' && typeof v.lng === 'number' && !isNaN(v.lat) && !isNaN(v.lng)) {
+        try {
+          map.flyTo([v.lat, v.lng], 13.5, { duration: 1.2 });
+        } catch (err) {
+          console.warn("Leaflet flyTo village error:", err);
+        }
       }
       return;
     }
 
-    const v = selectedVillageData?.village || villages.find(x => x.id === selectedVillageId);
-    if (v && typeof v.lat === 'number' && typeof v.lng === 'number' && !isNaN(v.lat) && !isNaN(v.lng)) {
-      try {
-        map.flyTo([v.lat, v.lng], 13.5, { duration: 1.2 });
-      } catch (err) {
-        console.warn("Leaflet flyTo village error:", err);
+    // 2. Basin Switching FlyTo (when selectedVillageId is null)
+    if (!selectedVillageId) {
+      if (lastFlownVillageIdRef.current !== null || lastFlownBasinIdRef.current !== activeBasinId) {
+        lastFlownVillageIdRef.current = null;
+        lastFlownBasinIdRef.current = activeBasinId;
+        
+        if (activeBasin && activeBasin.center_coords) {
+          try {
+            map.flyTo([activeBasin.center_coords[0], activeBasin.center_coords[1]], activeBasin.default_zoom || 12.0, { duration: 1.4 });
+          } catch (err) {
+            console.warn("Leaflet flyTo basin error:", err);
+          }
+        } else {
+          try {
+            map.flyTo([22.5, 78.9], 5, { duration: 1.4 });
+          } catch (err) {
+            console.warn("Leaflet flyTo overview error:", err);
+          }
+        }
       }
     }
-  }, [selectedVillageId, villages, selectedVillageData, viewMode]);
+  }, [selectedVillageId, villages, selectedVillageData, viewMode, activeBasinId, activeBasin]);
 
   // 5. Layer visibility sync
   useEffect(() => {

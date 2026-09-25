@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import { useFlood } from '../../context/FloodContext';
 import { BASEMAP_3D_SOURCES, DRONE_WAYPOINTS } from '../../constants';
@@ -23,7 +23,9 @@ export const GISMap3D: React.FC = () => {
     basemap3D,
     isDroneFlying,
     toggleDroneFlying,
-    simulation
+    simulation,
+    activeBasin,
+    activeBasinId
   } = useFlood();
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -172,6 +174,45 @@ export const GISMap3D: React.FC = () => {
     });
 
     map3d.on('load', () => {
+      // 3D Topographic Elevation Contours Layer (100m interval lines)
+      const generateContourFeatures = () => {
+        const features = [];
+        // Beas Basin bounding box approx lat 31.60 to 31.85, lng 77.00 to 77.25
+        for (let elev = 800; elev <= 1600; elev += 100) {
+          const latOffset = (elev - 800) * 0.00028;
+          const coords = [
+            [77.020 + latOffset * 0.4, 31.650 + latOffset],
+            [77.060 + latOffset * 0.2, 31.680 + latOffset * 0.8],
+            [77.100 - latOffset * 0.1, 31.710 + latOffset * 0.9],
+            [77.150 - latOffset * 0.3, 31.750 + latOffset * 0.7],
+            [77.210 - latOffset * 0.5, 31.780 + latOffset * 0.6]
+          ];
+          features.push({
+            type: 'Feature',
+            geometry: { type: 'LineString', coordinates: coords },
+            properties: { elevation_m: elev, label: `${elev}m` }
+          });
+        }
+        return { type: 'FeatureCollection', features };
+      };
+
+      map3d.addSource('3d-topo-contours-source', {
+        type: 'geojson',
+        data: generateContourFeatures()
+      });
+
+      map3d.addLayer({
+        id: '3d-topo-contours-line',
+        type: 'line',
+        source: '3d-topo-contours-source',
+        paint: {
+          'line-color': '#38bdf8',
+          'line-width': 1.2,
+          'line-opacity': 0.45,
+          'line-dasharray': [3, 2]
+        }
+      });
+
       // 3D Green Safe Ridge Zone Layer
       map3d.addSource('3d-green-safe-source', {
         type: 'geojson',
@@ -230,8 +271,8 @@ export const GISMap3D: React.FC = () => {
         source: '3d-stream-source',
         paint: {
           'line-color': '#0284c7',
-          'line-width': 6,
-          'line-opacity': 0.85
+          'line-width': 7,
+          'line-opacity': 0.9
         }
       });
 
@@ -241,18 +282,18 @@ export const GISMap3D: React.FC = () => {
         source: '3d-stream-source',
         paint: {
           'line-color': '#ffffff',
-          'line-width': 3.5,
-          'line-opacity': 0.8,
+          'line-width': 4,
+          'line-opacity': 0.85,
           'line-dasharray': [2, 3]
         }
       });
 
-      // Continuous 3D flow pulse animation
+      // Continuous 3D downhill water velocity pulse animation
       let pulseStep = 0;
       const animatePulse = () => {
         if (map3d.getLayer('3d-stream-pulse-layer')) {
-          pulseStep += 0.05;
-          const opacity = 0.55 + 0.4 * Math.sin(pulseStep); // Smooth wave between 0.15 and 0.95
+          pulseStep += 0.06;
+          const opacity = 0.55 + 0.4 * Math.sin(pulseStep);
           try {
             map3d.setPaintProperty('3d-stream-pulse-layer', 'line-opacity', opacity);
           } catch (_) { }
@@ -459,45 +500,68 @@ export const GISMap3D: React.FC = () => {
     }
   }, [selectedVillageData, selectedVillageId, simulation, villages]);
 
-  // 4b. Camera fly-to for village selection and deselect to All-India view
+  // 4b. Camera fly-to for village selection and basin switching
   const lastFlown3DVillageIdRef = useRef<string | null>(null);
+  const lastFlown3DBasinIdRef = useRef<string | null>(null);
+
   useEffect(() => {
     const map3d = map3dInstanceRef.current;
     if (!map3d || isDroneFlying || viewMode !== '3d') return;
-    if (lastFlown3DVillageIdRef.current === selectedVillageId) return;
 
-    lastFlown3DVillageIdRef.current = selectedVillageId;
-
-    if (!selectedVillageId) {
-      try {
-        map3d.flyTo({
-          center: [78.9, 22.5],
-          zoom: 4.8,
-          pitch: 20,
-          bearing: 0,
-          duration: 1800
-        });
-      } catch (err) {
-        console.warn("MapLibre flyTo India overview error:", err);
+    // 1. Village Selection FlyTo
+    if (selectedVillageId && lastFlown3DVillageIdRef.current !== selectedVillageId) {
+      lastFlown3DVillageIdRef.current = selectedVillageId;
+      const v = selectedVillageData?.village || villages.find(x => x.id === selectedVillageId);
+      if (v && typeof v.lng === 'number' && typeof v.lat === 'number' && !isNaN(v.lng) && !isNaN(v.lat)) {
+        try {
+          map3d.flyTo({
+            center: [v.lng, v.lat],
+            zoom: 13.5,
+            pitch: 58,
+            bearing: -25,
+            duration: 2000
+          });
+        } catch (err) {
+          console.warn("MapLibre flyTo error:", err);
+        }
       }
       return;
     }
 
-    const v = selectedVillageData?.village || villages.find(x => x.id === selectedVillageId);
-    if (v && typeof v.lng === 'number' && typeof v.lat === 'number' && !isNaN(v.lng) && !isNaN(v.lat)) {
-      try {
-        map3d.flyTo({
-          center: [v.lng, v.lat],
-          zoom: 13.5,
-          pitch: 58,
-          bearing: -25,
-          duration: 2000
-        });
-      } catch (err) {
-        console.warn("MapLibre flyTo error:", err);
+    // 2. Basin Switching FlyTo (when selectedVillageId is null)
+    if (!selectedVillageId) {
+      if (lastFlown3DVillageIdRef.current !== null || lastFlown3DBasinIdRef.current !== activeBasinId) {
+        lastFlown3DVillageIdRef.current = null;
+        lastFlown3DBasinIdRef.current = activeBasinId;
+        
+        if (activeBasin && activeBasin.center_coords) {
+          try {
+            map3d.flyTo({
+              center: [activeBasin.center_coords[1], activeBasin.center_coords[0]], // [lng, lat]
+              zoom: activeBasin.default_zoom || 12.0,
+              pitch: 55,
+              bearing: -15,
+              duration: 2000
+            });
+          } catch (err) {
+            console.warn("MapLibre flyTo basin error:", err);
+          }
+        } else {
+          try {
+            map3d.flyTo({
+              center: [78.9, 22.5],
+              zoom: 4.8,
+              pitch: 20,
+              bearing: 0,
+              duration: 1800
+            });
+          } catch (err) {
+            console.warn("MapLibre flyTo India overview error:", err);
+          }
+        }
       }
     }
-  }, [selectedVillageId, villages, selectedVillageData, isDroneFlying, viewMode]);
+  }, [selectedVillageId, villages, selectedVillageData, isDroneFlying, viewMode, activeBasinId, activeBasin]);
 
   // 5. Dynamic Village-Specific Drone Flythrough Sequence
   useEffect(() => {
@@ -571,6 +635,7 @@ export const GISMap3D: React.FC = () => {
         if (!isDroneFlying || !map3dInstanceRef.current) return;
         const wp = dynamicWaypoints[wpIdx];
         if (wp) {
+          setDroneWaypointDesc(wp.desc);
           map3d.flyTo({
             center: wp.center,
             zoom: wp.zoom,
@@ -585,6 +650,7 @@ export const GISMap3D: React.FC = () => {
       };
       flyNext();
     } else {
+      setDroneWaypointDesc(null);
       if (droneTimerRef.current) clearTimeout(droneTimerRef.current);
     }
 
@@ -593,11 +659,127 @@ export const GISMap3D: React.FC = () => {
     };
   }, [isDroneFlying, selectedVillageId, selectedVillageData, villages]);
 
+  const [droneWaypointDesc, setDroneWaypointDesc] = useState<string | null>(null);
+
+  const handleCameraPreset = (targetPitch: number, targetBearing: number = 0) => {
+    const map3d = map3dInstanceRef.current;
+    if (!map3d) return;
+    map3d.easeTo({
+      pitch: targetPitch,
+      bearing: targetBearing,
+      duration: 800
+    });
+  };
+
   return (
-    <div
-      ref={mapContainerRef}
-      id="gis-map-3d"
-      style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
-    />
+    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+      <div
+        ref={mapContainerRef}
+        id="gis-map-3d"
+        style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
+      />
+
+      {/* 3D Tactical Camera Presets & Drone HUD Overlay */}
+      <div className="hud-3d-overlay" style={{
+        position: 'absolute',
+        top: 12,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        zIndex: 20,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '6px',
+        pointerEvents: 'none'
+      }}>
+        {/* Drone Flight Waypoint Banner */}
+        {isDroneFlying && droneWaypointDesc && (
+          <div style={{
+            background: 'rgba(239, 68, 68, 0.9)',
+            border: '1px solid #ffffff',
+            borderRadius: '9999px',
+            padding: '4px 14px',
+            fontSize: '0.74rem',
+            fontWeight: 800,
+            color: '#ffffff',
+            boxShadow: '0 0 20px rgba(239, 68, 68, 0.8)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            animation: 'pulse-ring 1.5s infinite',
+            pointerEvents: 'auto'
+          }}>
+            <span>🚁 DRONE RECON TARGET:</span>
+            <span>{droneWaypointDesc}</span>
+          </div>
+        )}
+
+        {/* Tactical Angle Presets Bar */}
+        <div style={{
+          background: 'rgba(15, 23, 42, 0.88)',
+          border: '1px solid rgba(56, 189, 248, 0.4)',
+          borderRadius: '9999px',
+          padding: '3px 8px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          backdropFilter: 'blur(8px)',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.7)',
+          pointerEvents: 'auto'
+        }}>
+          <span style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--accent-cyan)', paddingLeft: '4px' }}>
+            3D ANGLE:
+          </span>
+          <button
+            onClick={() => handleCameraPreset(0, 0)}
+            style={{
+              background: '#090d16',
+              border: '1px solid var(--border-color)',
+              color: '#cbd5e1',
+              borderRadius: '9999px',
+              padding: '2px 8px',
+              fontSize: '0.68rem',
+              fontWeight: 600,
+              cursor: 'pointer'
+            }}
+            title="Birds-Eye Orthographic Plan View (0° Pitch)"
+          >
+            🦅 Topo (0°)
+          </button>
+          <button
+            onClick={() => handleCameraPreset(58, -25)}
+            style={{
+              background: 'rgba(56, 189, 248, 0.2)',
+              border: '1px solid #38bdf8',
+              color: '#38bdf8',
+              borderRadius: '9999px',
+              padding: '2px 8px',
+              fontSize: '0.68rem',
+              fontWeight: 700,
+              cursor: 'pointer'
+            }}
+            title="Standard Himalayan Valley Gorge Incline (58° Pitch)"
+          >
+            ⛰️ Valley (58°)
+          </button>
+          <button
+            onClick={() => handleCameraPreset(65, 15)}
+            style={{
+              background: '#090d16',
+              border: '1px solid var(--border-color)',
+              color: '#cbd5e1',
+              borderRadius: '9999px',
+              padding: '2px 8px',
+              fontSize: '0.68rem',
+              fontWeight: 600,
+              cursor: 'pointer'
+            }}
+            title="Steep Mountain Face Incline (65° Pitch)"
+          >
+            🚁 Recon (65°)
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };

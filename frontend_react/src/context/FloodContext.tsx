@@ -6,10 +6,14 @@ import {
   ThemeMode,
   ViewMode, 
   Basemap2D, 
-  Basemap3D 
+  Basemap3D,
+  BasinSummary
 } from '../types';
 
 interface FloodContextType {
+  basins: BasinSummary[];
+  activeBasinId: string;
+  activeBasin: BasinSummary | null;
   villages: Village[];
   selectedVillageId: string | null;
   selectedVillageData: VillageDetailResponse | null;
@@ -56,7 +60,8 @@ interface FloodContextType {
   setViewMode: (mode: ViewMode) => void;
   setBasemap2D: (basemap: Basemap2D) => void;
   setBasemap3D: (basemap: Basemap3D) => void;
-  selectVillage: (id: string | null, fly?: boolean) => Promise<void>;
+  switchBasin: (basinId: string) => Promise<void>;
+  selectVillage: (id: string | null, preserveSimulation?: boolean) => Promise<void>;
   setMethodologyOpen: (open: boolean) => void;
   setHydrographOpen: (open: boolean, villageId?: string | null) => void;
   toggleDroneFlying: (flying?: boolean) => void;
@@ -71,6 +76,8 @@ interface FloodContextType {
 const FloodContext = createContext<FloodContextType | undefined>(undefined);
 
 export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [basins, setBasins] = useState<BasinSummary[]>([]);
+  const [activeBasinId, setActiveBasinId] = useState<string>("BASIN-HP-BEAS");
   const [villages, setVillages] = useState<Village[]>([]);
   const [selectedVillageId, setSelectedVillageId] = useState<string | null>(null);
   const [selectedVillageData, setSelectedVillageData] = useState<VillageDetailResponse | null>(null);
@@ -84,6 +91,10 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [isDroneFlying, setIsDroneFlying] = useState<boolean>(false);
   const [isTourOpen, setIsTourOpen] = useState<boolean>(false);
   const [tourStep, setTourStep] = useState<number>(0);
+
+  const activeBasin = useMemo(() => {
+    return basins.find(b => b.basin_id === activeBasinId) || basins[0] || null;
+  }, [basins, activeBasinId]);
 
   const startTour = useCallback(() => {
     setRole('authority');
@@ -135,16 +146,48 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     activePreset: "cloudburst"
   });
 
-  // Fetch initial villages and selected village detail
+  // Fetch all basins and active basin villages
   const refreshData = useCallback(async () => {
     try {
-      const res = await fetch("/api/villages");
+      // 1. Fetch Basins Catalog
+      const basinsRes = await fetch("/api/basins");
+      if (basinsRes.ok) {
+        const basinsData = await basinsRes.json();
+        if (basinsData.basins && Array.isArray(basinsData.basins)) {
+          setBasins(basinsData.basins);
+        }
+      }
+
+      // 2. Fetch Active Basin Villages
+      const res = await fetch(`/api/villages?basin_id=${activeBasinId}`);
       const data = await res.json();
       if (data.villages && Array.isArray(data.villages)) {
         setVillages(data.villages);
       }
     } catch (err) {
-      console.error("Failed to fetch villages list:", err);
+      console.error("Failed to fetch basins/villages list:", err);
+    }
+  }, [activeBasinId]);
+
+  const switchBasin = useCallback(async (basinId: string) => {
+    setActiveBasinId(basinId);
+    setSelectedVillageId(null);
+    setSelectedVillageData(null);
+    try {
+      await fetch("/api/basins/active", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ basin_id: basinId })
+      });
+      const res = await fetch(`/api/basins/${basinId}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.villages && Array.isArray(data.villages)) {
+          setVillages(data.villages);
+        }
+      }
+    } catch (err) {
+      console.error(`Failed to switch basin to ${basinId}:`, err);
     }
   }, []);
 
@@ -175,25 +218,30 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   }, []);
 
-  const selectVillage = useCallback(async (villageId: string | null) => {
-    // If null or clicking already selected village -> deselect back to All-India mode!
-    if (!villageId || villageId === selectedVillageId) {
+  const selectVillage = useCallback(async (villageId: string | null, preserveSimulation: boolean = false) => {
+    // If null -> deselect back to All-India mode
+    if (!villageId) {
       setSelectedVillageId(null);
       setSelectedVillageData(null);
       return;
     }
 
+    const isSameVillage = villageId === selectedVillageId;
     setSelectedVillageId(villageId);
+
     try {
       const res = await fetch(`/api/villages/${villageId}`);
+      if (!res.ok) return;
       const data: VillageDetailResponse = await res.json();
       setSelectedVillageData(data);
-      if (data.telemetry) {
+
+      // Only overwrite slider values from backend telemetry if selecting a different village
+      if (!isSameVillage && !preserveSimulation && data.telemetry) {
         setSimulation(prev => ({
           ...prev,
-          rain: data.telemetry.rain_1h || 0,
-          soil: data.telemetry.soil_moisture || 0,
-          water: data.telemetry.water_level_m !== null ? data.telemetry.water_level_m : 1.0
+          rain: data.telemetry.rain_1h ?? prev.rain,
+          soil: data.telemetry.soil_moisture ?? prev.soil,
+          water: data.telemetry.water_level_m !== null ? data.telemetry.water_level_m : prev.water
         }));
       }
     } catch (err) {
@@ -231,6 +279,7 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   const applyScenario = useCallback(async (scenarioName: string) => {
     setSimulation(prev => ({ ...prev, activePreset: scenarioName }));
+    const targetVillageId = selectedVillageId || 'VIL-01';
     try {
       await fetch("/api/simulate/scenario", {
         method: "POST",
@@ -238,7 +287,9 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         body: JSON.stringify({ scenario_name: scenarioName })
       });
       await refreshData();
-      await selectVillage(selectedVillageId);
+      if (selectedVillageId) {
+        await selectVillage(selectedVillageId, false);
+      }
     } catch (err) {
       console.error(`Failed to apply scenario ${scenarioName}:`, err);
     }
@@ -256,7 +307,9 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           status: newStatus
         })
       });
-      await selectVillage(selectedVillageId);
+      if (selectedVillageId) {
+        await selectVillage(selectedVillageId, true);
+      }
       await refreshData();
     } catch (err) {
       console.error("Failed to toggle water sensor:", err);
@@ -264,6 +317,9 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   }, [selectedVillageData, selectVillage, selectedVillageId, refreshData]);
 
   const contextValue = useMemo<FloodContextType>(() => ({
+    basins,
+    activeBasinId,
+    activeBasin,
     villages,
     selectedVillageId,
     selectedVillageData,
@@ -290,6 +346,7 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setViewMode,
     setBasemap2D,
     setBasemap3D,
+    switchBasin,
     selectVillage,
     setMethodologyOpen,
     setHydrographOpen,
@@ -301,6 +358,9 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     refreshData,
     updateVillagesFromTelemetry
   }), [
+    basins,
+    activeBasinId,
+    activeBasin,
     villages,
     selectedVillageId,
     selectedVillageData,
@@ -322,6 +382,7 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     layers,
     simulation,
     toggleTheme,
+    switchBasin,
     selectVillage,
     setHydrographOpen,
     toggleDroneFlying,
