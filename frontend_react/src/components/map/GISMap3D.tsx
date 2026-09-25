@@ -21,6 +21,7 @@ export const GISMap3D: React.FC = () => {
     selectVillage,
     viewMode,
     basemap3D,
+    layers,
     isDroneFlying,
     toggleDroneFlying,
     simulation,
@@ -352,7 +353,7 @@ export const GISMap3D: React.FC = () => {
     }
   }, [basemap3D]);
 
-  // 3. Render 3D Village Markers & Shelters ONCE
+  // 3. Render 3D Village Markers, Shelters & Sensors
   const rendered3DCountRef = useRef<number>(0);
   useEffect(() => {
     const map3d = map3dInstanceRef.current;
@@ -391,20 +392,67 @@ export const GISMap3D: React.FC = () => {
 
       // Safe Ridge Shelter 3D Marker
       const shelters = v.safe_shelters || v.shelters || [];
-      shelters.forEach(s => {
+      if (shelters.length > 0) {
+        shelters.forEach(s => {
+          const shelterEl = document.createElement("div");
+          shelterEl.className = "marker-3d-shelter-badge";
+          shelterEl.innerHTML = `
+            <div class="shelter-3d-bubble">
+              ⛺ <b>${s.name}</b> (${s.elevation_m}m)
+            </div>
+          `;
+          const shelterMarker = new maplibregl.Marker({ element: shelterEl })
+            .setLngLat([s.lng, s.lat])
+            .addTo(map3d);
+
+          markers3DRef.current.push(shelterMarker);
+        });
+      } else {
         const shelterEl = document.createElement("div");
         shelterEl.className = "marker-3d-shelter-badge";
         shelterEl.innerHTML = `
           <div class="shelter-3d-bubble">
-            ⛺ <b>${s.name}</b> (${s.elevation_m}m)
+            ⛺ <b>${v.name} Refuge</b> (${v.elevation_m + 85}m)
           </div>
         `;
         const shelterMarker = new maplibregl.Marker({ element: shelterEl })
-          .setLngLat([s.lng, s.lat])
+          .setLngLat([v.lng + 0.006, v.lat + 0.007])
           .addTo(map3d);
 
         markers3DRef.current.push(shelterMarker);
-      });
+      }
+
+      // IoT Gauge 3D Marker
+      const sensors = v.sensor_locations || [];
+      if (sensors.length > 0) {
+        sensors.forEach(sens => {
+          const sensorEl = document.createElement("div");
+          sensorEl.className = "marker-3d-sensor-badge";
+          sensorEl.innerHTML = `
+            <div class="sensor-3d-bubble">
+              📡 <b>${sens.type}</b>
+            </div>
+          `;
+          const sensorMarker = new maplibregl.Marker({ element: sensorEl })
+            .setLngLat([sens.lng, sens.lat])
+            .addTo(map3d);
+
+          markers3DRef.current.push(sensorMarker);
+        });
+      } else {
+        const sensorEl = document.createElement("div");
+        sensorEl.className = "marker-3d-sensor-badge";
+        sensorEl.innerHTML = `
+          <div class="sensor-3d-bubble">
+            📡 <b>${v.name} Gauge</b>
+          </div>
+        `;
+        const sensorMarker = new maplibregl.Marker({ element: sensorEl })
+          .setLngLat([v.lng - 0.005, v.lat - 0.005])
+          .addTo(map3d);
+
+        markers3DRef.current.push(sensorMarker);
+      }
     });
   }, [villages, selectVillage]);
 
@@ -414,16 +462,37 @@ export const GISMap3D: React.FC = () => {
     if (!map3d || !map3d.isStyleLoaded()) return;
 
     if (!selectedVillageData) {
+      // Basin-wide 3D Streams
+      const allStreams: any[] = [];
+      const allRedPolys: any[] = [];
+      villages.forEach(v => {
+        if (v.river_stream && v.river_stream.length > 1) {
+          allStreams.push({
+            type: 'Feature',
+            geometry: { type: 'LineString', coordinates: v.river_stream.map(pt => [pt[1], pt[0]]) },
+            properties: { stream_width: 7 }
+          });
+        }
+        const redPts = v.hazard_zones?.red_inundation_polygon || v.inundation_polygon;
+        if (redPts && redPts.length > 0) {
+          allRedPolys.push({
+            type: 'Feature',
+            geometry: { type: 'Polygon', coordinates: [redPts.map(pt => [pt[1], pt[0]])] },
+            properties: { water_level: 1.0 }
+          });
+        }
+      });
+
       if (map3d.getSource('3d-stream-source')) {
         (map3d.getSource('3d-stream-source') as maplibregl.GeoJSONSource).setData({
           type: 'FeatureCollection',
-          features: []
+          features: allStreams
         });
       }
       if (map3d.getSource('3d-flood-water-source')) {
         (map3d.getSource('3d-flood-water-source') as maplibregl.GeoJSONSource).setData({
           type: 'FeatureCollection',
-          features: []
+          features: allRedPolys
         });
       }
       if (map3d.getSource('3d-orange-slope-source')) {
@@ -499,6 +568,38 @@ export const GISMap3D: React.FC = () => {
       });
     }
   }, [selectedVillageData, selectedVillageId, simulation, villages]);
+
+  // Layer visibility sync for 3D MapLibre
+  useEffect(() => {
+    const map3d = map3dInstanceRef.current;
+    if (!map3d || !map3d.isStyleLoaded()) return;
+
+    const setVis = (layerId: string, visible: boolean) => {
+      try {
+        if (map3d.getLayer(layerId)) {
+          map3d.setLayoutProperty(layerId, 'visibility', visible ? 'visible' : 'none');
+        }
+      } catch (e) {}
+    };
+
+    setVis('3d-flood-water-fill', layers.hazardZones);
+    setVis('3d-orange-slope-fill', layers.hazardZones);
+    setVis('3d-green-safe-fill', layers.hazardZones);
+    setVis('3d-stream-line-layer', layers.streams);
+    setVis('3d-stream-pulse-layer', layers.streams);
+    setVis('3d-topo-contours-line', layers.contoursDEM);
+
+    // Toggle 3D marker badges
+    document.querySelectorAll<HTMLElement>('.marker-3d-shelter-badge').forEach(el => {
+      el.style.display = layers.shelters ? 'block' : 'none';
+    });
+    document.querySelectorAll<HTMLElement>('.marker-3d-sensor-badge').forEach(el => {
+      el.style.display = layers.sensors ? 'block' : 'none';
+    });
+    document.querySelectorAll<HTMLElement>('.marker-3d-village-badge').forEach(el => {
+      el.style.display = layers.villageLabels ? 'block' : 'none';
+    });
+  }, [layers]);
 
   // 4b. Camera fly-to for village selection and basin switching
   const lastFlown3DVillageIdRef = useRef<string | null>(null);

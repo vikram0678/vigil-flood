@@ -4769,6 +4769,50 @@ html, body, #root {
   text-transform: uppercase;
 }
 
+/* 2D / 3D Dimension Selector Row in Layers Sheet */
+.dimension-selector-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.dim-btn {
+  background: #f8f9fa;
+  border: 1.5px solid #dadce0;
+  border-radius: 8px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #3c4043;
+  transition: all 0.15s ease;
+}
+
+.dim-btn:hover {
+  background: #e8f0fe;
+  border-color: #1a73e8;
+  color: #1a73e8;
+}
+
+.dim-btn.active {
+  background: #e8f0fe;
+  border-color: #1a73e8;
+  color: #1a73e8;
+  box-shadow: 0 0 0 1px #1a73e8;
+}
+
+.dim-icon {
+  font-size: 1rem;
+}
+
+.dim-text {
+  letter-spacing: 0.02em;
+}
+
 /* 2x3 Grid for Details Tiles */
 .details-card-grid {
   display: grid;
@@ -4951,4 +4995,83 @@ html, body, #root {
     left: 8px;
   }
 }
+
+/* ==========================================================
+   🏔️ 3D MAPLIBRE TERRAIN FLOATING BADGES & PINS
+   ========================================================== */
+.marker-3d-village-badge {
+  cursor: pointer;
+  z-index: 20;
+  transition: transform 0.2s ease;
+}
+
+.marker-3d-village-badge:hover {
+  transform: scale(1.1);
+  z-index: 50;
+}
+
+.badge-3d-bubble {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1.5px solid rgba(56, 189, 248, 0.6);
+  border-radius: 20px;
+  padding: 4px 10px;
+  color: #f8fafc;
+  font-size: 0.75rem;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  white-space: nowrap;
+}
+
+.badge-3d-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 8px #38bdf8;
+}
+
+.marker-3d-shelter-badge {
+  cursor: pointer;
+  z-index: 15;
+}
+
+.shelter-3d-bubble {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(6, 78, 59, 0.92);
+  border: 1.5px solid #10b981;
+  border-radius: 16px;
+  padding: 3px 8px;
+  color: #a7f3d0;
+  font-size: 0.70rem;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+}
+
+.marker-3d-sensor-badge {
+  cursor: pointer;
+  z-index: 15;
+}
+
+.sensor-3d-bubble {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(12, 74, 110, 0.92);
+  border: 1.5px solid #0284c7;
+  border-radius: 14px;
+  padding: 2px 7px;
+  color: #bae6fd;
+  font-size: 0.68rem;
+  font-weight: 700;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+}
+
 

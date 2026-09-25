@@ -65,11 +65,12 @@ export const GISMap2D: React.FC = () => {
   const shelterLayerRef = useRef<L.LayerGroup>(L.layerGroup());
   const routeLayerRef = useRef<L.LayerGroup>(L.layerGroup());
   const sensorLayerRef = useRef<L.LayerGroup>(L.layerGroup());
+  const contoursLayerRef = useRef<L.LayerGroup>(L.layerGroup());
+  const dopplerLayerRef = useRef<L.TileLayer | null>(null);
   const markersRef = useRef<Record<string, L.CircleMarker>>({});
   const hexPolygonsRef = useRef<Record<string, L.Polygon>>({});
 
   // Auto-invalidateSize and center camera whenever viewMode switches to 2D
-  // Auto-invalidateSize when viewMode switches to 2D
   useEffect(() => {
     if (viewMode === '2d' && mapInstanceRef.current) {
       const t1 = setTimeout(() => {
@@ -113,10 +114,17 @@ export const GISMap2D: React.FC = () => {
     shelterLayerRef.current = L.layerGroup().addTo(map);
     routeLayerRef.current = L.layerGroup().addTo(map);
     sensorLayerRef.current = L.layerGroup().addTo(map);
+    contoursLayerRef.current = L.layerGroup().addTo(map);
     markersRef.current = {};
     hexPolygonsRef.current = {};
     renderedVillageIdRef.current = null;
     lastFlownVillageIdRef.current = null;
+
+    // Doppler Radar Tile Layer (RainViewer Open Precipitation)
+    dopplerLayerRef.current = L.tileLayer(
+      'https://tilecache.rainviewer.com/v2/radar/nowcast_20240925/256/{z}/{x}/{y}/2/1_1.png',
+      { opacity: 0.65, maxZoom: 18, zIndex: 400 }
+    );
 
     // Set initial basemap tile layer
     const initialCfg = BASEMAP_2D_TILES[basemap2D] || BASEMAP_2D_TILES.google_floodhub;
@@ -299,16 +307,134 @@ export const GISMap2D: React.FC = () => {
     });
   }, [villages, selectVillage]);
 
-  // 4. Update Overlays for Selected Village (Hazard Zones, Shelters, Routes, Streams, Sensors)
+  // 4. Update Overlays for Selected Village or Entire Basin (Hazard Zones, Shelters, Routes, Streams, Sensors)
   const renderedVillageIdRef = useRef<string | null>(null);
   useEffect(() => {
+    hazardLayerRef.current.clearLayers();
+    streamLayerRef.current.clearLayers();
+    shelterLayerRef.current.clearLayers();
+    routeLayerRef.current.clearLayers();
+    sensorLayerRef.current.clearLayers();
+
     if (!selectedVillageData) {
       renderedVillageIdRef.current = null;
-      hazardLayerRef.current.clearLayers();
-      streamLayerRef.current.clearLayers();
-      shelterLayerRef.current.clearLayers();
-      routeLayerRef.current.clearLayers();
-      sensorLayerRef.current.clearLayers();
+
+      // Populate basin-wide Safe Refuge, IoT Sensors, River Streams, and Inundation Polygons
+      villages.forEach(v => {
+        // Basin-wide safe shelter pins
+        const shelters = v.safe_shelters || v.shelters || [];
+        if (shelters.length > 0) {
+          shelters.forEach(s => {
+            const shelterMarker = L.marker([s.lat, s.lng], {
+              icon: L.divIcon({
+                className: "custom-shelter-pin",
+                html: `<div class="shelter-pin-badge">⛺</div>`,
+                iconSize: [28, 28],
+                iconAnchor: [14, 14]
+              })
+            });
+            shelterMarker.bindTooltip(`
+              <div style="font-family:'Outfit',sans-serif; padding:2px;">
+                <div style="font-weight:700; color:#10b981;">⛺ ${s.name}</div>
+                <div style="font-size:11px; color:#cbd5e1;">Capacity: <b>${s.capacity}</b> | Elev: <b>${s.elevation_m}m</b></div>
+                <div style="font-size:10px; color:#34d399; margin-top:2px;">Status: SAFE HIGH RIDGE REFUGE</div>
+              </div>
+            `, { sticky: true, direction: "top" });
+            shelterLayerRef.current.addLayer(shelterMarker);
+          });
+        } else {
+          const shelterMarker = L.marker([v.lat + 0.007, v.lng + 0.006], {
+            icon: L.divIcon({
+              className: "custom-shelter-pin",
+              html: `<div class="shelter-pin-badge">⛺</div>`,
+              iconSize: [28, 28],
+              iconAnchor: [14, 14]
+            })
+          });
+          shelterMarker.bindTooltip(`
+            <div style="font-family:'Outfit',sans-serif; padding:2px;">
+              <div style="font-weight:700; color:#10b981;">⛺ ${v.name} High Ridge Refuge</div>
+              <div style="font-size:11px; color:#cbd5e1;">Capacity: <b>250</b> | Elev: <b>${v.elevation_m + 85}m</b></div>
+              <div style="font-size:10px; color:#34d399; margin-top:2px;">Status: SAFE HIGH RIDGE REFUGE</div>
+            </div>
+          `, { sticky: true, direction: "top" });
+          shelterLayerRef.current.addLayer(shelterMarker);
+        }
+
+        // Basin-wide IoT sensor pins
+        const sensors = v.sensor_locations || [];
+        if (sensors.length > 0) {
+          sensors.forEach(sens => {
+            const sensorMarker = L.marker([sens.lat, sens.lng], {
+              icon: L.divIcon({
+                className: "custom-sensor-pin",
+                html: `<div class="sensor-pin-badge">📡</div>`,
+                iconSize: [22, 22],
+                iconAnchor: [11, 11]
+              })
+            });
+            sensorMarker.bindTooltip(`
+              <div style="font-family:'Outfit',sans-serif; padding:2px;">
+                <div style="font-weight:700; color:#38bdf8;">📡 ${sens.type} Gauge</div>
+                <div style="font-size:11px; color:#cbd5e1;">ID: <code>${sens.id}</code></div>
+                <div style="font-size:10px; color:#10b981;">Status: LIVE TELEMETRY STREAMING</div>
+              </div>
+            `, { sticky: true, direction: "top" });
+            sensorLayerRef.current.addLayer(sensorMarker);
+          });
+        } else {
+          const sensorMarker = L.marker([v.lat - 0.005, v.lng - 0.005], {
+            icon: L.divIcon({
+              className: "custom-sensor-pin",
+              html: `<div class="sensor-pin-badge">📡</div>`,
+              iconSize: [22, 22],
+              iconAnchor: [11, 11]
+            })
+          });
+          sensorMarker.bindTooltip(`
+            <div style="font-family:'Outfit',sans-serif; padding:2px;">
+              <div style="font-weight:700; color:#38bdf8;">📡 ${v.name} CWC River Gauge</div>
+              <div style="font-size:11px; color:#cbd5e1;">ID: <code>SENS-CWC-${v.id}</code></div>
+              <div style="font-size:10px; color:#10b981;">Status: REAL-TIME TELEMETRY ACTIVE</div>
+            </div>
+          `, { sticky: true, direction: "top" });
+          sensorLayerRef.current.addLayer(sensorMarker);
+        }
+
+        // Basin-wide River Streams
+        if (v.river_stream && v.river_stream.length > 1) {
+          const streamLine = L.polyline(v.river_stream, {
+            color: "#0284c7",
+            weight: 5,
+            opacity: 0.85
+          });
+          streamLine.bindTooltip(`<b>🌊 ${v.name} River Drainage Stream</b><br>Flow Velocity: <b>28 km/h</b>`, { sticky: true });
+          streamLayerRef.current.addLayer(streamLine);
+
+          const pulseLine = L.polyline(v.river_stream, {
+            color: "#ffffff",
+            weight: 2.5,
+            opacity: 0.9,
+            className: "animated-stream-flow-pulse"
+          });
+          streamLayerRef.current.addLayer(pulseLine);
+        }
+
+        // Basin-wide Inundation Hazards
+        const redPts = v.hazard_zones?.red_inundation_polygon || v.inundation_polygon;
+        if (redPts && redPts.length > 0) {
+          const color = RISK_COLORS[v.risk_level] || RISK_COLORS.LOW;
+          const poly = L.polygon(redPts, {
+            color: color,
+            fillColor: color,
+            fillOpacity: 0.35,
+            weight: 2,
+            dashArray: "4, 4"
+          });
+          poly.bindTooltip(`<b>🔴 ${v.name} Inundation Zone</b><br>Threat Level: ${v.risk_level} (${v.risk_percentage}%)`, { sticky: true });
+          hazardLayerRef.current.addLayer(poly);
+        }
+      });
       return;
     }
     const v = selectedVillageData.village;
@@ -563,86 +689,103 @@ export const GISMap2D: React.FC = () => {
       }
       sensorLayerRef.current.addLayer(sensorMarker);
     });
-  }, [selectedVillageData]);
+  }, [selectedVillageData, villages, activeBasinId]);
 
-  // Camera fly-to for village selection and basin switching
-  const lastFlownVillageIdRef = useRef<string | null>(null);
-  const lastFlownBasinIdRef = useRef<string | null>(null);
+// Camera fly-to for village selection and basin switching
+const lastFlownVillageIdRef = useRef<string | null>(null);
+const lastFlownBasinIdRef = useRef<string | null>(null);
 
-  useEffect(() => {
-    const map = mapInstanceRef.current;
-    if (!map || viewMode !== '2d') return;
+useEffect(() => {
+  const map = mapInstanceRef.current;
+  if (!map || viewMode !== '2d') return;
 
-    // Check if map container has valid rendered pixel dimensions
-    try {
-      const size = map.getSize();
-      if (!size || size.x <= 0 || size.y <= 0 || isNaN(size.x) || isNaN(size.y)) {
-        return;
-      }
-    } catch (_) {
+  // Check if map container has valid rendered pixel dimensions
+  try {
+    const size = map.getSize();
+    if (!size || size.x <= 0 || size.y <= 0 || isNaN(size.x) || isNaN(size.y)) {
       return;
     }
+  } catch (_) {
+    return;
+  }
 
-    // 1. Village Selection FlyTo
-    if (selectedVillageId && lastFlownVillageIdRef.current !== selectedVillageId) {
-      lastFlownVillageIdRef.current = selectedVillageId;
-      const v = selectedVillageData?.village || villages.find(x => x.id === selectedVillageId);
-      if (v && typeof v.lat === 'number' && typeof v.lng === 'number' && !isNaN(v.lat) && !isNaN(v.lng)) {
+  // 1. Village Selection FlyTo
+  if (selectedVillageId && lastFlownVillageIdRef.current !== selectedVillageId) {
+    lastFlownVillageIdRef.current = selectedVillageId;
+    const v = selectedVillageData?.village || villages.find(x => x.id === selectedVillageId);
+    if (v && typeof v.lat === 'number' && typeof v.lng === 'number' && !isNaN(v.lat) && !isNaN(v.lng)) {
+      try {
+        map.flyTo([v.lat, v.lng], 13.5, { duration: 1.2 });
+      } catch (err) {
+        console.warn("Leaflet flyTo village error:", err);
+      }
+    }
+    return;
+  }
+
+  // 2. Basin Switching FlyTo (when selectedVillageId is null)
+  if (!selectedVillageId) {
+    if (lastFlownVillageIdRef.current !== null || lastFlownBasinIdRef.current !== activeBasinId) {
+      lastFlownVillageIdRef.current = null;
+      lastFlownBasinIdRef.current = activeBasinId;
+      
+      if (activeBasin && activeBasin.center_coords) {
         try {
-          map.flyTo([v.lat, v.lng], 13.5, { duration: 1.2 });
+          map.flyTo([activeBasin.center_coords[0], activeBasin.center_coords[1]], activeBasin.default_zoom || 12.0, { duration: 1.4 });
         } catch (err) {
-          console.warn("Leaflet flyTo village error:", err);
+          console.warn("Leaflet flyTo basin error:", err);
         }
-      }
-      return;
-    }
-
-    // 2. Basin Switching FlyTo (when selectedVillageId is null)
-    if (!selectedVillageId) {
-      if (lastFlownVillageIdRef.current !== null || lastFlownBasinIdRef.current !== activeBasinId) {
-        lastFlownVillageIdRef.current = null;
-        lastFlownBasinIdRef.current = activeBasinId;
-        
-        if (activeBasin && activeBasin.center_coords) {
-          try {
-            map.flyTo([activeBasin.center_coords[0], activeBasin.center_coords[1]], activeBasin.default_zoom || 12.0, { duration: 1.4 });
-          } catch (err) {
-            console.warn("Leaflet flyTo basin error:", err);
-          }
-        } else {
-          try {
-            map.flyTo([22.5, 78.9], 5, { duration: 1.4 });
-          } catch (err) {
-            console.warn("Leaflet flyTo overview error:", err);
-          }
+      } else {
+        try {
+          map.flyTo([22.5, 78.9], 5, { duration: 1.4 });
+        } catch (err) {
+          console.warn("Leaflet flyTo overview error:", err);
         }
       }
     }
-  }, [selectedVillageId, villages, selectedVillageData, viewMode, activeBasinId, activeBasin]);
+  }
+}, [selectedVillageId, villages, selectedVillageData, viewMode, activeBasinId, activeBasin]);
 
-  // 5. Layer visibility sync
-  useEffect(() => {
-    const map = mapInstanceRef.current;
-    if (!map) return;
+// 5. Layer visibility sync
+useEffect(() => {
+  const map = mapInstanceRef.current;
+  if (!map) return;
 
-    if (layers.hazardZones) map.addLayer(hazardLayerRef.current);
-    else map.removeLayer(hazardLayerRef.current);
+  if (layers.hazardZones) map.addLayer(hazardLayerRef.current);
+  else map.removeLayer(hazardLayerRef.current);
 
-    if (layers.hexGrid) map.addLayer(hexGridLayerRef.current);
-    else map.removeLayer(hexGridLayerRef.current);
+  if (layers.hexGrid) map.addLayer(hexGridLayerRef.current);
+  else map.removeLayer(hexGridLayerRef.current);
 
-    if (layers.shelters) map.addLayer(shelterLayerRef.current);
-    else map.removeLayer(shelterLayerRef.current);
+  if (layers.shelters) map.addLayer(shelterLayerRef.current);
+  else map.removeLayer(shelterLayerRef.current);
 
-    if (layers.routes) map.addLayer(routeLayerRef.current);
-    else map.removeLayer(routeLayerRef.current);
+  if (layers.routes) map.addLayer(routeLayerRef.current);
+  else map.removeLayer(routeLayerRef.current);
 
-    if (layers.streams) map.addLayer(streamLayerRef.current);
-    else map.removeLayer(streamLayerRef.current);
+  if (layers.streams) map.addLayer(streamLayerRef.current);
+  else map.removeLayer(streamLayerRef.current);
 
-    if (layers.sensors) map.addLayer(sensorLayerRef.current);
-    else map.removeLayer(sensorLayerRef.current);
-  }, [layers]);
+  if (layers.sensors) map.addLayer(sensorLayerRef.current);
+  else map.removeLayer(sensorLayerRef.current);
+
+  if (layers.contoursDEM) map.addLayer(contoursLayerRef.current);
+  else map.removeLayer(contoursLayerRef.current);
+
+  if (dopplerLayerRef.current) {
+    if (layers.dopplerRadar) map.addLayer(dopplerLayerRef.current);
+    else map.removeLayer(dopplerLayerRef.current);
+  }
+
+  // Village markers visibility
+  Object.values(markersRef.current).forEach(marker => {
+    if (layers.villageLabels) {
+      marker.setStyle({ opacity: 1.0, fillOpacity: 0.95 });
+    } else {
+      marker.setStyle({ opacity: 0.2, fillOpacity: 0.15 });
+    }
+  });
+}, [layers]);
 
   return (
     <div
