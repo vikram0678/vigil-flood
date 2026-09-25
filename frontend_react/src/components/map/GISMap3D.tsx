@@ -113,10 +113,10 @@ export const GISMap3D: React.FC = () => {
     rendered3DCountRef.current = 0;
     lastFlown3DVillageIdRef.current = null;
 
-    // Add unified distance scale controls (metric & imperial)
+    // Add unified distance scale controls (metric)
     try {
       const scaleCtrl = new maplibregl.ScaleControl({ maxWidth: 100, unit: 'metric' });
-      map3d.addControl(scaleCtrl, 'bottom-left');
+      map3d.addControl(scaleCtrl, 'bottom-right');
     } catch (e) {
       console.warn("ScaleControl metric add error:", e);
     }
@@ -629,40 +629,24 @@ export const GISMap3D: React.FC = () => {
       return;
     }
 
-    // 2. Basin Switching FlyTo (when selectedVillageId is null)
+    // 2. All-India National Overview (when selectedVillageId is null)
     if (!selectedVillageId) {
-      if (lastFlown3DVillageIdRef.current !== null || lastFlown3DBasinIdRef.current !== activeBasinId) {
+      if (lastFlown3DVillageIdRef.current !== null) {
         lastFlown3DVillageIdRef.current = null;
-        lastFlown3DBasinIdRef.current = activeBasinId;
-        
-        if (activeBasin && activeBasin.center_coords) {
-          try {
-            map3d.flyTo({
-              center: [activeBasin.center_coords[1], activeBasin.center_coords[0]], // [lng, lat]
-              zoom: activeBasin.default_zoom || 12.0,
-              pitch: 55,
-              bearing: -15,
-              duration: 2000
-            });
-          } catch (err) {
-            console.warn("MapLibre flyTo basin error:", err);
-          }
-        } else {
-          try {
-            map3d.flyTo({
-              center: [78.9, 22.5],
-              zoom: 4.8,
-              pitch: 20,
-              bearing: 0,
-              duration: 1800
-            });
-          } catch (err) {
-            console.warn("MapLibre flyTo India overview error:", err);
-          }
+        try {
+          map3d.flyTo({
+            center: [78.9, 22.5],
+            zoom: 4.8,
+            pitch: 20,
+            bearing: 0,
+            duration: 1800
+          });
+        } catch (err) {
+          console.warn("MapLibre flyTo India overview error:", err);
         }
       }
     }
-  }, [selectedVillageId, villages, selectedVillageData, isDroneFlying, viewMode, activeBasinId, activeBasin]);
+  }, [selectedVillageId, villages, selectedVillageData, isDroneFlying, viewMode]);
 
   // 5. Dynamic Village-Specific Drone Flythrough Sequence
   useEffect(() => {
@@ -783,13 +767,12 @@ export const GISMap3D: React.FC = () => {
       {/* 3D Tactical Camera Presets & Drone HUD Overlay */}
       <div className="hud-3d-overlay" style={{
         position: 'absolute',
-        top: 12,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        zIndex: 20,
+        top: 60,
+        left: 14,
+        zIndex: 500,
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         gap: '6px',
         pointerEvents: 'none'
       }}>

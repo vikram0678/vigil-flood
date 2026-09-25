@@ -3736,8 +3736,8 @@ html, body, #root {
   top: 14px;
   left: 65px;
   z-index: 1000;
-  width: 380px;
-  max-width: calc(100vw - 120px);
+  width: 320px;
+  max-width: calc(100vw - 320px);
 }
 
 .search-bar-inner {
