@@ -83,23 +83,23 @@ export const MapWeatherHazardSymbols: React.FC = () => {
         }
 
         // 2. Render on MapLibre (3D Map)
-        const map3d = (window as any).map3dInstance as maplibregl.Map;
-        if (map3d) {
+        const render3DSymbols = (map3d: maplibregl.Map) => {
           map3dMarkersRef.current.forEach(m => m.remove());
           map3dMarkersRef.current = [];
 
           symbols.forEach((s: any) => {
-            const el = document.createElement('div');
-            el.className = `weather-hazard-map-pin ${s.severity.toLowerCase()}`;
-            el.style.setProperty('--pin-color', s.color);
-            el.innerHTML = `
-              <span class="hazard-emoji">${s.icon}</span>
-              <span class="hazard-pulse-ring"></span>
+            const wrapper = document.createElement('div');
+            wrapper.className = 'weather-symbol-3d-marker-anchor';
+            wrapper.innerHTML = `
+              <div class="weather-hazard-map-pin ${s.severity.toLowerCase()}" style="--pin-color: ${s.color};">
+                <span class="hazard-emoji">${s.icon}</span>
+                <span class="hazard-pulse-ring"></span>
+              </div>
             `;
 
-            const popup = new maplibregl.Popup({ offset: 25 }).setHTML(`
+            const popup = new maplibregl.Popup({ offset: 25, closeButton: false }).setHTML(`
               <div class="hazard-symbol-popup">
-                <div class="popup-event-header" style="background: ${s.color}20; border-left: 3px solid ${s.color};">
+                <div class="popup-event-header" style="background: ${s.color}25; border-left: 4px solid ${s.color};">
                   <div class="popup-icon">${s.icon}</div>
                   <div>
                     <div class="popup-title" style="color: ${s.color};">${s.event}</div>
@@ -111,19 +111,38 @@ export const MapWeatherHazardSymbols: React.FC = () => {
                   <div class="popup-stats-grid">
                     <div>🌧️ Rain: <b>${s.rainfall_mmh} mm/h</b></div>
                     <div>🌱 Soil: <b>${s.soil_moisture_pct}%</b></div>
+                    <div>⛰️ Elev: <b>${s.elevation_m}m</b></div>
+                    <div>⚠️ Tier: <b style="color: ${s.color};">${s.severity}</b></div>
                   </div>
-                  <div class="popup-directive">🚨 ${s.action_directive}</div>
+                  <div class="popup-directive">
+                    🚨 <b>DIRECTIVE:</b> ${s.action_directive}
+                  </div>
+                  <div class="popup-issued-by">🏛️ ${s.issued_by}</div>
                 </div>
               </div>
             `);
 
-            const marker3d = new maplibregl.Marker({ element: el })
+            const marker3d = new maplibregl.Marker({ element: wrapper, anchor: 'center' })
               .setLngLat([s.coordinates[1], s.coordinates[0]]) // [lng, lat]
               .setPopup(popup)
               .addTo(map3d);
 
             map3dMarkersRef.current.push(marker3d);
           });
+        };
+
+        const map3d = (window as any).map3dInstance as maplibregl.Map;
+        if (map3d) {
+          render3DSymbols(map3d);
+        } else {
+          const checkMap3D = setInterval(() => {
+            const m3d = (window as any).map3dInstance as maplibregl.Map;
+            if (m3d) {
+              render3DSymbols(m3d);
+              clearInterval(checkMap3D);
+            }
+          }, 200);
+          setTimeout(() => clearInterval(checkMap3D), 3000);
         }
       } catch (err) {
         console.error('Failed to render live hazard symbols:', err);
@@ -131,7 +150,7 @@ export const MapWeatherHazardSymbols: React.FC = () => {
     };
 
     renderSymbols();
-    const interval = setInterval(renderSymbols, 60000);
+    const interval = setInterval(renderSymbols, 30000);
     return () => {
       isMounted = false;
       clearInterval(interval);

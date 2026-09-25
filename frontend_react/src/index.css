@@ -3952,9 +3952,12 @@ html, body, #root {
    LIVE WEATHER & DISASTER HAZARD MAP SYMBOLS (NDMA SACHET / IMD STYLE)
    ========================================================================== */
 
-.weather-symbol-marker-wrapper {
+.weather-symbol-marker-wrapper,
+.weather-symbol-3d-marker-anchor {
   background: transparent !important;
   border: none !important;
+  cursor: pointer;
+  overflow: visible !important;
 }
 
 .weather-hazard-map-pin {
