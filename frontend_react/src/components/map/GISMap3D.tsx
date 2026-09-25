@@ -110,7 +110,6 @@ export const GISMap3D: React.FC = () => {
     map3dInstanceRef.current = map3d;
     (window as any).map3dInstance = map3d;
     markers3DRef.current = [];
-    rendered3DCountRef.current = 0;
     lastFlown3DVillageIdRef.current = null;
 
     // Add unified distance scale controls (metric)
@@ -311,7 +310,6 @@ export const GISMap3D: React.FC = () => {
       map3d.remove();
       map3dInstanceRef.current = null;
       markers3DRef.current = [];
-      rendered3DCountRef.current = 0;
       lastFlown3DVillageIdRef.current = null;
     };
   }, []);
@@ -353,108 +351,84 @@ export const GISMap3D: React.FC = () => {
     }
   }, [basemap3D]);
 
-  // 3. Render 3D Village Markers, Shelters & Sensors
-  const rendered3DCountRef = useRef<number>(0);
+  // 3. Render 3D Village Markers, Shelters & Sensors (Only for Active Selected Village)
   useEffect(() => {
     const map3d = map3dInstanceRef.current;
-    if (!map3d || villages.length === 0) return;
-    if (rendered3DCountRef.current === villages.length && markers3DRef.current.length > 0) return;
-    rendered3DCountRef.current = villages.length;
+    if (!map3d) return;
 
     // Clear previous markers
     markers3DRef.current.forEach(m => m.remove());
     markers3DRef.current = [];
 
-    villages.forEach(v => {
-      // Village 3D Floating Name Badge
-      const el = document.createElement("div");
-      el.className = "marker-3d-village-badge";
-      el.innerHTML = `
-        <div class="badge-3d-bubble">
-          <span class="badge-3d-dot"></span>
-          <span><b>${v.name}</b> (${v.elevation_m}m)</span>
+    // When at All-India National Overview (no village selected), keep map uncluttered
+    if (!selectedVillageId && !selectedVillageData) {
+      return;
+    }
+
+    const v = selectedVillageData?.village || villages.find(x => x.id === selectedVillageId);
+    if (!v) return;
+
+    // 1. Selected Village 3D Floating Name Badge
+    const el = document.createElement("div");
+    el.className = "marker-3d-village-badge active-selected";
+    el.innerHTML = `
+      <div class="badge-3d-bubble">
+        <span class="badge-3d-dot"></span>
+        <span><b>${v.name}</b> (${v.elevation_m}m)</span>
+      </div>
+    `;
+
+    const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
+      .setLngLat([v.lng, v.lat])
+      .setPopup(new maplibregl.Popup({ offset: 20 }).setHTML(`
+        <div style="font-family:sans-serif; padding:4px;">
+          <div style="font-weight:700; color:#0284c7;">🏔️ ${v.name} (${v.ward})</div>
+          <div style="font-size:11px;">Elevation: <b>${v.elevation_m}m</b> | Slope: <b>${v.slope_deg}°</b></div>
+          <div style="font-size:11px; color:#ef4444; font-weight:700; margin-top:2px;">Threat: ${v.risk_percentage}% (${v.risk_level})</div>
         </div>
-      `;
-      el.onclick = () => selectVillage(v.id);
+      `))
+      .addTo(map3d);
 
-      const marker = new maplibregl.Marker({ element: el })
-        .setLngLat([v.lng, v.lat])
-        .setPopup(new maplibregl.Popup({ offset: 20 }).setHTML(`
-          <div style="font-family:sans-serif; padding:4px;">
-            <div style="font-weight:700; color:#0284c7;">🏔️ ${v.name} (${v.ward})</div>
-            <div style="font-size:11px;">Elevation: <b>${v.elevation_m}m</b> | Slope: <b>${v.slope_deg}°</b></div>
-            <div style="font-size:11px; color:#ef4444; font-weight:700; margin-top:2px;">Threat: ${v.risk_percentage}% (${v.risk_level})</div>
-          </div>
-        `))
-        .addTo(map3d);
+    markers3DRef.current.push(marker);
 
-      markers3DRef.current.push(marker);
-
-      // Safe Ridge Shelter 3D Marker
-      const shelters = v.safe_shelters || v.shelters || [];
-      if (shelters.length > 0) {
-        shelters.forEach(s => {
-          const shelterEl = document.createElement("div");
-          shelterEl.className = "marker-3d-shelter-badge";
-          shelterEl.innerHTML = `
-            <div class="shelter-3d-bubble">
-              ⛺ <b>${s.name}</b> (${s.elevation_m}m)
-            </div>
-          `;
-          const shelterMarker = new maplibregl.Marker({ element: shelterEl })
-            .setLngLat([s.lng, s.lat])
-            .addTo(map3d);
-
-          markers3DRef.current.push(shelterMarker);
-        });
-      } else {
+    // 2. Safe Ridge Shelter 3D Marker
+    const shelters = v.safe_shelters || v.shelters || [];
+    if (shelters.length > 0) {
+      shelters.forEach(s => {
         const shelterEl = document.createElement("div");
         shelterEl.className = "marker-3d-shelter-badge";
         shelterEl.innerHTML = `
           <div class="shelter-3d-bubble">
-            ⛺ <b>${v.name} Refuge</b> (${v.elevation_m + 85}m)
+            ⛺ <b>${s.name}</b> (${s.elevation_m}m)
           </div>
         `;
-        const shelterMarker = new maplibregl.Marker({ element: shelterEl })
-          .setLngLat([v.lng + 0.006, v.lat + 0.007])
+        const shelterMarker = new maplibregl.Marker({ element: shelterEl, anchor: 'bottom' })
+          .setLngLat([s.lng, s.lat])
           .addTo(map3d);
 
         markers3DRef.current.push(shelterMarker);
-      }
+      });
+    }
 
-      // IoT Gauge 3D Marker
-      const sensors = v.sensor_locations || [];
-      if (sensors.length > 0) {
-        sensors.forEach(sens => {
-          const sensorEl = document.createElement("div");
-          sensorEl.className = "marker-3d-sensor-badge";
-          sensorEl.innerHTML = `
-            <div class="sensor-3d-bubble">
-              📡 <b>${sens.type}</b>
-            </div>
-          `;
-          const sensorMarker = new maplibregl.Marker({ element: sensorEl })
-            .setLngLat([sens.lng, sens.lat])
-            .addTo(map3d);
-
-          markers3DRef.current.push(sensorMarker);
-        });
-      } else {
+    // 3. IoT Gauge 3D Marker
+    const sensors = v.sensor_locations || [];
+    if (sensors.length > 0) {
+      sensors.forEach(sens => {
         const sensorEl = document.createElement("div");
         sensorEl.className = "marker-3d-sensor-badge";
         sensorEl.innerHTML = `
           <div class="sensor-3d-bubble">
-            📡 <b>${v.name} Gauge</b>
+            📡 <b>${sens.type}</b>
           </div>
         `;
-        const sensorMarker = new maplibregl.Marker({ element: sensorEl })
-          .setLngLat([v.lng - 0.005, v.lat - 0.005])
+        const sensorMarker = new maplibregl.Marker({ element: sensorEl, anchor: 'bottom' })
+          .setLngLat([sens.lng, sens.lat])
           .addTo(map3d);
 
         markers3DRef.current.push(sensorMarker);
-      }
-    });
-  }, [villages, selectVillage]);
+      });
+    }
+  }, [selectedVillageId, selectedVillageData, villages]);
 
   // 4. Update 3D Inundation & River stream lines based on simulation sliders
   useEffect(() => {
