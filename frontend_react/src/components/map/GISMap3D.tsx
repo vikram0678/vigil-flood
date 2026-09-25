@@ -103,7 +103,7 @@ export const GISMap3D: React.FC = () => {
       },
       center: [78.9, 22.5],
       zoom: 4.8,
-      pitch: 20,
+      pitch: 0,
       bearing: 0
     });
 
@@ -589,17 +589,27 @@ export const GISMap3D: React.FC = () => {
     setVis('3d-stream-pulse-layer', layers.streams);
     setVis('3d-topo-contours-line', layers.contoursDEM);
 
-    // Toggle 3D marker badges
-    document.querySelectorAll<HTMLElement>('.marker-3d-shelter-badge').forEach(el => {
-      el.style.display = layers.shelters ? 'block' : 'none';
-    });
-    document.querySelectorAll<HTMLElement>('.marker-3d-sensor-badge').forEach(el => {
-      el.style.display = layers.sensors ? 'block' : 'none';
-    });
-    document.querySelectorAll<HTMLElement>('.marker-3d-village-badge').forEach(el => {
-      el.style.display = layers.villageLabels ? 'block' : 'none';
-    });
-  }, [layers]);
+    // Toggle 3D marker badges with zoom threshold (Hide when zoomed out at All-India overview)
+    const updateMarkerZoomVis = () => {
+      const isZoomedIn = (map3d.getZoom() >= 8.5) || !!selectedVillageId;
+      document.querySelectorAll<HTMLElement>('.marker-3d-shelter-badge').forEach(el => {
+        el.style.display = (layers.shelters && isZoomedIn) ? 'block' : 'none';
+      });
+      document.querySelectorAll<HTMLElement>('.marker-3d-sensor-badge').forEach(el => {
+        el.style.display = (layers.sensors && isZoomedIn) ? 'block' : 'none';
+      });
+      document.querySelectorAll<HTMLElement>('.marker-3d-village-badge').forEach(el => {
+        el.style.display = (layers.villageLabels && isZoomedIn) ? 'block' : 'none';
+      });
+    };
+
+    map3d.on('zoom', updateMarkerZoomVis);
+    updateMarkerZoomVis();
+
+    return () => {
+      map3d.off('zoom', updateMarkerZoomVis);
+    };
+  }, [layers, selectedVillageId]);
 
   // 4b. Camera fly-to for village selection and basin switching
   const lastFlown3DVillageIdRef = useRef<string | null>(null);
@@ -637,7 +647,7 @@ export const GISMap3D: React.FC = () => {
           map3d.flyTo({
             center: [78.9, 22.5],
             zoom: 4.8,
-            pitch: 20,
+            pitch: 0,
             bearing: 0,
             duration: 1800
           });

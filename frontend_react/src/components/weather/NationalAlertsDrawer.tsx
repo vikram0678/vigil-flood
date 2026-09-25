@@ -3,7 +3,7 @@ import { useFlood } from '../../context/FloodContext';
 
 export const NationalAlertsDrawer: React.FC = () => {
   const { switchBasin, hazardFilter } = useFlood();
-  const [isOpen, setIsOpen] = useState<boolean>(true);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   const [alertsData, setAlertsData] = useState<any>(null);
   const [hillyCities, setHillyCities] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'alerts' | 'weather'>('alerts');
@@ -48,21 +48,42 @@ export const NationalAlertsDrawer: React.FC = () => {
 
   return (
     <div className={`national-alerts-drawer ${isOpen ? 'open' : 'closed'}`} id="tour-sachet-drawer">
-      {/* Toggle Button */}
-      <button 
-        className="drawer-toggle-tab"
-        onClick={() => setIsOpen(!isOpen)}
-        title={isOpen ? "Collapse Alert Drawer" : "Expand National Disaster Alert Drawer"}
-      >
-        <span>{isOpen ? '▶' : '◀'}</span>
-        <span className="drawer-tab-label">⚡ NATIONAL ALERTS</span>
-        {alertsData && (
-          <span className="alert-count-pill">{alertsData.active_alert_count}</span>
-        )}
-      </button>
-
-      {isOpen && (
+      {!isOpen ? (
+        /* Sleek Floating Pill Trigger when Closed */
+        <button 
+          className="drawer-toggle-tab-closed"
+          onClick={() => setIsOpen(true)}
+          title="Expand National Disaster Alert Drawer"
+          aria-label="Open National Alerts Feed"
+        >
+          <span className="drawer-tab-arrow">◀</span>
+          <span className="drawer-tab-label">⚡ NATIONAL ALERTS</span>
+          {alertsData && (
+            <span className="alert-count-pill">{alertsData.active_alert_count}</span>
+          )}
+        </button>
+      ) : (
+        /* Clean Unified Drawer with Internal Header and Close Button */
         <div className="drawer-content">
+          {/* Main Header with Title & Internal Close Button */}
+          <div className="drawer-main-header">
+            <div className="drawer-main-title">
+              <span className="drawer-icon">⚡</span>
+              <span>NATIONAL ALERTS</span>
+              {alertsData && (
+                <span className="alert-count-pill">{alertsData.active_alert_count}</span>
+              )}
+            </div>
+            <button 
+              className="drawer-internal-close-btn"
+              onClick={() => setIsOpen(false)}
+              title="Collapse Alerts Feed"
+              aria-label="Close National Alerts"
+            >
+              &times;
+            </button>
+          </div>
+
           {/* Sub-header Tabs */}
           <div className="drawer-tabs">
             <button 

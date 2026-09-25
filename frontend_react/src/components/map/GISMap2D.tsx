@@ -130,7 +130,7 @@ export const GISMap2D: React.FC = () => {
     const initialCfg = BASEMAP_2D_TILES[basemap2D] || BASEMAP_2D_TILES.google_floodhub;
     baseLayerRef.current = L.tileLayer(initialCfg.url, initialCfg.options).addTo(map);
 
-    L.control.scale({ position: 'bottomright', metric: true, imperial: false, maxWidth: 100 }).addTo(map);
+    L.control.scale({ position: 'bottomright', metric: true, imperial: true, maxWidth: 120 }).addTo(map);
 
     // Continuous container resize observer to prevent blank/grey map on layout shifts
     let resizeObserver: ResizeObserver | null = null;
