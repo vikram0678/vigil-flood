@@ -4543,3 +4543,387 @@ html, body, #root {
   align-items: center;
 }
 
+/* ==========================================================================
+   HAZARD FILTERS BAR (ALL, LANDSLIDES, FLASH FLOODS, MULTI-HAZARD)
+   ========================================================================== */
+
+.hazard-filter-bar-container {
+  position: absolute;
+  bottom: 74px;
+  left: 14px;
+  z-index: 1000;
+}
+
+.hazard-filter-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(13, 19, 34, 0.94);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: var(--radius-full);
+  padding: 4px 6px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.65);
+}
+
+.hazard-filter-pill {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  padding: 6px 12px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
+
+.hazard-filter-pill:hover {
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.hazard-filter-pill.active {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border-color: var(--pill-active-color, #38bdf8);
+  box-shadow: 0 0 12px var(--pill-active-color, #38bdf8) 40;
+}
+
+.hazard-filter-pill.active .pill-label {
+  color: var(--pill-active-color, #38bdf8);
+}
+
+.pill-icon {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.pill-badge {
+  font-size: 0.64rem;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 1px 6px;
+  border-radius: 10px;
+  color: var(--text-muted);
+}
+
+.hazard-filter-pill.active .pill-badge {
+  background: var(--pill-active-color, #38bdf8);
+  color: #000000;
+  font-weight: 800;
+}
+
+/* ==========================================================================
+   GOOGLE MAPS STYLE LAYERS WIDGET (POSITIONED RIGHT BELOW HAZARD FILTER)
+   ========================================================================== */
+
+.google-layers-widget-container {
+  position: absolute;
+  bottom: 18px;
+  left: 14px;
+  z-index: 1000;
+}
+
+/* Floating Trigger Button */
+.google-layers-trigger-btn {
+  background: #ffffff;
+  color: #1e293b;
+  border: 2px solid rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+
+.google-layers-trigger-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  border-color: #1a73e8;
+}
+
+.google-layers-trigger-btn.active {
+  background: #1a73e8;
+  color: #ffffff;
+  border-color: #1a73e8;
+}
+
+.layers-btn-thumbnail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+}
+
+.layers-btn-label {
+  letter-spacing: 0.02em;
+}
+
+/* Expanded Google Maps Style Details Sheet */
+.google-layers-popover-sheet {
+  position: absolute;
+  bottom: 50px;
+  left: 0;
+  width: 290px;
+  background: #ffffff;
+  color: #202124;
+  border-radius: 12px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  animation: popoverFadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  z-index: 1001;
+}
+
+@keyframes popoverFadeIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.sheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px 8px 16px;
+  border-bottom: 1px solid #f1f3f4;
+}
+
+.sheet-header h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #202124;
+}
+
+.sheet-close-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: #5f6368;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 50%;
+}
+
+.sheet-close-btn:hover {
+  background: #f1f3f4;
+  color: #202124;
+}
+
+.sheet-scroll-body {
+  padding: 12px 16px;
+  max-height: 420px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sheet-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.section-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #5f6368;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* 2x3 Grid for Details Tiles */
+.details-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.detail-tile-card {
+  background: #f8f9fa;
+  border: 1.5px solid #dadce0;
+  border-radius: 8px;
+  padding: 8px 4px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s ease;
+}
+
+.detail-tile-card:hover {
+  background: #e8f0fe;
+  border-color: #1a73e8;
+}
+
+.detail-tile-card.active {
+  background: #e8f0fe;
+  border-color: #1a73e8;
+}
+
+.tile-icon-bubble {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  margin-bottom: 4px;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.storm-bubble { background: #fee2e2; }
+.river-bubble { background: #e0f2fe; }
+.terrain-bubble { background: #fef3c7; }
+.shelter-bubble { background: #dcfce7; }
+.sensor-bubble { background: #f3e8ff; }
+.radar-bubble { background: #ffedd5; }
+
+.tile-name {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #3c4043;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.detail-tile-card.active .tile-name {
+  color: #1a73e8;
+  font-weight: 700;
+}
+
+.tile-active-indicator {
+  display: none;
+}
+
+.detail-tile-card.active .tile-active-indicator {
+  display: block;
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 6px;
+  height: 6px;
+  background: #1a73e8;
+  border-radius: 50%;
+}
+
+/* Map Type Grid (3 Column square cards) */
+.map-type-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.map-type-card {
+  background: #f8f9fa;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.map-type-card:hover {
+  background: #e8f0fe;
+}
+
+.map-type-card.active {
+  border-color: #1a73e8;
+  background: #e8f0fe;
+}
+
+.type-thumb {
+  width: 100%;
+  height: 48px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.dark-thumb { background: #1e293b; color: #ffffff; }
+.sat-thumb { background: #0f172a; border: 1px solid #334155; }
+.terrain-thumb { background: #047857; color: #ffffff; }
+
+.thumb-preview-icon {
+  font-size: 1.3rem;
+}
+
+.type-name {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #3c4043;
+}
+
+.map-type-card.active .type-name {
+  color: #1a73e8;
+  font-weight: 700;
+}
+
+/* Tools & Checkboxes Stack */
+.tools-section {
+  border-top: 1px solid #f1f3f4;
+  padding-top: 10px;
+}
+
+.tools-checkbox-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tool-checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.76rem;
+  color: #3c4043;
+  user-select: none;
+}
+
+.tool-checkbox-item input {
+  accent-color: #1a73e8;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.tool-checkbox-item:hover .tool-label {
+  color: #1a73e8;
+}
+
+@media (max-width: 768px) {
+  .hazard-filter-bar-container {
+    bottom: 64px;
+    left: 8px;
+    right: 8px;
+  }
+  .hazard-filter-pills {
+    overflow-x: auto;
+  }
+  .google-layers-widget-container {
+    bottom: 12px;
+    left: 8px;
+  }
+}
+

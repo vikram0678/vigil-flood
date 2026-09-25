@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useFlood } from '../../context/FloodContext';
 
 export const NationalAlertsDrawer: React.FC = () => {
-  const { switchBasin } = useFlood();
+  const { switchBasin, hazardFilter } = useFlood();
   const [isOpen, setIsOpen] = useState<boolean>(true);
   const [alertsData, setAlertsData] = useState<any>(null);
   const [hillyCities, setHillyCities] = useState<any[]>([]);
@@ -11,8 +11,9 @@ export const NationalAlertsDrawer: React.FC = () => {
   useEffect(() => {
     const fetchFeeds = async () => {
       try {
+        const query = hazardFilter !== 'ALL' ? `?category=${encodeURIComponent(hazardFilter)}` : '';
         const [alertsRes, weatherRes] = await Promise.all([
-          fetch('/api/weather/national-alerts-feed'),
+          fetch(`/api/weather/national-alerts-feed${query}`),
           fetch('/api/weather/hilly-cities-weather')
         ]);
         if (alertsRes.ok) {
@@ -31,7 +32,7 @@ export const NationalAlertsDrawer: React.FC = () => {
     fetchFeeds();
     const interval = setInterval(fetchFeeds, 30000); // 30s poll
     return () => clearInterval(interval);
-  }, []);
+  }, [hazardFilter]);
 
   const handleAlertClick = (item: any) => {
     // Map alert state to basin if matching

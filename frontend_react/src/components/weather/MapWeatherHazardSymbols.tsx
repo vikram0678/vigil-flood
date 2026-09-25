@@ -4,7 +4,7 @@ import L from 'leaflet';
 import maplibregl from 'maplibre-gl';
 
 export const MapWeatherHazardSymbols: React.FC = () => {
-  const { viewMode, switchBasin } = useFlood();
+  const { viewMode, hazardFilter, layers } = useFlood();
   const leafletMarkersRef = useRef<L.LayerGroup | null>(null);
   const map3dMarkersRef = useRef<maplibregl.Marker[]>([]);
 
@@ -13,7 +13,15 @@ export const MapWeatherHazardSymbols: React.FC = () => {
 
     const renderSymbols = async () => {
       try {
-        const res = await fetch('/api/weather/live-hazard-symbols');
+        if (!layers.stormSymbols) {
+          leafletMarkersRef.current?.clearLayers();
+          map3dMarkersRef.current.forEach(m => m.remove());
+          map3dMarkersRef.current = [];
+          return;
+        }
+
+        const query = hazardFilter !== 'ALL' ? `?category=${encodeURIComponent(hazardFilter)}` : '';
+        const res = await fetch(`/api/weather/live-hazard-symbols${query}`);
         if (!res.ok) return;
         const data = await res.json();
         const symbols = data.symbols || [];
@@ -130,7 +138,7 @@ export const MapWeatherHazardSymbols: React.FC = () => {
       leafletMarkersRef.current?.clearLayers();
       map3dMarkersRef.current.forEach(m => m.remove());
     };
-  }, [viewMode]);
+  }, [viewMode, hazardFilter, layers.stormSymbols]);
 
   return null;
 };

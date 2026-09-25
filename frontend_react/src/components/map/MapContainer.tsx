@@ -5,6 +5,8 @@ import { GISMap3D } from './GISMap3D';
 import { NullschoolCanvas } from './NullschoolCanvas';
 import { MapNavControls } from './MapNavControls';
 import { UniversalSearchBar } from './UniversalSearchBar';
+import { HazardFilterBar } from './HazardFilterBar';
+import { MapLayersControl } from './MapLayersControl';
 import { MapWeatherHazardSymbols } from '../weather/MapWeatherHazardSymbols';
 import { NationalAlertsDrawer } from '../weather/NationalAlertsDrawer';
 import { Basemap2D, Basemap3D } from '../../types';
@@ -62,6 +64,12 @@ export const MapContainer: React.FC = () => {
 
       {/* 📋 National Disaster Alert Feed Drawer (Right Side) */}
       <NationalAlertsDrawer />
+
+      {/* ⚠️ Hazard Categories Filter Bar (All, Landslides, Flash Floods, Multi-Hazard) */}
+      <HazardFilterBar />
+
+      {/* 🌊 Google Maps Style Floating Layers Widget (Positioned right below Hazard Filter) */}
+      <MapLayersControl />
 
       {/* 🧭 Integrated Map Navigation Controls (Top-Left: Compass, Zoom In, Zoom Out) */}
       <MapNavControls />

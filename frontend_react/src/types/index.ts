@@ -1,5 +1,7 @@
 export type RiskLevel = "LOW" | "MODERATE" | "HIGH" | "CRITICAL" | "EXTREME" | "DANGER" | "WARNING" | "NORMAL" | "NO_DATA";
 
+export type HazardFilterType = "ALL" | "LANDSLIDE" | "FLASH_FLOOD" | "MULTI_HAZARD";
+
 export type RoleMode = "authority" | "citizen";
 
 export type ThemeMode = "dark" | "light";

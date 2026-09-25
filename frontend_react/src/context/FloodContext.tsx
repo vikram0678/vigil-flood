@@ -27,6 +27,10 @@ interface FloodContextType {
   isDroneFlying: boolean;
   theme: ThemeMode;
   
+  // Hazard Category Filter (Google Maps Style)
+  hazardFilter: 'ALL' | 'LANDSLIDE' | 'FLASH_FLOOD' | 'MULTI_HAZARD';
+  setHazardFilter: (filter: 'ALL' | 'LANDSLIDE' | 'FLASH_FLOOD' | 'MULTI_HAZARD') => void;
+
   // Layer visibility toggles
   layers: {
     hazardZones: boolean;
@@ -36,6 +40,11 @@ interface FloodContextType {
     routes: boolean;
     sensors: boolean;
     streams: boolean;
+    stormSymbols: boolean;
+    contoursDEM: boolean;
+    dopplerRadar: boolean;
+    flowArrows: boolean;
+    villageLabels: boolean;
   };
 
   // What-If Simulation State
@@ -129,6 +138,8 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   }, []);
 
+  const [hazardFilter, setHazardFilter] = useState<'ALL' | 'LANDSLIDE' | 'FLASH_FLOOD' | 'MULTI_HAZARD'>('ALL');
+
   const [layers, setLayers] = useState({
     hazardZones: true,
     hexGrid: true,
@@ -136,7 +147,12 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     shelters: true,
     routes: true,
     sensors: true,
-    streams: true
+    streams: true,
+    stormSymbols: true,
+    contoursDEM: true,
+    dopplerRadar: false,
+    flowArrows: true,
+    villageLabels: true
   });
 
   const [simulation, setSimulation] = useState({
@@ -339,6 +355,8 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     prevTourStep,
     setTourStep,
     theme,
+    hazardFilter,
+    setHazardFilter,
     layers,
     simulation,
     setRole,
@@ -379,6 +397,7 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     nextTourStep,
     prevTourStep,
     theme,
+    hazardFilter,
     layers,
     simulation,
     toggleTheme,

@@ -2,23 +2,30 @@ import React, { useState, useEffect } from 'react';
 import { useFlood } from '../../context/FloodContext';
 
 export const StateAlertsTableModal: React.FC = () => {
-  const { switchBasin } = useFlood();
+  const { switchBasin, hazardFilter, setHazardFilter } = useFlood();
   const [isOpen, setIsOpen] = useState(false);
   const [stateFilter, setStateFilter] = useState('ALL');
+  const [modalHazardFilter, setModalHazardFilter] = useState<string>('ALL');
   const [tableRows, setTableRows] = useState<any[]>([]);
   const [activeSubTab, setActiveSubTab] = useState<'state' | 'location'>('state');
 
   useEffect(() => {
-    const handleOpen = () => setIsOpen(true);
+    const handleOpen = () => {
+      setModalHazardFilter(hazardFilter);
+      setIsOpen(true);
+    };
     window.addEventListener('open-state-alerts-table-modal', handleOpen);
     return () => window.removeEventListener('open-state-alerts-table-modal', handleOpen);
-  }, []);
+  }, [hazardFilter]);
 
   useEffect(() => {
     if (!isOpen) return;
     const fetchTable = async () => {
       try {
-        const query = stateFilter !== 'ALL' ? `?state=${encodeURIComponent(stateFilter)}` : '';
+        const params = new URLSearchParams();
+        if (stateFilter !== 'ALL') params.append('state', stateFilter);
+        if (modalHazardFilter !== 'ALL') params.append('category', modalHazardFilter);
+        const query = params.toString() ? `?${params.toString()}` : '';
         const res = await fetch(`/api/weather/state-alerts-table${query}`);
         if (res.ok) {
           const data = await res.json();
@@ -29,7 +36,7 @@ export const StateAlertsTableModal: React.FC = () => {
       }
     };
     fetchTable();
-  }, [isOpen, stateFilter]);
+  }, [isOpen, stateFilter, modalHazardFilter]);
 
   if (!isOpen) return null;
 
@@ -52,9 +59,15 @@ export const StateAlertsTableModal: React.FC = () => {
     { id: 'Kerala', name: 'Kerala' },
     { id: 'Sikkim', name: 'Sikkim' },
     { id: 'Jammu & Kashmir', name: 'Jammu & Kashmir' },
-    { id: 'Arunachal Pradesh', name: 'Arunachal Pradesh' },
+    { id: 'Maharashtra', name: 'Maharashtra' },
     { id: 'Karnataka', name: 'Karnataka' },
-    { id: 'Meghalaya', name: 'Meghalaya' }
+    { id: 'Tamil Nadu', name: 'Tamil Nadu' },
+    { id: 'Arunachal Pradesh', name: 'Arunachal Pradesh' },
+    { id: 'Meghalaya', name: 'Meghalaya' },
+    { id: 'Mizoram', name: 'Mizoram' },
+    { id: 'West Bengal', name: 'West Bengal (Hills)' },
+    { id: 'Assam', name: 'Assam (Hills)' },
+    { id: 'Nagaland', name: 'Nagaland' }
   ];
 
   return (
@@ -66,7 +79,7 @@ export const StateAlertsTableModal: React.FC = () => {
             <span className="modal-icon">⚠️</span>
             <div>
               <h3>LOCATION SPECIFIC DISASTER & WEATHER ALERTS</h3>
-              <p>National Disaster Management Authority (CAP-SACHET & IMD Standard Feed)</p>
+              <p>National Disaster Management Standard Hazard Registry</p>
             </div>
           </div>
           <button className="modal-close-btn" onClick={() => setIsOpen(false)}>&times;</button>
@@ -89,18 +102,38 @@ export const StateAlertsTableModal: React.FC = () => {
             </button>
           </div>
 
-          <div className="state-filter-wrapper">
-            <label htmlFor="modal-state-select">SELECT REGION: </label>
-            <select
-              id="modal-state-select"
-              className="state-filter-select"
-              value={stateFilter}
-              onChange={(e) => setStateFilter(e.target.value)}
-            >
-              {statesList.map(s => (
-                <option key={s.id} value={s.id}>{s.name}</option>
-              ))}
-            </select>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <div className="state-filter-wrapper">
+              <label htmlFor="modal-hazard-select">HAZARD: </label>
+              <select
+                id="modal-hazard-select"
+                className="state-filter-select"
+                value={modalHazardFilter}
+                onChange={(e) => {
+                  setModalHazardFilter(e.target.value);
+                  setHazardFilter(e.target.value as any);
+                }}
+              >
+                <option value="ALL">🌟 ALL HAZARDS</option>
+                <option value="LANDSLIDE">⚠️ LANDSLIDES</option>
+                <option value="FLASH_FLOOD">🌊 FLASH FLOODS</option>
+                <option value="MULTI_HAZARD">⚡ MULTI-HAZARD</option>
+              </select>
+            </div>
+
+            <div className="state-filter-wrapper">
+              <label htmlFor="modal-state-select">REGION: </label>
+              <select
+                id="modal-state-select"
+                className="state-filter-select"
+                value={stateFilter}
+                onChange={(e) => setStateFilter(e.target.value)}
+              >
+                {statesList.map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 

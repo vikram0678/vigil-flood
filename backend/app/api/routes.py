@@ -51,26 +51,28 @@ def health_check():
 # --- LIVE METEOROLOGICAL & HAZARD SYMBOLS API ENDPOINTS ---
 
 @router.get("/weather/live-hazard-symbols")
-def get_live_hazard_symbols():
+def get_live_hazard_symbols(category: Optional[str] = None):
     """Returns active weather & disaster symbols with GPS coordinates across India."""
-    symbols = national_weather_hazard_engine.get_live_hazard_symbols()
+    symbols = national_weather_hazard_engine.get_live_hazard_symbols(category)
     return {
         "count": len(symbols),
         "source": "METEOROLOGICAL_HAZARD_GRID_LIVE",
+        "category_filter": category or "ALL",
         "symbols": symbols
     }
 
 @router.get("/weather/national-alerts-feed")
-def get_national_alerts_feed():
+def get_national_alerts_feed(category: Optional[str] = None):
     """Returns color-coded national alerts feed and recent mountain seismic/GLOF events."""
-    return national_weather_hazard_engine.get_national_alerts_feed()
+    return national_weather_hazard_engine.get_national_alerts_feed(category)
 
 @router.get("/weather/state-alerts-table")
-def get_state_alerts_table(state: Optional[str] = None):
+def get_state_alerts_table(state: Optional[str] = None, category: Optional[str] = None):
     """Returns filterable location-specific alerts table."""
     return {
         "state_filter": state or "ALL",
-        "table_rows": national_weather_hazard_engine.get_state_alerts_table(state)
+        "category_filter": category or "ALL",
+        "table_rows": national_weather_hazard_engine.get_state_alerts_table(state, category)
     }
 
 @router.get("/weather/hilly-cities-weather")
