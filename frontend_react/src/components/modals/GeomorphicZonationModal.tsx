@@ -50,8 +50,7 @@ export interface SectorSummary {
 }
 
 export const GeomorphicZonationModal: React.FC = () => {
-  const { switchBasin } = useFlood();
-  const [isOpen, setIsOpen] = useState(false);
+  const { switchBasin, isGeomorphicOpen, setGeomorphicOpen } = useFlood();
   const [activeSector, setActiveSector] = useState<string>('ALL');
   const [susceptibilityFilter, setSusceptibilityFilter] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -62,13 +61,13 @@ export const GeomorphicZonationModal: React.FC = () => {
   const [fosResult, setFosResult] = useState<any | null>(null);
 
   useEffect(() => {
-    const handleOpen = () => setIsOpen(true);
+    const handleOpen = () => setGeomorphicOpen(true);
     window.addEventListener('open-geomorphic-zonation-modal', handleOpen);
     return () => window.removeEventListener('open-geomorphic-zonation-modal', handleOpen);
-  }, []);
+  }, [setGeomorphicOpen]);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isGeomorphicOpen) return;
 
     const loadData = async () => {
       setIsLoading(true);
@@ -87,9 +86,9 @@ export const GeomorphicZonationModal: React.FC = () => {
     };
 
     loadData();
-  }, [isOpen]);
+  }, [isGeomorphicOpen]);
 
-  if (!isOpen) return null;
+  if (!isGeomorphicOpen) return null;
 
   // Filter districts
   const filteredDistricts = districts.filter(d => {
@@ -108,7 +107,7 @@ export const GeomorphicZonationModal: React.FC = () => {
   });
 
   const handleInspectOnMap = (d: DistrictZonation) => {
-    setIsOpen(false);
+    setGeomorphicOpen(false);
     if (d.active_pilot_basin_id) {
       switchBasin(d.active_pilot_basin_id);
     } else if ((window as any).leafletMap && d.center_coords) {
@@ -136,7 +135,7 @@ export const GeomorphicZonationModal: React.FC = () => {
   const currentSectorData = activeSector !== 'ALL' ? sectors.find(s => s.sector_id === activeSector) : null;
 
   return (
-    <div className="modal-backdrop" onClick={() => setIsOpen(false)} style={{ zIndex: 9999 }}>
+    <div className="modal-backdrop" onClick={() => setGeomorphicOpen(false)} style={{ zIndex: 9999 }}>
       <div 
         className="modal-content" 
         onClick={(e) => e.stopPropagation()}
@@ -174,7 +173,7 @@ export const GeomorphicZonationModal: React.FC = () => {
             </div>
           </div>
           <button 
-            onClick={() => setIsOpen(false)}
+            onClick={() => setGeomorphicOpen(false)}
             style={{
               background: 'transparent',
               border: 'none',

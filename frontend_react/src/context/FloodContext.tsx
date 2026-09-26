@@ -22,6 +22,8 @@ interface FloodContextType {
   basemap2D: Basemap2D;
   basemap3D: Basemap3D;
   isMethodologyOpen: boolean;
+  isGeomorphicOpen: boolean;
+  setGeomorphicOpen: (open: boolean) => void;
   isHydrographOpen: boolean;
   hydrographVillageId: string | null;
   isDroneFlying: boolean;
@@ -95,6 +97,7 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [basemap2D, setBasemap2D] = useState<Basemap2D>("google_floodhub");
   const [basemap3D, setBasemap3D] = useState<Basemap3D>("google_hybrid");
   const [isMethodologyOpen, setMethodologyOpen] = useState<boolean>(false);
+  const [isGeomorphicOpen, setGeomorphicOpen] = useState<boolean>(false);
   const [isHydrographOpen, setHydrographOpenState] = useState<boolean>(false);
   const [hydrographVillageId, setHydrographVillageId] = useState<string | null>(null);
   const [isDroneFlying, setIsDroneFlying] = useState<boolean>(false);
@@ -344,6 +347,8 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     basemap2D,
     basemap3D,
     isMethodologyOpen,
+    isGeomorphicOpen,
+    setGeomorphicOpen,
     isHydrographOpen,
     hydrographVillageId,
     isDroneFlying,
@@ -387,6 +392,8 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     basemap2D,
     basemap3D,
     isMethodologyOpen,
+    isGeomorphicOpen,
+    setGeomorphicOpen,
     isHydrographOpen,
     hydrographVillageId,
     isDroneFlying,

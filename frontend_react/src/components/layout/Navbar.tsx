@@ -6,6 +6,7 @@ export const Navbar: React.FC = () => {
     role, 
     setRole, 
     setMethodologyOpen, 
+    setGeomorphicOpen,
     theme, 
     toggleTheme, 
     startTour,
@@ -71,7 +72,10 @@ export const Navbar: React.FC = () => {
         <button 
           id="btn-open-geomorphic-zonation" 
           className="nav-action-btn geomorphic-nav-btn"
-          onClick={() => window.dispatchEvent(new CustomEvent('open-geomorphic-zonation-modal'))}
+          onClick={() => {
+            setGeomorphicOpen(true);
+            window.dispatchEvent(new CustomEvent('open-geomorphic-zonation-modal'));
+          }}
           title="Open ISRO Landslide Atlas & NDMA LHZ 147 Districts Registry"
           aria-label="Open ISRO Geomorphic Zonation"
           style={{
