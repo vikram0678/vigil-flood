@@ -32,6 +32,10 @@
     </div>
 
     <div class="nav-actions">
+      <button id="btn-open-geomorphic-zonation" class="nav-action-btn" title="ISRO Landslide Atlas & NDMA LHZ 147 Districts Registry">
+        <span>🏔️</span> ISRO & NDMA Zonation (147 Districts)
+      </button>
+
       <button id="btn-open-methodology" class="nav-action-btn">
         <span>ℹ️</span> Scientific Methodology
       </button>
@@ -646,6 +650,71 @@
             </div>
           </div>
           <canvas id="hydrograph-canvas" width="680" height="220"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ISRO Landslide Atlas & NDMA LHZ (147 Districts) Geomorphic Zonation Modal -->
+  <div id="geomorphic-zonation-modal" class="modal-overlay">
+    <div class="modal-card geomorphic-modal-card">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span style="font-size:1.8rem;">🏔️</span>
+          <div>
+            <h2 class="modal-title">ISRO Landslide Atlas & NDMA LHZ Geomorphic Zonation</h2>
+            <div style="font-size:0.82rem; color:var(--text-muted);">
+              Comprehensive 147+ Mountain Districts Registry • 3 Physiographic Sectors • Geotechnical Baseline Parameters
+            </div>
+          </div>
+        </div>
+        <button id="btn-close-geomorphic-modal" class="modal-close-btn">&times;</button>
+      </div>
+
+      <div class="modal-body" style="padding:16px 24px 24px 24px;">
+        <!-- Top Sector Filter Tabs -->
+        <div class="geomorphic-sector-tabs">
+          <button class="geom-sector-btn active" data-sector="ALL">
+            🌐 All Sectors (147+ Districts)
+          </button>
+          <button class="geom-sector-btn" data-sector="SEC-NW-HIM">
+            🏔️ NW & Central Himalayas (SEC-NW-HIM)
+          </button>
+          <button class="geom-sector-btn" data-sector="SEC-WG-SOU">
+            🌴 Western Ghats & South (SEC-WG-SOU)
+          </button>
+          <button class="geom-sector-btn" data-sector="SEC-NE-HIL">
+            ⛰️ North-Eastern Hills (SEC-NE-HIL)
+          </button>
+        </div>
+
+        <!-- Sector Aggregate Summary Banner -->
+        <div id="geom-sector-summary-banner" class="geom-summary-banner">
+          <!-- Populated dynamically via JS -->
+        </div>
+
+        <!-- Filter Controls Bar -->
+        <div class="geom-filter-bar">
+          <div class="geom-search-wrapper">
+            <span class="geom-search-icon">🔍</span>
+            <input type="text" id="geom-search-input" placeholder="Search by district, state, river basin, or rock formation..." class="geom-search-input">
+          </div>
+
+          <div style="display:flex; gap:10px; align-items:center;">
+            <select id="geom-susceptibility-select" class="geom-select">
+              <option value="ALL">All Risk Categories</option>
+              <option value="VERY_HIGH">🔴 Very High Susceptibility</option>
+              <option value="HIGH">🟠 High Susceptibility</option>
+              <option value="MODERATE">🟡 Moderate Susceptibility</option>
+            </select>
+
+            <span id="geom-district-count-badge" class="geom-count-badge">Loading...</span>
+          </div>
+        </div>
+
+        <!-- Dynamic Districts Grid Container -->
+        <div id="geom-districts-grid" class="geom-districts-grid">
+          <!-- Populated via JS -->
         </div>
       </div>
     </div>

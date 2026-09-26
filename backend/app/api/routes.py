@@ -5,9 +5,9 @@ from typing import Dict, Any, Optional, List
 from backend.app.config import PILOT_REGION, APP_NAME, APP_VERSION
 from backend.app.core.simulation import simulation_engine
 from backend.app.core.multi_basin_manager import multi_basin_manager
-from backend.app.core.sensor_health import sensor_health_manager
 from backend.app.core.universal_geo_engine import universal_geo_engine
 from backend.app.core.national_weather_hazard_engine import national_weather_hazard_engine
+from backend.app.core.geomorphic_zonation_engine import geomorphic_zonation_engine
 
 router = APIRouter(prefix="/api", tags=["Early Warning API"])
 
@@ -81,6 +81,53 @@ def get_hilly_cities_weather():
     return {
         "cities": national_weather_hazard_engine.get_hilly_cities_weather()
     }
+
+# --- ISRO LANDSLIDE ATLAS & NDMA LHZ GEOMORPHIC ZONATION (147 DISTRICTS) API ---
+
+@router.get("/geomorphic/sectors")
+def get_geomorphic_sectors():
+    """Returns the 3 core physiographic sectors with aggregate vulnerability metrics."""
+    return {
+        "count": 3,
+        "sectors": geomorphic_zonation_engine.get_all_sectors()
+    }
+
+@router.get("/geomorphic/districts")
+def get_geomorphic_districts(
+    sector: Optional[str] = None,
+    state: Optional[str] = None,
+    susceptibility: Optional[str] = None,
+    search: Optional[str] = None
+):
+    """Returns the 147 mountain districts with full geotechnical baseline parameters."""
+    districts = geomorphic_zonation_engine.get_all_districts(sector, state, susceptibility, search)
+    return {
+        "total_count": len(districts),
+        "filter_sector": sector or "ALL",
+        "filter_state": state or "ALL",
+        "filter_susceptibility": susceptibility or "ALL",
+        "districts": districts
+    }
+
+@router.get("/geomorphic/districts/{district_id}")
+def get_geomorphic_district_detail(district_id: str):
+    """Returns deep geotechnical parameters, FoS baseline, and NDMA directives for a district."""
+    dist = geomorphic_zonation_engine.get_district_by_id(district_id)
+    if not dist:
+        raise HTTPException(status_code=404, detail=f"District '{district_id}' not found in ISRO registry")
+    return dist
+
+class DynamicFoSRequest(BaseModel):
+    current_rain_1h: float
+    current_soil_moisture_pct: float
+
+@router.post("/geomorphic/districts/{district_id}/dynamic-fos")
+def compute_district_dynamic_fos(district_id: str, req: DynamicFoSRequest):
+    """Computes real-time dynamic Factor of Safety (FoS) based on live telemetry."""
+    res = geomorphic_zonation_engine.compute_live_dynamic_fos(district_id, req.current_rain_1h, req.current_soil_moisture_pct)
+    if "error" in res:
+        raise HTTPException(status_code=404, detail=res["error"])
+    return res
 
 # --- MULTI-BASIN ENTERPRISE API ENDPOINTS ---
 
