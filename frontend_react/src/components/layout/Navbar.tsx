@@ -67,6 +67,23 @@ export const Navbar: React.FC = () => {
           <span>ℹ️</span> <span className="btn-text">Methodology</span>
         </button>
 
+        {/* 🏔️ ISRO Landslide Atlas & NDMA LHZ 147 Districts Registry */}
+        <button 
+          id="btn-open-geomorphic-zonation" 
+          className="nav-action-btn geomorphic-nav-btn"
+          onClick={() => window.dispatchEvent(new CustomEvent('open-geomorphic-zonation-modal'))}
+          title="Open ISRO Landslide Atlas & NDMA LHZ 147 Districts Registry"
+          aria-label="Open ISRO Geomorphic Zonation"
+          style={{
+            background: 'linear-gradient(135deg, rgba(2, 132, 199, 0.25) 0%, rgba(99, 102, 241, 0.35) 100%)',
+            border: '1px solid rgba(56, 189, 248, 0.6)',
+            color: '#38bdf8',
+            fontWeight: 700
+          }}
+        >
+          <span>🏔️</span> <span className="btn-text">ISRO Zonation (147)</span>
+        </button>
+
         {/* ⚠️ State & National Weather Alerts Table */}
         <button 
           id="btn-open-state-alerts" 

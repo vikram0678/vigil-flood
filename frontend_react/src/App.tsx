@@ -10,6 +10,7 @@ import { HydrographModal } from './components/modals/HydrographModal';
 import { MethodologyModal } from './components/modals/MethodologyModal';
 import { EmergencyBroadcastModal } from './components/modals/EmergencyBroadcastModal';
 import { StateAlertsTableModal } from './components/modals/StateAlertsTableModal';
+import { GeomorphicZonationModal } from './components/modals/GeomorphicZonationModal';
 import { CitizenView } from './components/citizen/CitizenView';
 import { AapdaMitraBot } from './components/aapda_mitra/AapdaMitraBot';
 import { ProductTourModal } from './components/tour/ProductTourModal';
@@ -124,6 +125,7 @@ const DashboardContent: React.FC = () => {
       <MethodologyModal />
       <EmergencyBroadcastModal />
       <StateAlertsTableModal />
+      <GeomorphicZonationModal />
 
       {/* Aapda Mitra AI Disaster Decision Assistant */}
       <AapdaMitraBot />
