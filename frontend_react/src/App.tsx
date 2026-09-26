@@ -56,7 +56,7 @@ class ErrorBoundary extends React.Component<
 
 const DashboardContent: React.FC = () => {
   useWebSocket();
-  const { role, villages, selectedVillageId } = useFlood();
+  const { role, villages, selectedVillageId, isTelemetryCollapsed, toggleTelemetryPanel } = useFlood();
   const [mobileTab, setMobileTab] = React.useState<'map' | 'villages' | 'telemetry'>('map');
 
   // Auto-switch to map on mobile when a village is selected
@@ -74,7 +74,7 @@ const DashboardContent: React.FC = () => {
 
       {/* Authority Command Center View */}
       {role === 'authority' && (
-        <main className="dashboard-container">
+        <main className={`dashboard-container ${isTelemetryCollapsed ? 'telemetry-collapsed' : ''}`}>
           {/* Mobile Navigation Tabs (Shown on screens <= 1024px) */}
           <div className="mobile-tab-bar">
             <button 
@@ -102,14 +102,28 @@ const DashboardContent: React.FC = () => {
             <PilotCatchmentPanel />
           </div>
 
-          {/* Center Column: GIS Map & What-If Simulation Sandbox */}
+          {/* Center Column: GIS Map & What-If Simulation Sandbox (Extends fully when right panel is collapsed) */}
           <section className={`center-panel col-wrapper col-map ${mobileTab === 'map' ? 'mobile-visible' : ''}`}>
             <MapContainer />
             <WhatIfSandbox />
+
+            {/* Floating Expand Tab on Right Edge of Map when Collapsed */}
+            {isTelemetryCollapsed && (
+              <button 
+                type="button"
+                className="telemetry-expand-floating-btn"
+                onClick={toggleTelemetryPanel}
+                title="Open Decision Support & XAI panel"
+                aria-label="Open Decision Support & XAI panel"
+              >
+                <span className="expand-pill-icon">◀</span>
+                <span>🛡️ Decision Support & XAI</span>
+              </button>
+            )}
           </section>
 
-          {/* Right Column: Deep-Dive AI Telemetry, XAI, & Action Directives */}
-          <div className={`col-wrapper col-telemetry ${mobileTab === 'telemetry' ? 'mobile-visible' : ''}`}>
+          {/* Right Column: Deep-Dive AI Telemetry, XAI, & Action Directives (Slides horizontally) */}
+          <div className={`col-wrapper col-telemetry ${isTelemetryCollapsed ? 'collapsed-right' : ''} ${mobileTab === 'telemetry' ? 'mobile-visible' : ''}`}>
             <DeepDiveAnalysis />
           </div>
         </main>

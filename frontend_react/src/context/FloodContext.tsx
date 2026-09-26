@@ -72,6 +72,11 @@ interface FloodContextType {
   setBasemap2D: (basemap: Basemap2D) => void;
   setBasemap3D: (basemap: Basemap3D) => void;
   switchBasin: (basinId: string) => Promise<void>;
+  // Right Telemetry Panel Collapse (Right slide collapse, collapsed by default)
+  isTelemetryCollapsed: boolean;
+  setIsTelemetryCollapsed: (collapsed: boolean) => void;
+  toggleTelemetryPanel: () => void;
+
   selectVillage: (id: string | null, preserveSimulation?: boolean) => Promise<void>;
   setMethodologyOpen: (open: boolean) => void;
   setHydrographOpen: (open: boolean, villageId?: string | null) => void;
@@ -103,6 +108,13 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [isDroneFlying, setIsDroneFlying] = useState<boolean>(false);
   const [isTourOpen, setIsTourOpen] = useState<boolean>(false);
   const [tourStep, setTourStep] = useState<number>(0);
+
+  // Right Telemetry Panel Collapsed by Default (Right slide)
+  const [isTelemetryCollapsed, setIsTelemetryCollapsed] = useState<boolean>(true);
+
+  const toggleTelemetryPanel = useCallback(() => {
+    setIsTelemetryCollapsed(prev => !prev);
+  }, []);
 
   const activeBasin = useMemo(() => {
     return basins.find(b => b.basin_id === activeBasinId) || basins[0] || null;
@@ -365,6 +377,9 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     layers,
     simulation,
     setRole,
+    isTelemetryCollapsed,
+    setIsTelemetryCollapsed,
+    toggleTelemetryPanel,
     toggleTheme,
     setViewMode,
     setBasemap2D,
@@ -407,6 +422,9 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     hazardFilter,
     layers,
     simulation,
+    isTelemetryCollapsed,
+    setIsTelemetryCollapsed,
+    toggleTelemetryPanel,
     toggleTheme,
     switchBasin,
     selectVillage,
