@@ -4,10 +4,14 @@ import { useFlood } from '../../context/FloodContext';
 export const DeepDiveAnalysis: React.FC = () => {
   const { selectedVillageData, toggleWaterSensor } = useFlood();
 
-  const [isXaiOpen, setIsXaiOpen] = useState<boolean>(true);
-  const [isSensorsOpen, setIsSensorsOpen] = useState<boolean>(true);
-  const [isDirectivesOpen, setIsDirectivesOpen] = useState<boolean>(true);
-  const [isNationalStatusOpen, setIsNationalStatusOpen] = useState<boolean>(true);
+  const [isXaiOpen, setIsXaiOpen] = useState<boolean>(false);
+  const [isSensorsOpen, setIsSensorsOpen] = useState<boolean>(false);
+  const [isDirectivesOpen, setIsDirectivesOpen] = useState<boolean>(false);
+  const [isNationalStatusOpen, setIsNationalStatusOpen] = useState<boolean>(false);
+  const [isPilotBasinOpen, setIsPilotBasinOpen] = useState<boolean>(false);
+  const [isDrillDownOpen, setIsDrillDownOpen] = useState<boolean>(false);
+  const [isDualHazardOpen, setIsDualHazardOpen] = useState<boolean>(false);
+  const [isTelemetryGridOpen, setIsTelemetryGridOpen] = useState<boolean>(false);
 
   if (!selectedVillageData) {
     return (
@@ -16,7 +20,8 @@ export const DeepDiveAnalysis: React.FC = () => {
           <div className="panel-title">🛡️ Decision Support & XAI</div>
           <span style={{ fontSize: '0.75rem', color: 'var(--accent-cyan)' }}>🇮🇳 National View</span>
         </div>
-        <div className="panel-body">
+        <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {/* Card 1: National Early Warning Status */}
           <div 
             style={{ 
               background: 'rgba(56, 189, 248, 0.08)', 
@@ -27,59 +32,111 @@ export const DeepDiveAnalysis: React.FC = () => {
             }}
           >
             <div 
-              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', userSelect: 'none' }}
               onClick={() => setIsNationalStatusOpen(!isNationalStatusOpen)}
+              title="Click to collapse or expand"
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '1.2rem' }}>📡</span>
                 <div>
-                  <h4 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-primary)' }}>National Early Warning Status</h4>
-                  <div style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: 600 }}>● ALL SYSTEMS OPERATIONAL</div>
+                  <h4 style={{ margin: 0, fontSize: '0.88rem', color: 'var(--text-primary)', fontWeight: 700 }}>
+                    National Early Warning Status
+                  </h4>
+                  <div style={{ fontSize: '0.68rem', color: '#10b981', fontWeight: 600 }}>● ALL SYSTEMS OPERATIONAL</div>
                 </div>
               </div>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{isNationalStatusOpen ? '▴' : '▾'}</span>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', padding: '2px 6px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }}>
+                {isNationalStatusOpen ? '▴' : '▾'}
+              </span>
             </div>
             
             {isNationalStatusOpen && (
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.4, marginTop: '8px' }}>
+              <div style={{ fontSize: '0.76rem', color: 'var(--text-secondary)', lineHeight: 1.4, marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(56, 189, 248, 0.15)' }}>
                 VIGIL-FLOOD is continuously monitoring multi-source atmospheric, hydrological, and IoT telemetry across vulnerable mountain valleys.
               </div>
             )}
           </div>
 
-          <div className="threat-meter-card" style={{ marginTop: '10px' }}>
-            <div className="threat-header">
-              <span>Primary Live Pilot Basin</span>
-              <span style={{ fontWeight: 700, color: '#f59e0b' }}>Beas Valley (HP)</span>
+          {/* Card 2: Primary Live Pilot Basin (Collapsible & Default Collapsed) */}
+          <div 
+            className="threat-meter-card" 
+            style={{ 
+              marginTop: 0,
+              padding: '12px',
+              border: '1px solid var(--border-color)',
+              borderRadius: '8px',
+              background: 'rgba(15, 23, 42, 0.75)',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <div 
+              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', userSelect: 'none' }}
+              onClick={() => setIsPilotBasinOpen(!isPilotBasinOpen)}
+              title="Click to collapse or expand"
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '1.1rem' }}>🏔️</span>
+                <div>
+                  <div style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                    Primary Live Pilot Basin
+                  </div>
+                  <div style={{ fontSize: '0.68rem', color: '#f59e0b', fontWeight: 600 }}>
+                    Beas Valley (HP) • 61% Peak Threat
+                  </div>
+                </div>
+              </div>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', padding: '2px 6px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }}>
+                {isPilotBasinOpen ? '▴' : '▾'}
+              </span>
             </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px', lineHeight: 1.4 }}>
-              • <b>Active Wards:</b> Pandoh, Aut, Thalot, Nagwain, Hanogi<br/>
-              • <b>Monitoring Stack:</b> 3D Elevation Mesh, LoRa IoT Nodes & CWC Gauges<br/>
-              • <b>Current Peak Threat:</b> Pandoh Gorge (61% Hazard Index)
-            </div>
+
+            {isPilotBasinOpen && (
+              <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--border-color)', lineHeight: 1.45 }}>
+                • <b>Active Wards:</b> Pandoh, Aut, Thalot, Nagwain, Hanogi<br/>
+                • <b>Monitoring Stack:</b> 3D Elevation Mesh, LoRa IoT Nodes &amp; CWC Gauges<br/>
+                • <b>Current Peak Threat:</b> Pandoh Gorge (61% Hazard Index)
+              </div>
+            )}
           </div>
 
-          <div style={{ 
-            marginTop: '12px', 
-            padding: '12px', 
-            background: 'rgba(255, 255, 255, 0.03)', 
-            border: '1px dashed var(--border-color)', 
-            borderRadius: '8px',
-            textAlign: 'center'
-          }}>
-            <div style={{ fontSize: '1.4rem', marginBottom: '4px' }}>🎯</div>
-            <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-              Hyper-Local Drill-Down Available
+          {/* Card 3: Hyper-Local Drill-Down (Collapsible & Default Collapsed) */}
+          <div 
+            style={{ 
+              marginTop: 0, 
+              padding: '12px', 
+              background: 'rgba(255, 255, 255, 0.03)', 
+              border: '1px dashed var(--border-color)', 
+              borderRadius: '8px',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <div 
+              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', userSelect: 'none' }}
+              onClick={() => setIsDrillDownOpen(!isDrillDownOpen)}
+              title="Click to collapse or expand"
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '1.2rem' }}>🎯</span>
+                <div style={{ fontSize: '0.84rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                  Hyper-Local Drill-Down Available
+                </div>
+              </div>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', padding: '2px 6px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }}>
+                {isDrillDownOpen ? '▴' : '▾'}
+              </span>
             </div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-              Click any village from the left sidebar or the map radar marker to inspect real-time IoT sensors, TreeSHAP XAI drivers, and dynamic evacuation paths.
-            </div>
+
+            {isDrillDownOpen && (
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '8px', paddingTop: '8px', borderTop: '1px dashed var(--border-color)', lineHeight: 1.4 }}>
+                Click any village from the left sidebar or the map radar marker to inspect real-time IoT sensors, TreeSHAP XAI drivers, and dynamic evacuation paths.
+              </div>
+            )}
           </div>
 
           {/* National View Direct Broadcast Launcher */}
           <button
             className="cap-broadcast-trigger-btn"
-            style={{ marginTop: '14px' }}
+            style={{ marginTop: '4px' }}
             onClick={() => window.dispatchEvent(new CustomEvent('open-emergency-broadcast-modal'))}
           >
             <span>📢</span> Open CAP-SACHET &amp; Cell Broadcast Center
