@@ -71,7 +71,24 @@ export const StateAlertsTableModal: React.FC = () => {
   ];
 
   return (
-    <div className="modal-backdrop" onClick={() => setIsOpen(false)}>
+    <div 
+      className="modal-backdrop active" 
+      onClick={() => setIsOpen(false)}
+      style={{ 
+        display: 'flex',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        background: 'rgba(4, 8, 18, 0.85)',
+        backdropFilter: 'blur(12px)',
+        zIndex: 99999,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px'
+      }}
+    >
       <div className="modal-content state-alerts-modal" onClick={(e) => e.stopPropagation()}>
         {/* Header Banner */}
         <div className="state-modal-header">

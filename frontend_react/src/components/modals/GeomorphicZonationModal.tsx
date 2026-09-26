@@ -135,7 +135,24 @@ export const GeomorphicZonationModal: React.FC = () => {
   const currentSectorData = activeSector !== 'ALL' ? sectors.find(s => s.sector_id === activeSector) : null;
 
   return (
-    <div className="modal-backdrop" onClick={() => setGeomorphicOpen(false)} style={{ zIndex: 9999 }}>
+    <div 
+      className="modal-backdrop active" 
+      onClick={() => setGeomorphicOpen(false)} 
+      style={{ 
+        display: 'flex',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        background: 'rgba(4, 8, 18, 0.85)',
+        backdropFilter: 'blur(12px)',
+        zIndex: 99999,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px'
+      }}
+    >
       <div 
         className="modal-content" 
         onClick={(e) => e.stopPropagation()}
