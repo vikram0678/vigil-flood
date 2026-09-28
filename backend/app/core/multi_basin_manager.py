@@ -709,9 +709,17 @@ class MultiBasinManager:
             for vid in target_villages:
                 if vid in self.basin_states[target_basin]:
                     self.basin_states[target_basin][vid].update({
-                        "rain_1h": 135.0, "rain_3h": 220.0, "rain_6h": 290.0,
-                        "forecast_rain_3h": 90.0, "soil_moisture": 94.0,
-                        "water_level_m": 4.8, "water_level_rise_rate": 1.95, "tilt_deg": 4.2
+                        "rain_1h": 80.0, "rain_3h": 140.0, "rain_6h": 190.0,
+                        "forecast_rain_3h": 60.0, "soil_moisture": 92.0,
+                        "water_level_m": 4.2, "water_level_rise_rate": 1.65, "tilt_deg": 3.8
+                    })
+        elif scenario_name == "DAM_BREACH_GLOF":
+            for vid in target_villages:
+                if vid in self.basin_states[target_basin]:
+                    self.basin_states[target_basin][vid].update({
+                        "rain_1h": 145.0, "rain_3h": 260.0, "rain_6h": 340.0,
+                        "forecast_rain_3h": 110.0, "soil_moisture": 98.0,
+                        "water_level_m": 5.8, "water_level_rise_rate": 2.85, "tilt_deg": 5.4
                     })
         elif scenario_name == "SENSOR_FAILURE_DEMO":
             for vid in target_villages:

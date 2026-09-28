@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useFlood } from '../../context/FloodContext';
 
 export const NationalAlertsDrawer: React.FC = () => {
-  const { switchBasin, hazardFilter } = useFlood();
+  const { switchBasin, hazardFilter, setHazardFilter } = useFlood();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [alertsData, setAlertsData] = useState<any>(null);
   const [hillyCities, setHillyCities] = useState<any[]>([]);
@@ -102,21 +102,21 @@ export const NationalAlertsDrawer: React.FC = () => {
 
           {activeTab === 'alerts' && (
             <div className="drawer-scroll-body">
-              {/* Recent Earthquakes & GLOF Triggers (NDMA SACHET Style Cards) */}
-              <div className="seismic-section">
-                <div className="section-title">RECENT MOUNTAIN EVENTS</div>
-                <div className="seismic-grid">
-                  {(alertsData?.recent_earthquakes || []).map((eq: any, idx: number) => (
-                    <div key={idx} className="seismic-card">
-                      <div className="seismic-mag" style={{ color: eq.color }}>{eq.magnitude}</div>
-                      <div className="seismic-loc">📍 {eq.location}</div>
-                      <div className="seismic-time">{eq.time}</div>
-                    </div>
-                  ))}
-                </div>
+              {/* Hazard Filter Dropdown */}
+              <div className="drawer-filter-row" style={{ padding: '8px 16px', background: '#0f172a', borderBottom: '1px solid #1e293b' }}>
+                <select 
+                  value={hazardFilter} 
+                  onChange={(e) => setHazardFilter(e.target.value as any)}
+                  style={{ width: '100%', padding: '6px 8px', background: '#1e293b', color: '#f8fafc', border: '1px solid #334155', borderRadius: '4px', fontSize: '0.8rem' }}
+                >
+                  <option value="ALL">All Hazards (Pan-India)</option>
+                  <option value="LANDSLIDE">Landslides (Debris Flow)</option>
+                  <option value="FLASH_FLOOD">Flash Floods (Cloudburst)</option>
+                  <option value="MULTI_HAZARD">Multi-Hazard (GLOF)</option>
+                </select>
               </div>
 
-              {/* Color-Coded National Alert List */}
+              {/* Color-Coded National Alert List (Critical List First) */}
               <div className="alerts-list-header">
                 <span>ACTIVE CAP DISASTER WARNINGS</span>
                 <button 
@@ -149,17 +149,28 @@ export const NationalAlertsDrawer: React.FC = () => {
                     <div className="alert-district-text">
                       <strong>{alert.district}</strong>, {alert.state}
                     </div>
-
-                    <div className="alert-headline-text">
-                      {alert.headline}
-                    </div>
-
-                    <div className="alert-footer-row">
-                      <span>🌧️ {alert.rainfall_mmh} mm/h</span>
-                      <span className="action-prompt">Inspect Basin ➔</span>
+                    <div className="alert-desc-text">{alert.description}</div>
+                    
+                    <div className="alert-bottom-metrics">
+                      <span className="alert-metric">☔ {alert.rainfall_mm_h || '--'} mm/h</span>
+                      <span className="alert-action-link" style={{ color: alert.color }}>Inspect Basin ➔</span>
                     </div>
                   </div>
                 ))}
+              </div>
+
+              {/* Recent Earthquakes & GLOF Triggers (Moved Below Critical List) */}
+              <div className="seismic-section">
+                <div className="section-title">RECENT MOUNTAIN EVENTS</div>
+                <div className="seismic-grid">
+                  {(alertsData?.recent_earthquakes || []).map((eq: any, idx: number) => (
+                    <div key={idx} className="seismic-card">
+                      <div className="seismic-mag" style={{ color: eq.color }}>{eq.magnitude}</div>
+                      <div className="seismic-loc">📍 {eq.location}</div>
+                      <div className="seismic-time">{eq.time}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}

@@ -36,7 +36,7 @@ export const PilotCatchmentPanel: React.FC = () => {
               key={b.basin_id}
               className={`basin-quick-tab-btn ${b.basin_id === activeBasinId ? 'active' : ''}`}
               onClick={() => switchBasin(b.basin_id)}
-              title={`${b.name} (${b.state})`}
+              data-location-tooltip={`${b.name} (${b.state})`}
             >
               <span>{b.state.includes('Himachal') ? '🏔️ HP' : b.state.includes('Uttarakhand') ? '⛰️ UK' : b.state.includes('Sikkim') ? '🌊 SK' : '🌧️ KL'}</span>
             </button>
@@ -95,18 +95,22 @@ export const PilotCatchmentPanel: React.FC = () => {
           {villages.map((v, idx) => {
             const isSelected = v.id === selectedVillageId;
             const isCritical = v.risk_level === 'CRITICAL' || v.risk_level === 'EXTREME';
-            const badgeClass = `badge-${(v.risk_level || 'low').toLowerCase()}`;
+            const riskPct = v.risk_percentage || 0;
+            const radius = 15;
+            const circumference = 2 * Math.PI * radius;
+            const strokeDashoffset = circumference - (riskPct / 100) * circumference;
+            const ringColor = riskPct >= 70 ? '#ef4444' : riskPct >= 40 ? '#f59e0b' : '#10b981';
 
             return (
               <div
                 key={v.id}
-                className={`village-card ${isSelected ? 'selected' : ''} ${isCritical ? 'critical-pulse-card' : ''}`}
+                className={`village-card ${isSelected ? 'selected' : ''} ${isCritical ? 'severity-critical' : ''}`}
                 onClick={() => selectVillage(v.id)}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
                   <div className="village-rank-badge">#{idx + 1}</div>
-                  <div className="village-info">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div className="village-info" style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                       <h4>{v.name}</h4>
                       {isSelected && (
                         <span className="active-village-pill">
@@ -116,14 +120,36 @@ export const PilotCatchmentPanel: React.FC = () => {
                     </div>
                     <div className="village-meta">Elev: {v.elevation_m}m | Slope: {v.slope_deg}°</div>
                     <div className="village-shelter-preview">
-                      <span>⏳ {v.lead_time_display || '10-30 min'}</span>
+                      <span style={{ color: isCritical ? '#f87171' : 'var(--text-muted)', fontWeight: isCritical ? 700 : 500 }}>
+                        ⏳ {v.lead_time_display || '10-30 min'}
+                      </span>
                       <span>•</span>
                       <span>⛺ {typeof v.primary_shelter === 'object' && v.primary_shelter !== null ? (v.primary_shelter as any).name : (v.primary_shelter || 'Safe Ridge')}</span>
                     </div>
                   </div>
                 </div>
-                <div className={`risk-badge ${badgeClass}`}>
-                  {v.risk_badge} {v.risk_percentage}%
+
+                {/* Circular SVG Micro Threat Ring */}
+                <div className="village-risk-ring-container" title={`${v.risk_level} • ${riskPct}% Hazard`}>
+                  <svg width="40" height="40" viewBox="0 0 40 40" className="risk-ring-svg">
+                    <circle cx="20" cy="20" r="15" fill="rgba(15, 23, 42, 0.6)" stroke="rgba(255,255,255,0.08)" strokeWidth="3" />
+                    <circle 
+                      cx="20" 
+                      cy="20" 
+                      r="15" 
+                      fill="transparent" 
+                      stroke={ringColor} 
+                      strokeWidth="3" 
+                      strokeDasharray={circumference}
+                      strokeDashoffset={strokeDashoffset}
+                      strokeLinecap="round"
+                      transform="rotate(-90 20 20)"
+                      style={{ transition: 'stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1)' }}
+                    />
+                  </svg>
+                  <div className="risk-ring-text" style={{ color: ringColor }}>
+                    {riskPct}%
+                  </div>
                 </div>
               </div>
             );

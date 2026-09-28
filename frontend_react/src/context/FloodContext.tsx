@@ -124,6 +124,7 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setRole('authority');
     setTourStep(0);
     setIsTourOpen(true);
+    setIsTelemetryCollapsed(false);
   }, []);
 
   const closeTour = useCallback(() => {
@@ -254,11 +255,15 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     if (!villageId) {
       setSelectedVillageId(null);
       setSelectedVillageData(null);
+      setIsTelemetryCollapsed(true);
       return;
     }
 
     const isSameVillage = villageId === selectedVillageId;
     setSelectedVillageId(villageId);
+    
+    // Selecting a village auto-collapses the left panel and opens the right panel
+    setIsTelemetryCollapsed(false);
 
     try {
       const res = await fetch(`/api/villages/${villageId}`);

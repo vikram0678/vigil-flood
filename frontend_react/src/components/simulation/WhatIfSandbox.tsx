@@ -167,10 +167,10 @@ export const WhatIfSandbox: React.FC = () => {
   };
 
   const presets = [
-    { id: 'BASELINE_NORMAL', name: '🟢 Baseline Normal' },
-    { id: 'HEAVY_MONSOON', name: '🟡 Heavy Monsoon' },
-    { id: 'CLOUDBURST_CRITICAL', name: '🔴 Cloudburst Emergency' },
-    { id: 'SENSOR_FAILURE_DEMO', name: '🛡️ Test Fallback Model' }
+    { id: 'BASELINE_NORMAL', name: '🟢 Baseline Reset' },
+    { id: 'CLOUDBURST_CRITICAL', name: '☁️ Cloudburst (80mm/h)' },
+    { id: 'HEAVY_MONSOON', name: '🌧️ Monsoon Saturation (95%)' },
+    { id: 'DAM_BREACH_GLOF', name: '🏔️ Dam Breach / GLOF' }
   ];
 
   const currentPresetName = presets.find(p => p.id === simulation.activePreset)?.name || 'Custom Parameters';
@@ -180,12 +180,21 @@ export const WhatIfSandbox: React.FC = () => {
   )?.status === "OFFLINE";
 
   return (
-    <div className={`sandbox-card ${isCollapsed ? 'collapsed' : ''}`} id="tour-sandbox-card">
-      <div className="sandbox-header">
-        <div className="sandbox-title-group">
-          <div className="sandbox-title">⚡ Interactive "What-If" Simulation Sandbox</div>
+    <div className={`sandbox-card simulation-dock ${isCollapsed ? 'collapsed' : ''} full-width-dock`} id="tour-sandbox-card">
+      <div className="sandbox-header" style={{ justifyContent: 'flex-start', gap: '16px' }}>
+        <button 
+          className="sandbox-toggle-btn icon-only"
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          title={isCollapsed ? "Expand Sandbox" : "Collapse Sandbox"}
+          style={{ width: '32px', height: '32px', padding: 0, display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+        >
+          <span className="toggle-chevron">{isCollapsed ? '▾' : '▴'}</span>
+        </button>
+
+        <div className="sandbox-title-group" style={{ display: 'flex', alignItems: 'center', gap: '12px', flexDirection: 'row' }}>
+          <div className="sandbox-title" style={{ margin: 0 }}>⚡ Interactive "What-If" Simulation Sandbox</div>
           {isCollapsed && (
-            <div className="sandbox-compact-preview">
+            <div className="sandbox-compact-preview" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span className="compact-preset-badge">{currentPresetName}</span>
               <span className="compact-metric-pill">🌧️ {simulation.rain} mm/h</span>
               <span className="compact-metric-pill">🌱 {simulation.soil}%</span>
@@ -197,7 +206,7 @@ export const WhatIfSandbox: React.FC = () => {
           )}
         </div>
 
-        <div className="sandbox-header-actions">
+        <div className="sandbox-header-actions" style={{ marginLeft: 'auto' }}>
           {!isCollapsed && (
             <div className="preset-buttons">
               {presets.map((p) => (
@@ -211,16 +220,6 @@ export const WhatIfSandbox: React.FC = () => {
               ))}
             </div>
           )}
-
-          <button 
-            className="sandbox-toggle-btn"
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            title={isCollapsed ? "Click to Expand Simulation Sandbox" : "Click to Collapse Simulation Sandbox"}
-            aria-label={isCollapsed ? "Expand Sandbox" : "Collapse Sandbox"}
-          >
-            <span className="toggle-chevron">{isCollapsed ? '▾' : '▴'}</span>
-            <span>{isCollapsed ? 'Expand' : 'Collapse'}</span>
-          </button>
         </div>
       </div>
 

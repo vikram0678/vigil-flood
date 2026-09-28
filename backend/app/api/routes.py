@@ -238,7 +238,7 @@ def get_village_detail(village_id: str, basin_id: Optional[str] = None):
 
 @router.post("/simulate/scenario")
 def trigger_scenario(req: ScenarioRequest):
-    valid_scenarios = ["BASELINE_NORMAL", "HEAVY_MONSOON", "CLOUDBURST_CRITICAL", "SENSOR_FAILURE_DEMO"]
+    valid_scenarios = ["BASELINE_NORMAL", "HEAVY_MONSOON", "CLOUDBURST_CRITICAL", "DAM_BREACH_GLOF", "SENSOR_FAILURE_DEMO"]
     if req.scenario_name not in valid_scenarios:
         raise HTTPException(status_code=400, detail=f"Invalid scenario. Choose from {valid_scenarios}")
     

@@ -18,20 +18,21 @@ export const Navbar: React.FC = () => {
 
   return (
     <nav className="navbar">
-      <div className="brand-wrapper">
-        <div className="logo-badge">🌊</div>
-        <div className="brand-text-container">
-          <div className="brand-title">
-            VIGIL-FLOOD <span className="brand-tagline">| Early Warning</span>
-          </div>
-          <div className="brand-subtitle">
-            {activeBasin ? `📍 ${activeBasin.name} • ${activeBasin.state}` : 'Pan-India Multi-Basin System'}
+      {/* Zone 1: Identity & Basin Telemetry Context */}
+      <div className="navbar-brand-section">
+        <div className="brand-wrapper">
+          <div className="logo-badge">🌊</div>
+          <div className="brand-text-container">
+            <div className="brand-title">
+              VIGIL-FLOOD <span className="brand-tagline">| Early Warning</span>
+            </div>
+            <div className="brand-subtitle">
+              {activeBasin ? `📍 ${activeBasin.name}` : 'Pan-India Multi-Basin System'}
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="nav-actions">
-        {/* 🗺️ Pan-India Basin Selector */}
+        {/* 🗺️ Pan-India Basin Selector (Temporarily commented out per user request)
         <div className="basin-selector-container">
           <select 
             id="basin-select"
@@ -48,78 +49,91 @@ export const Navbar: React.FC = () => {
             ))}
           </select>
         </div>
-        {/* ✨ Interactive Guided Product Tour */}
-        <button 
-          id="btn-start-tour" 
-          className="nav-action-btn tour-nav-btn"
-          onClick={startTour}
-          title="Take a 60-Second Guided Tour"
-          aria-label="Start Guided Product Tour"
-        >
-          <span>✨</span> <span className="btn-text">Quick Tour</span>
-        </button>
+        */}
 
-        <button 
-          id="btn-open-methodology" 
-          className="nav-action-btn"
-          onClick={() => setMethodologyOpen(true)}
-          title="View Scientific Methodology"
-        >
-          <span>ℹ️</span> <span className="btn-text">Methodology</span>
-        </button>
+        <div className="status-pill live-pill">
+          <span className="pulse-dot"></span>
+          <span className="status-text">LIVE</span>
+        </div>
+      </div>
 
-        {/* 🏔️ ISRO Landslide Atlas & NDMA LHZ 147 Districts Registry */}
-        <button 
-          id="btn-open-geomorphic-zonation" 
-          className="nav-action-btn geomorphic-nav-btn"
-          onClick={() => {
-            setGeomorphicOpen(true);
-            window.dispatchEvent(new CustomEvent('open-geomorphic-zonation-modal'));
-          }}
-          title="Open ISRO Landslide Atlas & NDMA LHZ 147 Districts Registry"
-          aria-label="Open ISRO Geomorphic Zonation"
-          style={{
-            background: 'linear-gradient(135deg, rgba(2, 132, 199, 0.25) 0%, rgba(99, 102, 241, 0.35) 100%)',
-            border: '1px solid rgba(56, 189, 248, 0.6)',
-            color: '#38bdf8',
-            fontWeight: 700
-          }}
-        >
-          <span>🏔️</span> <span className="btn-text">ISRO Zonation (147)</span>
-        </button>
+      {/* Zone 2: Intelligence & Decision Support HUD */}
+      <div className="navbar-hud-section">
+        <div className="hud-pill-group">
+          {/* 🏔️ ISRO Landslide Atlas & NDMA LHZ 147 Districts Registry */}
+          <button 
+            id="btn-open-geomorphic-zonation" 
+            className="hud-pill-btn isro-btn"
+            onClick={() => {
+              setGeomorphicOpen(true);
+              window.dispatchEvent(new CustomEvent('open-geomorphic-zonation-modal'));
+            }}
+            title="Open ISRO Landslide Atlas & NDMA LHZ 147 Districts Registry"
+            aria-label="Open ISRO Geomorphic Zonation"
+          >
+            <span>🏔️</span> <span className="btn-text">ISRO Zonation (147)</span>
+          </button>
 
-        {/* ⚠️ State & National Weather Alerts Table */}
-        <button 
-          id="btn-open-state-alerts" 
-          className="nav-action-btn alerts-nav-btn"
-          onClick={() => window.dispatchEvent(new CustomEvent('open-state-alerts-table-modal'))}
-          title="Open Location & State-wise Weather Alerts Table"
-          aria-label="Open State Weather Alerts Table"
-          style={{
-            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.3) 100%)',
-            border: '1px solid rgba(245, 158, 11, 0.6)',
-            color: '#fde68a',
-            fontWeight: 700
-          }}
-        >
-          <span>⚡</span> <span className="btn-text">State Alerts</span>
-        </button>
+          {/* ⚠️ State & National Weather Alerts Table */}
+          <button 
+            id="btn-open-state-alerts" 
+            className="hud-pill-btn alerts-btn"
+            onClick={() => window.dispatchEvent(new CustomEvent('open-state-alerts-table-modal'))}
+            title="Open Location & State-wise Weather Alerts Table"
+            aria-label="Open State Weather Alerts Table"
+          >
+            <span>⚡</span> <span className="btn-text">State Alerts</span>
+          </button>
+
+          <button 
+            id="btn-open-methodology" 
+            className="hud-pill-btn"
+            onClick={() => setMethodologyOpen(true)}
+            title="View Scientific Methodology"
+          >
+            <span>ℹ️</span> <span className="btn-text">Methodology</span>
+          </button>
+
+          {/* ✨ Interactive Guided Product Tour */}
+          <button 
+            id="btn-start-tour" 
+            className="hud-pill-btn tour-btn"
+            onClick={startTour}
+            title="Take a 60-Second Guided Tour"
+            aria-label="Start Guided Product Tour"
+          >
+            <span>✨</span> <span className="btn-text">Quick Tour</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Zone 3: Emergency Actions, Theme & Role Switcher */}
+      <div className="navbar-actions-section">
+        
+        {/* 🌍 English & Hindi Translator Dropdown */}
+        <div className="language-selector-container basin-selector-container" style={{ borderRadius: '12px', marginRight: '16px' }}>
+          <select 
+            id="lang-select"
+            className="basin-select-dropdown"
+            defaultValue="en"
+            title="Translate Website"
+            aria-label="Translate Website"
+            style={{ borderRadius: '8px' }}
+          >
+            <option value="en">🇬🇧 English</option>
+            <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
+          </select>
+        </div>
 
         {/* 📢 CAP-SACHET Emergency Cell Broadcast Center */}
         <button 
           id="btn-open-broadcast" 
-          className="nav-action-btn broadcast-nav-btn"
+          className="nav-emergency-cta-btn"
           onClick={() => window.dispatchEvent(new CustomEvent('open-emergency-broadcast-modal'))}
           title="Open CAP-SACHET & Cell Broadcast Center"
           aria-label="Open Emergency Broadcast"
-          style={{
-            background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.25) 0%, rgba(185, 28, 28, 0.4) 100%)',
-            border: '1px solid rgba(239, 68, 68, 0.6)',
-            color: '#fca5a5',
-            fontWeight: 700
-          }}
         >
-          <span>📢</span> <span className="btn-text">CAP Broadcast</span>
+          <span className="cta-icon">📢</span> <span className="cta-text">CAP Broadcast</span>
         </button>
 
         {/* Theme Mode Toggle (Dark / Light) */}
@@ -133,11 +147,6 @@ export const Navbar: React.FC = () => {
           <span className="theme-toggle-icon">{theme === 'dark' ? '☀️' : '🌙'}</span>
           <span className="theme-toggle-label">{theme === 'dark' ? 'Light' : 'Dark'}</span>
         </button>
-
-        <div className="status-pill">
-          <span className="pulse-dot"></span>
-          <span className="status-text">LIVE TELEMETRY</span>
-        </div>
 
         <div className="role-switcher">
           <button 
