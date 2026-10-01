@@ -15,6 +15,7 @@ interface FloodContextType {
   activeBasinId: string;
   activeBasin: BasinSummary | null;
   villages: Village[];
+  allVillages: Village[];
   selectedVillageId: string | null;
   selectedVillageData: VillageDetailResponse | null;
   role: RoleMode;
@@ -87,13 +88,21 @@ interface FloodContextType {
   toggleWaterSensor: () => Promise<void>;
   refreshData: () => Promise<void>;
   updateVillagesFromTelemetry: (villages: Village[]) => void;
+  // Full-page Tactical Dossier Routing
+  activePage: 'command_center' | 'tactical_dossier';
+  setActivePage: (page: 'command_center' | 'tactical_dossier') => void;
+  dossierVillageId: string;
+  setDossierVillageId: (id: string) => void;
+  openTacticalDossier: (villageId?: string) => void;
+  closeTacticalDossier: () => void;
 }
 
 const FloodContext = createContext<FloodContextType | undefined>(undefined);
 
 export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [basins, setBasins] = useState<BasinSummary[]>([]);
-  const [activeBasinId, setActiveBasinId] = useState<string>("BASIN-HP-BEAS");
+  const [activeBasinId, setActiveBasinId] = useState<string>("ALL");
+  const [allVillages, setAllVillages] = useState<Village[]>([]);
   const [villages, setVillages] = useState<Village[]>([]);
   const [selectedVillageId, setSelectedVillageId] = useState<string | null>(null);
   const [selectedVillageData, setSelectedVillageData] = useState<VillageDetailResponse | null>(null);
@@ -112,13 +121,67 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   // Right Telemetry Panel Collapsed by Default (Right slide)
   const [isTelemetryCollapsed, setIsTelemetryCollapsed] = useState<boolean>(true);
 
+  // Full-Page View Navigation ('command_center' | 'tactical_dossier')
+  const [activePage, setActivePage] = useState<'command_center' | 'tactical_dossier'>('command_center');
+  const [dossierVillageId, setDossierVillageId] = useState<string>('VIL-01');
+
+  const openTacticalDossier = useCallback((villageId?: string) => {
+    const targetId = villageId || selectedVillageId || 'VIL-01';
+    setDossierVillageId(targetId);
+    setActivePage('tactical_dossier');
+    window.location.hash = `#/dossier?village=${targetId}`;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [selectedVillageId]);
+
+  const closeTacticalDossier = useCallback(() => {
+    setActivePage('command_center');
+    if (window.location.hash.includes('dossier')) {
+      window.location.hash = '#/';
+    }
+  }, []);
+
+  // Listen to hash changes (browser back/forward & direct links)
+  useEffect(() => {
+    const handleHash = () => {
+      const hash = window.location.hash;
+      if (hash.includes('dossier')) {
+        setActivePage('tactical_dossier');
+        const match = hash.match(/village=([A-Za-z0-9_-]+)/);
+        if (match && match[1]) {
+          setDossierVillageId(match[1]);
+        }
+      } else {
+        setActivePage('command_center');
+      }
+    };
+    handleHash();
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
+
   const toggleTelemetryPanel = useCallback(() => {
     setIsTelemetryCollapsed(prev => !prev);
   }, []);
 
+  const ALL_INDIA_BASIN: BasinSummary = useMemo(() => ({
+    basin_id: "ALL",
+    name: "All-India Valleys",
+    state: "All Monitored States",
+    region_type: "National Multi-Basin Network",
+    center_coords: [24.5, 78.9],
+    default_zoom: 5.2,
+    bounding_box: [[8.0, 68.0], [35.0, 97.0]],
+    total_villages: 26,
+    active_threat_level: "CRITICAL",
+    primary_river: "Indus, Ganga, Brahmaputra & Western Ghats",
+    hydrology_agency: "Central Water Commission (CWC) & NDMA",
+    description: "Unified national triage monitoring across all 4 pilot mountain basins (26 monitored wards)."
+  }), []);
+
   const activeBasin = useMemo(() => {
+    if (activeBasinId === "ALL") return ALL_INDIA_BASIN;
     return basins.find(b => b.basin_id === activeBasinId) || basins[0] || null;
-  }, [basins, activeBasinId]);
+  }, [basins, activeBasinId, ALL_INDIA_BASIN]);
 
   const startTour = useCallback(() => {
     setRole('authority');
@@ -164,7 +227,7 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     routes: true,
     sensors: true,
     streams: true,
-    stormSymbols: true,
+    stormSymbols: false, // Default false: focus strictly on 26 village hazard pins
     contoursDEM: true,
     dopplerRadar: false,
     flowArrows: true,
@@ -190,11 +253,26 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         }
       }
 
-      // 2. Fetch Active Basin Villages
-      const res = await fetch(`/api/villages?basin_id=${activeBasinId}`);
-      const data = await res.json();
-      if (data.villages && Array.isArray(data.villages)) {
-        setVillages(data.villages);
+      // 2. Always fetch All 26 villages for national map markers
+      let master: Village[] = [];
+      const allRes = await fetch("/api/villages?basin_id=ALL");
+      if (allRes.ok) {
+        const allData = await allRes.json();
+        if (allData.villages && Array.isArray(allData.villages)) {
+          master = allData.villages;
+          setAllVillages(master);
+        }
+      }
+
+      // 3. Set Active Basin Villages
+      if (activeBasinId === "ALL") {
+        setVillages(master);
+      } else {
+        const res = await fetch(`/api/villages?basin_id=${activeBasinId}`);
+        const data = await res.json();
+        if (data.villages && Array.isArray(data.villages)) {
+          setVillages(data.villages);
+        }
       }
     } catch (err) {
       console.error("Failed to fetch basins/villages list:", err);
@@ -206,26 +284,56 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setSelectedVillageId(null);
     setSelectedVillageData(null);
     try {
-      await fetch("/api/basins/active", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ basin_id: basinId })
-      });
-      const res = await fetch(`/api/basins/${basinId}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.villages && Array.isArray(data.villages)) {
-          setVillages(data.villages);
+      if (basinId === "ALL") {
+        if (allVillages.length > 0) {
+          setVillages(allVillages);
+        } else {
+          const res = await fetch("/api/villages?basin_id=ALL");
+          if (res.ok) {
+            const data = await res.json();
+            if (data.villages && Array.isArray(data.villages)) {
+              setAllVillages(data.villages);
+              setVillages(data.villages);
+            }
+          }
+        }
+      } else {
+        await fetch("/api/basins/active", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ basin_id: basinId })
+        });
+        const res = await fetch(`/api/basins/${basinId}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.villages && Array.isArray(data.villages)) {
+            setVillages(data.villages);
+          }
         }
       }
     } catch (err) {
       console.error(`Failed to switch basin to ${basinId}:`, err);
     }
-  }, []);
+  }, [allVillages]);
 
   const updateVillagesFromTelemetry = useCallback((newVillages: Village[]) => {
     if (newVillages && Array.isArray(newVillages)) {
-      setVillages(newVillages);
+      setAllVillages(prev => {
+        if (prev.length === 0) return newVillages;
+        return prev.map(oldV => {
+          const match = newVillages.find(nv => nv.id === oldV.id);
+          return match ? { ...oldV, ...match } : oldV;
+        });
+      });
+      setVillages(prev => {
+        if (activeBasinId === "ALL") {
+          return newVillages;
+        }
+        return prev.map(oldV => {
+          const match = newVillages.find(nv => nv.id === oldV.id);
+          return match ? { ...oldV, ...match } : oldV;
+        });
+      });
       setSelectedVillageData(prev => {
         if (!prev) return null;
         const matching = newVillages.find(v => v.id === prev.village.id);
@@ -248,7 +356,7 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         };
       });
     }
-  }, []);
+  }, [activeBasinId]);
 
   const selectVillage = useCallback(async (villageId: string | null, preserveSimulation: boolean = false) => {
     // If null -> deselect back to All-India mode
@@ -264,6 +372,11 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     
     // Selecting a village auto-collapses the left panel and opens the right panel
     setIsTelemetryCollapsed(false);
+
+    // Immediately clear stale village detail when switching to a different village
+    if (!isSameVillage) {
+      setSelectedVillageData(null);
+    }
 
     try {
       const res = await fetch(`/api/villages/${villageId}`);
@@ -357,6 +470,7 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     activeBasinId,
     activeBasin,
     villages,
+    allVillages,
     selectedVillageId,
     selectedVillageData,
     role,
@@ -399,12 +513,19 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     applyScenario,
     toggleWaterSensor,
     refreshData,
-    updateVillagesFromTelemetry
+    updateVillagesFromTelemetry,
+    activePage,
+    setActivePage,
+    dossierVillageId,
+    setDossierVillageId,
+    openTacticalDossier,
+    closeTacticalDossier
   }), [
     basins,
     activeBasinId,
     activeBasin,
     villages,
+    allVillages,
     selectedVillageId,
     selectedVillageData,
     role,
@@ -440,7 +561,11 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     applyScenario,
     toggleWaterSensor,
     refreshData,
-    updateVillagesFromTelemetry
+    updateVillagesFromTelemetry,
+    activePage,
+    dossierVillageId,
+    openTacticalDossier,
+    closeTacticalDossier
   ]);
 
   return (

@@ -8,7 +8,7 @@ export const HydrographModal: React.FC = () => {
   const [hydroData, setHydroData] = useState<any>(null);
   const [hoveredPoint, setHoveredPoint] = useState<any | null>(null);
   const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null);
-  
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -82,19 +82,19 @@ export const HydrographModal: React.FC = () => {
       ctx.stroke();
 
       // Left axis label (Stage m)
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '10px Outfit, sans-serif';
+      ctx.fillStyle = '#f1f5f9';
+      ctx.font = '600 11px Outfit, sans-serif';
       ctx.textAlign = 'right';
-      ctx.fillText(`${s.toFixed(1)}m`, pad.left - 6, y + 3);
+      ctx.fillText(`${s.toFixed(1)}m`, pad.left - 10, y + 3);
     }
 
     // Right axis label (Discharge m3/s)
     for (let q = 100; q <= maxDischarge; q += 150) {
       const y = getYDischarge(q);
-      ctx.fillStyle = '#f59e0b';
-      ctx.font = '9px Outfit, sans-serif';
+      ctx.fillStyle = '#fbbf24';
+      ctx.font = '600 11px Outfit, sans-serif';
       ctx.textAlign = 'left';
-      ctx.fillText(`${q} m³/s`, w - pad.right + 6, y + 3);
+      ctx.fillText(`${q} m³/s`, w - pad.right + 10, y + 3);
     }
 
     // Danger Threshold Line (3.8m)
@@ -216,11 +216,11 @@ export const HydrographModal: React.FC = () => {
 
     // X-Axis Hour Labels
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = '10px Outfit, sans-serif';
+    ctx.fillStyle = '#f1f5f9';
+    ctx.font = '600 11px Outfit, sans-serif';
     pts.forEach((p: any, idx: number) => {
       if (idx % 2 === 0 || p.hour_offset === 0) {
-        ctx.fillText(p.label, getX(idx), h - pad.bottom + 16);
+        ctx.fillText(p.label, getX(idx), h - pad.bottom + 18);
       }
     });
 
@@ -412,8 +412,8 @@ export const HydrographModal: React.FC = () => {
               </div>
             </div>
 
-            <canvas 
-              ref={canvasRef} 
+            <canvas
+              ref={canvasRef}
               id="hydrograph-canvas"
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}

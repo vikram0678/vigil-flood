@@ -62,6 +62,25 @@
         <span style="font-size:0.75rem; color:var(--text-muted);">6 Wards</span>
       </div>
       <div class="panel-body">
+        <!-- State / Basin Dropdown Selector -->
+        <div class="state-dropdown-section" style="margin-bottom: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+            <label for="state-basin-select" style="font-size: 0.72rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">
+              🗺️ Filter State:
+            </label>
+            <span style="font-size: 0.65rem; font-weight: 700; color: #38bdf8; background: rgba(56, 189, 248, 0.12); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(56, 189, 248, 0.3);">
+              ⚡ Descending Risk
+            </span>
+          </div>
+          <select id="state-basin-select" style="width: 100%; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 6px; padding: 7px 10px; color: #f8fafc; font-size: 0.8rem; font-weight: 600; cursor: pointer; outline: none;">
+            <option value="ALL" selected>🌐 All States (All 26 Villages Monitored)</option>
+            <option value="BASIN-HP-BEAS">🏔️ Himachal Pradesh (11 Wards - Beas & Sutlej)</option>
+            <option value="BASIN-UK-ALAK">⛰️ Uttarakhand (5 Wards - Alaknanda Valley)</option>
+            <option value="BASIN-SK-TEESTA">🌊 Sikkim (5 Wards - Teesta River Basin)</option>
+            <option value="BASIN-KL-WAYANAD">🌧️ Kerala (5 Wards - Wayanad Chaliyar)</option>
+          </select>
+        </div>
+
         <!-- Threat Index -->
         <div class="threat-meter-card">
           <div class="threat-header">

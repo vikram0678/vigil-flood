@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useFlood } from '../../context/FloodContext';
 
 export const NationalAlertsDrawer: React.FC = () => {
-  const { switchBasin, hazardFilter, setHazardFilter } = useFlood();
+  const { switchBasin, selectVillage, hazardFilter, setHazardFilter } = useFlood();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [alertsData, setAlertsData] = useState<any>(null);
   const [hillyCities, setHillyCities] = useState<any[]>([]);
@@ -30,19 +30,23 @@ export const NationalAlertsDrawer: React.FC = () => {
     };
 
     fetchFeeds();
-    const interval = setInterval(fetchFeeds, 30000); // 30s poll
+    const interval = setInterval(fetchFeeds, 15000); // 15s poll
     return () => clearInterval(interval);
   }, [hazardFilter]);
 
   const handleAlertClick = (item: any) => {
-    // Map alert state to basin if matching
-    const st = (item.state || '').toLowerCase();
-    if (st.includes('himachal')) switchBasin('BASIN-HP-BEAS');
-    else if (st.includes('uttarakhand')) switchBasin('BASIN-UK-ALAK');
-    else if (st.includes('sikkim')) switchBasin('BASIN-SK-TEESTA');
-    else if (st.includes('kerala')) switchBasin('BASIN-KL-WAYANAD');
-    else if ((window as any).leafletMap && item.coordinates) {
-      (window as any).leafletMap.flyTo(item.coordinates, 12, { duration: 1.5 });
+    if (item.village_id) {
+      selectVillage(item.village_id);
+      setIsOpen(false);
+    } else {
+      const st = (item.state || '').toLowerCase();
+      if (st.includes('himachal')) switchBasin('BASIN-HP-BEAS');
+      else if (st.includes('uttarakhand')) switchBasin('BASIN-UK-ALAK');
+      else if (st.includes('sikkim')) switchBasin('BASIN-SK-TEESTA');
+      else if (st.includes('kerala')) switchBasin('BASIN-KL-WAYANAD');
+      else if ((window as any).leafletMap && item.coordinates) {
+        (window as any).leafletMap.flyTo(item.coordinates, 13.5, { duration: 1.0 });
+      }
     }
   };
 
@@ -129,31 +133,44 @@ export const NationalAlertsDrawer: React.FC = () => {
               </div>
 
               <div className="alerts-feed-stack">
-                {(alertsData?.alerts || []).map((alert: any) => (
+                {(alertsData?.alerts || []).map((alert: any, idx: number) => (
                   <div 
-                    key={alert.id}
+                    key={alert.id || idx}
                     className="alert-banner-card"
                     style={{ borderLeft: `4px solid ${alert.color}` }}
                     onClick={() => handleAlertClick(alert)}
-                    title="Click to inspect this mountain gorge on map"
+                    title={`Click to inspect ${alert.location_name} on map`}
                   >
                     <div className="alert-banner-top">
-                      <div className="alert-event-name" style={{ color: alert.color }}>
-                        <span>{alert.icon}</span> <span>{alert.event_type.replace('_', ' ')}</span>
+                      <div className="alert-event-name" style={{ color: alert.color, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span>{alert.icon}</span> 
+                        <span style={{ fontWeight: 700 }}>{alert.event_type}</span>
                       </div>
-                      <span className="alert-severity-badge" style={{ background: `${alert.color}25`, color: alert.color, border: `1px solid ${alert.color}60` }}>
-                        {alert.severity}
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        {alert.risk_percentage !== undefined && (
+                          <span style={{ fontSize: '0.78rem', fontWeight: 800, color: alert.color }}>
+                            {alert.risk_percentage}%
+                          </span>
+                        )}
+                        <span className="alert-severity-badge" style={{ background: `${alert.color}25`, color: alert.color, border: `1px solid ${alert.color}60` }}>
+                          {alert.severity}
+                        </span>
+                      </div>
                     </div>
 
                     <div className="alert-district-text">
-                      <strong>{alert.district}</strong>, {alert.state}
+                      <strong>{alert.location_name}</strong>{alert.district ? ` (${alert.district})` : ''}, {alert.state}
                     </div>
-                    <div className="alert-desc-text">{alert.description}</div>
+                    <div className="alert-desc-text" style={{ fontSize: '0.74rem', color: '#cbd5e1', margin: '4px 0', lineHeight: 1.35 }}>
+                      {alert.action_directive || alert.description}
+                    </div>
                     
-                    <div className="alert-bottom-metrics">
-                      <span className="alert-metric">☔ {alert.rainfall_mm_h || '--'} mm/h</span>
-                      <span className="alert-action-link" style={{ color: alert.color }}>Inspect Basin ➔</span>
+                    <div className="alert-bottom-metrics" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
+                      <div style={{ display: 'flex', gap: '8px', color: '#94a3b8', fontSize: '0.72rem' }}>
+                        <span>☔ {alert.rainfall_mmh ?? alert.rainfall_mm_h ?? '--'} mm/h</span>
+                        {alert.lead_time_display && <span>⏱️ {alert.lead_time_display}</span>}
+                      </div>
+                      <span className="alert-action-link" style={{ color: alert.color, fontWeight: 700, fontSize: '0.74rem' }}>Inspect Village ➔</span>
                     </div>
                   </div>
                 ))}

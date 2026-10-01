@@ -77,8 +77,8 @@ export const UniversalSearchBar: React.FC = () => {
     if (!query || query.trim().length < 1) return [];
     const q = query.toLowerCase().trim();
     return villages
-      .filter(v => 
-        v.name.toLowerCase().includes(q) || 
+      .filter(v =>
+        v.name.toLowerCase().includes(q) ||
         (v.district && v.district.toLowerCase().includes(q)) ||
         (v.ward && v.ward.toLowerCase().includes(q))
       )
@@ -149,7 +149,7 @@ export const UniversalSearchBar: React.FC = () => {
     debounceRef.current = setTimeout(async () => {
       // If query is pure coordinates, no need to hit Nominatim
       if (parsedCoords) return;
-      
+
       setIsLoading(true);
       try {
         const res = await fetch(
@@ -240,32 +240,29 @@ export const UniversalSearchBar: React.FC = () => {
   return (
     <div className="universal-search-container" id="tour-universal-search">
       <div className="search-bar-inner">
-        <span className="search-icon">🔍</span>
         <input
           ref={inputRef}
           type="text"
           className="universal-search-input"
-          placeholder="Search village, gorge, ISRO district, or GPS [Lat, Lng]..."
+          placeholder="Search village/location..."
           value={query}
           onChange={(e) => handleSearchChange(e.target.value)}
           onFocus={() => query.trim().length > 0 && setIsDropdownOpen(true)}
           onKeyDown={handleKeyDownInput}
         />
-        {isLoading && <span className="search-spinner">⏳</span>}
-        {!query && (
-          <kbd className="search-kbd-shortcut" title="Press Ctrl+K or ⌘K to search">
-            ⌘K / Ctrl+K
-          </kbd>
-        )}
-        {query && (
-          <button 
+        {isLoading ? (
+          <span className="search-spinner">⏳</span>
+        ) : query ? (
+          <button
             type="button"
-            className="search-clear-btn" 
+            className="search-clear-btn"
             onClick={() => { setQuery(''); setGlobalSuggestions([]); setQueryAnalysis(null); setIsDropdownOpen(false); }}
             title="Clear Search"
           >
             &times;
           </button>
+        ) : (
+          <span className="search-icon" style={{ opacity: 0.6, cursor: 'pointer' }}>🔍</span>
         )}
       </div>
 
@@ -276,7 +273,7 @@ export const UniversalSearchBar: React.FC = () => {
           {parsedCoords && (
             <div className="search-category-block">
               <div className="category-header">🧭 GPS COORDINATES (DIRECT JUMP)</div>
-              <div 
+              <div
                 className={`suggestion-item highlighted ${selectedIndex === 0 ? 'keyboard-selected' : ''}`}
                 onClick={() => handleSelectLocation(parsedCoords.lat, parsedCoords.lng, `GPS (${parsedCoords.lat.toFixed(4)}, ${parsedCoords.lng.toFixed(4)})`, 'GPS')}
               >
@@ -305,9 +302,9 @@ export const UniversalSearchBar: React.FC = () => {
                     <div className="suggestion-title">{item.display_name}</div>
                     <div className="suggestion-subtitle">{item.subtext}</div>
                   </div>
-                  <span 
-                    className="category-risk-badge" 
-                    style={{ 
+                  <span
+                    className="category-risk-badge"
+                    style={{
                       backgroundColor: item.riskScore && item.riskScore > 70 ? 'rgba(239, 68, 68, 0.2)' : 'rgba(56, 189, 248, 0.2)',
                       color: item.riskScore && item.riskScore > 70 ? '#ef4444' : '#38bdf8',
                       border: `1px solid ${item.riskScore && item.riskScore > 70 ? '#ef4444' : '#38bdf8'}`

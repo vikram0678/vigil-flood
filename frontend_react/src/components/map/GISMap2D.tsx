@@ -44,6 +44,7 @@ function getDownhillFlowArrowPoints(streamCoords: [number, number][]) {
 export const GISMap2D: React.FC = () => {
   const {
     villages,
+    allVillages,
     selectedVillageId,
     selectedVillageData,
     selectVillage,
@@ -235,27 +236,66 @@ export const GISMap2D: React.FC = () => {
   // 3. Update Village Markers (Google Flood Hub 5-Tier Threat Style)
   useEffect(() => {
     const map = mapInstanceRef.current;
-    if (!map || villages.length === 0) return;
+    if (!map) return;
 
-    villages.forEach(v => {
+    // Use all 26 villages so national map always renders full India context
+    const sourceVillages = allVillages && allVillages.length > 0 ? allVillages : villages;
+
+    // Clean up markers that are no longer in the active village set
+    const currentVillageIds = new Set(sourceVillages.map(v => v.id));
+    Object.keys(markersRef.current).forEach(id => {
+      if (!currentVillageIds.has(id)) {
+        markersRef.current[id].remove();
+        delete markersRef.current[id];
+      }
+    });
+    Object.keys(hexPolygonsRef.current).forEach(id => {
+      if (!currentVillageIds.has(id)) {
+        hexPolygonsRef.current[id].remove();
+        delete hexPolygonsRef.current[id];
+      }
+    });
+
+    if (sourceVillages.length === 0) return;
+
+    sourceVillages.forEach(v => {
       const color = RISK_COLORS[v.risk_level] || RISK_COLORS.LOW;
       const isCritical = v.risk_level === 'CRITICAL' || v.risk_level === 'EXTREME';
       const isDanger = v.risk_level === 'HIGH' || v.risk_level === 'DANGER';
       const isMultiHazard = (v.slope_deg || 0) > 30 && (v.risk_percentage || 0) > 60;
       const isLandslide = (v.slope_deg || 0) > 35;
-      
-      // Geometry-Coded Hazard Icon (WCAG Color-Blind Accessible)
-      // 🔺 Landslides: Triangle | 🔷 Flash Floods: Diamond | ⚡ Multi-Hazard: Hexagon
-      const shapeIcon = isMultiHazard ? '⚡' : (isLandslide ? '🔺' : '🔷');
-      const shapeClass = isMultiHazard ? 'shape-hexagon' : (isLandslide ? 'shape-triangle' : 'shape-diamond');
 
+      const isSelected = v.id === selectedVillageId;
+      const isStateActive = activeBasinId === 'ALL' ||
+        v.basin_id === activeBasinId ||
+        (activeBasin && (v.state === activeBasin.state || (activeBasin.name && activeBasin.name.includes(v.state))));
+
+      // Shape coding
+      const shapeIcon = isMultiHazard ? '⚡' : (isLandslide ? '⚠️' : '🌊');
+      // const shapeClass = isMultiHazard ? 'shape-hexagon' : (isLandslide ? 'shape-triangle' : 'shape-diamond');
+      const shapeClass = 'shape-circle';
+      // Determine pin wrapper classes
+      let pinClasses = 'senior-hazard-pin-wrapper';
+      if (isSelected) {
+        pinClasses += ' village-selected-beacon';
+      } else if (isCritical) {
+        pinClasses += ' critical-pulse';
+      } else if (isDanger) {
+        pinClasses += ' danger-pulse';
+      }
+
+      // Ring effect logic:
+      // When ALL is active: all 26 villages display animated radar pulse ring.
+      // When a state is selected: ONLY the selected state villages display the animated radar ring.
+      // Villages from other states: ring effect is turned off, but markers remain completely clear and normal (NOT darkened).
+      const showRadarRing = isStateActive && !isSelected;
       const markerHtml = `
-        <div class="senior-hazard-pin-wrapper ${isCritical ? 'critical-pulse' : (isDanger ? 'danger-pulse' : '')}">
-          ${(isCritical || isDanger) ? `
+        <div class="${pinClasses}">
+          ${showRadarRing ? `
             <div class="dual-radar-ring ring-1" style="border-color: ${color};"></div>
             <div class="dual-radar-ring ring-2" style="border-color: ${color};"></div>
           ` : ''}
-          <div class="senior-hazard-badge ${shapeClass}" style="background: ${color}; box-shadow: 0 0 14px ${color}88;">
+          <div class="senior-hazard-badge ${shapeClass}" style="background: ${color}; box-shadow: 0 2px 6px rgba(0,0,0,0.35);">
             <span class="hazard-geom-symbol">${shapeIcon}</span>
           </div>
           <div class="senior-elevation-tag">
@@ -307,8 +347,9 @@ export const GISMap2D: React.FC = () => {
     });
 
     // Render Hexagonal Risk Grid (Google Flood Hub Style) in-place
-    villages.forEach(v => {
+    sourceVillages.forEach(v => {
       const color = RISK_COLORS[v.risk_level] || RISK_COLORS.LOW;
+
       if (!hexPolygonsRef.current[v.id]) {
         const cellRadius = 0.015;
         const hexPoints: [number, number][] = [];
@@ -322,32 +363,48 @@ export const GISMap2D: React.FC = () => {
         const poly = L.polygon(hexPoints, {
           color: color,
           weight: 1.5,
-          opacity: 0.7,
+          opacity: 0.65,
           fillColor: color,
-          fillOpacity: 0.22,
+          fillOpacity: 0.18,
           dashArray: '4, 4'
         }).addTo(hexGridLayerRef.current);
         hexPolygonsRef.current[v.id] = poly;
       } else {
         hexPolygonsRef.current[v.id].setStyle({
           color: color,
-          fillColor: color
+          fillColor: color,
+          opacity: 0.65,
+          fillOpacity: 0.18
         });
       }
     });
-  }, [villages, selectVillage]);
+  }, [allVillages, villages, selectVillage, activeBasinId, activeBasin, selectedVillageId]);
 
   // 4. Update Overlays for Selected Village or Entire Basin (Hazard Zones, Shelters, Routes, Streams, Sensors)
   const renderedVillageIdRef = useRef<string | null>(null);
-  useEffect(() => {
-    hazardLayerRef.current.clearLayers();
-    streamLayerRef.current.clearLayers();
-    shelterLayerRef.current.clearLayers();
-    routeLayerRef.current.clearLayers();
-    sensorLayerRef.current.clearLayers();
+  const renderedHasDetailRef = useRef<boolean>(false);
 
-    if (!selectedVillageData) {
-      renderedVillageIdRef.current = null;
+  useEffect(() => {
+    const sourceVillages = allVillages && allVillages.length > 0 ? allVillages : villages;
+    const v = selectedVillageId
+      ? ((selectedVillageData?.village?.id === selectedVillageId ? selectedVillageData.village : null) || sourceVillages.find(x => x.id === selectedVillageId))
+      : null;
+
+    const hasDetail = Boolean(selectedVillageData?.village?.id && selectedVillageData.village.id === selectedVillageId);
+
+    // Case 1: Overview mode (no village selected)
+    if (!v || !selectedVillageId) {
+      if (renderedVillageIdRef.current === '__OVERVIEW__' + activeBasinId) {
+        return;
+      }
+      renderedVillageIdRef.current = '__OVERVIEW__' + activeBasinId;
+      renderedHasDetailRef.current = false;
+
+      hazardLayerRef.current.clearLayers();
+      streamLayerRef.current.clearLayers();
+      shelterLayerRef.current.clearLayers();
+      routeLayerRef.current.clearLayers();
+      sensorLayerRef.current.clearLayers();
 
       // Populate basin-wide Safe Refuge, IoT Sensors, River Streams, and Inundation Polygons
       villages.forEach(v => {
@@ -467,18 +524,23 @@ export const GISMap2D: React.FC = () => {
       });
       return;
     }
-    const v = selectedVillageData.village;
-    const isCritical = selectedVillageData.risk_analysis?.risk_level === 'CRITICAL' || selectedVillageData.risk_analysis?.risk_level === 'EXTREME';
 
-    // Only rebuild layers when selected village changes, not on every telemetry pulse
-    if (renderedVillageIdRef.current === v.id) return;
+    // Case 2: A specific village IS selected
+    // If already rendered with full detail for this exact village, do not clear or re-render (prevents layer disappearance)
+    if (renderedVillageIdRef.current === v.id && renderedHasDetailRef.current === true) {
+      return;
+    }
+
     renderedVillageIdRef.current = v.id;
+    renderedHasDetailRef.current = hasDetail;
 
     hazardLayerRef.current.clearLayers();
     streamLayerRef.current.clearLayers();
     shelterLayerRef.current.clearLayers();
     routeLayerRef.current.clearLayers();
     sensorLayerRef.current.clearLayers();
+
+    const isCritical = (hasDetail && (selectedVillageData?.risk_analysis?.risk_level === 'CRITICAL' || selectedVillageData?.risk_analysis?.risk_level === 'EXTREME')) || v.risk_level === 'CRITICAL' || v.risk_level === 'EXTREME';
 
     // A. Concentric 3-Tier Catchment Hazard Buffer Zones (🔴 Core, 🟠 Buffer, 🟡 Watch/🟢 Refuge)
     const zones = v.hazard_zones;
@@ -719,103 +781,105 @@ export const GISMap2D: React.FC = () => {
       }
       sensorLayerRef.current.addLayer(sensorMarker);
     });
-  }, [selectedVillageData, villages, activeBasinId]);
+  }, [selectedVillageData, villages, allVillages, activeBasinId, selectedVillageId]);
 
-// Camera fly-to for village selection and basin switching
-const lastFlownVillageIdRef = useRef<string | null>(null);
-const lastFlownBasinIdRef = useRef<string | null>(null);
+  // Camera fly-to for village selection and basin switching
+  const lastFlownVillageIdRef = useRef<string | null>(null);
 
-useEffect(() => {
-  const map = mapInstanceRef.current;
-  if (!map || viewMode !== '2d') return;
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || viewMode !== '2d') return;
 
-  // Check if map container has valid rendered pixel dimensions
-  try {
-    const size = map.getSize();
-    if (!size || size.x <= 0 || size.y <= 0 || isNaN(size.x) || isNaN(size.y)) {
+    // Check if map container has valid rendered pixel dimensions
+    try {
+      const size = map.getSize();
+      if (!size || size.x <= 0 || size.y <= 0 || isNaN(size.x) || isNaN(size.y)) {
+        return;
+      }
+    } catch (_) {
       return;
     }
-  } catch (_) {
-    return;
-  }
 
-  // 1. Village Selection FlyTo
-  if (selectedVillageId && lastFlownVillageIdRef.current !== selectedVillageId) {
-    lastFlownVillageIdRef.current = selectedVillageId;
-    const v = selectedVillageData?.village || villages.find(x => x.id === selectedVillageId);
-    if (v && typeof v.lat === 'number' && typeof v.lng === 'number' && !isNaN(v.lat) && !isNaN(v.lng)) {
-      try {
-        map.flyTo([v.lat, v.lng], 13.5, { duration: 1.2 });
-      } catch (err) {
-        console.warn("Leaflet flyTo village error:", err);
-      }
-    }
-    return;
-  }
+    // 1. Village Selection FlyTo (zoom in smoothly and instantly when village is clicked!)
+    if (selectedVillageId) {
+      if (lastFlownVillageIdRef.current !== selectedVillageId) {
+        const sourceVillages = allVillages && allVillages.length > 0 ? allVillages : villages;
+        const targetVillage = sourceVillages.find(x => x.id === selectedVillageId) ||
+          (selectedVillageData?.village?.id === selectedVillageId ? selectedVillageData.village : null);
 
-  // 2. Basin Switching FlyTo (when selectedVillageId is null)
-  if (!selectedVillageId) {
-    if (lastFlownVillageIdRef.current !== null || lastFlownBasinIdRef.current !== activeBasinId) {
-      lastFlownVillageIdRef.current = null;
-      lastFlownBasinIdRef.current = activeBasinId;
-      
-      if (activeBasin && activeBasin.center_coords) {
-        try {
-          map.flyTo([activeBasin.center_coords[0], activeBasin.center_coords[1]], activeBasin.default_zoom || 12.0, { duration: 1.4 });
-        } catch (err) {
-          console.warn("Leaflet flyTo basin error:", err);
+        if (targetVillage && typeof targetVillage.lat === 'number' && typeof targetVillage.lng === 'number' && !isNaN(targetVillage.lat) && !isNaN(targetVillage.lng)) {
+          lastFlownVillageIdRef.current = selectedVillageId;
+          try {
+            map.stop(); // Stop any pending camera animation immediately so it shifts cleanly
+            map.flyTo([targetVillage.lat, targetVillage.lng], 13.5, {
+              duration: 1.0,
+              easeLinearity: 0.25
+            });
+          } catch (err) {
+            console.warn("Leaflet flyTo village error:", err);
+          }
         }
-      } else {
+      }
+      return;
+    }
+
+    // 2. Unselection FlyTo (when selectedVillageId is null)
+    // Crucial: DO NOT zoom in after selecting state in the left sidebar!
+    // Only fly back to overview if a village was previously selected and is now deselected.
+    if (!selectedVillageId) {
+      if (lastFlownVillageIdRef.current !== null) {
+        lastFlownVillageIdRef.current = null;
         try {
-          map.flyTo([22.5, 78.9], 5, { duration: 1.4 });
+          map.stop();
+          map.flyTo([22.5, 78.9], 5, { duration: 1.0 });
         } catch (err) {
           console.warn("Leaflet flyTo overview error:", err);
         }
       }
     }
-  }
-}, [selectedVillageId, villages, selectedVillageData, viewMode, activeBasinId, activeBasin]);
+  }, [selectedVillageId, villages, allVillages, selectedVillageData, viewMode, activeBasinId, activeBasin]);
 
-// 5. Layer visibility sync
-useEffect(() => {
-  const map = mapInstanceRef.current;
-  if (!map) return;
+  // 5. Layer visibility sync
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
 
-  if (layers.hazardZones) map.addLayer(hazardLayerRef.current);
-  else map.removeLayer(hazardLayerRef.current);
+    if (layers.hazardZones) map.addLayer(hazardLayerRef.current);
+    else map.removeLayer(hazardLayerRef.current);
 
-  if (layers.hexGrid) map.addLayer(hexGridLayerRef.current);
-  else map.removeLayer(hexGridLayerRef.current);
+    if (layers.hexGrid) map.addLayer(hexGridLayerRef.current);
+    else map.removeLayer(hexGridLayerRef.current);
 
-  if (layers.shelters) map.addLayer(shelterLayerRef.current);
-  else map.removeLayer(shelterLayerRef.current);
+    if (layers.shelters) map.addLayer(shelterLayerRef.current);
+    else map.removeLayer(shelterLayerRef.current);
 
-  if (layers.routes) map.addLayer(routeLayerRef.current);
-  else map.removeLayer(routeLayerRef.current);
+    if (layers.routes) map.addLayer(routeLayerRef.current);
+    else map.removeLayer(routeLayerRef.current);
 
-  if (layers.streams) map.addLayer(streamLayerRef.current);
-  else map.removeLayer(streamLayerRef.current);
+    if (layers.streams) map.addLayer(streamLayerRef.current);
+    else map.removeLayer(streamLayerRef.current);
 
-  if (layers.sensors) map.addLayer(sensorLayerRef.current);
-  else map.removeLayer(sensorLayerRef.current);
+    if (layers.sensors) map.addLayer(sensorLayerRef.current);
+    else map.removeLayer(sensorLayerRef.current);
 
-  if (layers.contoursDEM) map.addLayer(contoursLayerRef.current);
-  else map.removeLayer(contoursLayerRef.current);
+    if (layers.contoursDEM) map.addLayer(contoursLayerRef.current);
+    else map.removeLayer(contoursLayerRef.current);
 
-  if (dopplerLayerRef.current) {
-    if (layers.dopplerRadar) map.addLayer(dopplerLayerRef.current);
-    else map.removeLayer(dopplerLayerRef.current);
-  }
-
-  // Village markers visibility
-  Object.values(markersRef.current).forEach(marker => {
-    if (layers.villageLabels) {
-      marker.setStyle({ opacity: 1.0, fillOpacity: 0.95 });
-    } else {
-      marker.setStyle({ opacity: 0.2, fillOpacity: 0.15 });
+    if (dopplerLayerRef.current) {
+      if (layers.dopplerRadar) map.addLayer(dopplerLayerRef.current);
+      else map.removeLayer(dopplerLayerRef.current);
     }
-  });
-}, [layers]);
+
+    // Village markers visibility
+    Object.values(markersRef.current).forEach(marker => {
+      if (!marker) return;
+      if (typeof (marker as any).setStyle === 'function') {
+        (marker as any).setStyle({ opacity: layers.villageLabels ? 1.0 : 0.2, fillOpacity: layers.villageLabels ? 0.95 : 0.15 });
+      } else if (typeof (marker as any).setOpacity === 'function') {
+        (marker as any).setOpacity(layers.villageLabels ? 1.0 : 0.2);
+      }
+    });
+  }, [layers]);
 
   return (
     <div

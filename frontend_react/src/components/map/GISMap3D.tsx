@@ -365,7 +365,8 @@ export const GISMap3D: React.FC = () => {
       return;
     }
 
-    const v = selectedVillageData?.village || villages.find(x => x.id === selectedVillageId);
+    const v = villages.find(x => x.id === selectedVillageId) ||
+      (selectedVillageData?.village?.id === selectedVillageId ? selectedVillageData.village : null);
     if (!v) return;
 
     // 1. Selected Village 3D Floating Name Badge
@@ -596,7 +597,8 @@ export const GISMap3D: React.FC = () => {
     // 1. Village Selection FlyTo
     if (selectedVillageId && lastFlown3DVillageIdRef.current !== selectedVillageId) {
       lastFlown3DVillageIdRef.current = selectedVillageId;
-      const v = selectedVillageData?.village || villages.find(x => x.id === selectedVillageId);
+      const v = villages.find(x => x.id === selectedVillageId) ||
+        (selectedVillageData?.village?.id === selectedVillageId ? selectedVillageData.village : null);
       if (v && typeof v.lng === 'number' && typeof v.lat === 'number' && !isNaN(v.lng) && !isNaN(v.lat)) {
         try {
           map3d.flyTo({

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useFlood } from '../../context/FloodContext';
 
 export const StateAlertsTableModal: React.FC = () => {
-  const { switchBasin, hazardFilter, setHazardFilter } = useFlood();
+  const { switchBasin, selectVillage, hazardFilter, setHazardFilter } = useFlood();
   const [isOpen, setIsOpen] = useState(false);
   const [stateFilter, setStateFilter] = useState('ALL');
   const [modalHazardFilter, setModalHazardFilter] = useState<string>('ALL');
@@ -42,32 +42,26 @@ export const StateAlertsTableModal: React.FC = () => {
 
   const handleActionClick = (row: any) => {
     setIsOpen(false);
-    const st = (row.state || '').toLowerCase();
-    if (st.includes('himachal')) switchBasin('BASIN-HP-BEAS');
-    else if (st.includes('uttarakhand')) switchBasin('BASIN-UK-ALAK');
-    else if (st.includes('sikkim')) switchBasin('BASIN-SK-TEESTA');
-    else if (st.includes('kerala')) switchBasin('BASIN-KL-WAYANAD');
-    else if ((window as any).leafletMap && row.coordinates) {
-      (window as any).leafletMap.flyTo(row.coordinates, 12, { duration: 1.5 });
+    if (row.village_id) {
+      selectVillage(row.village_id);
+    } else {
+      const st = (row.state || '').toLowerCase();
+      if (st.includes('himachal')) switchBasin('BASIN-HP-BEAS');
+      else if (st.includes('uttarakhand')) switchBasin('BASIN-UK-ALAK');
+      else if (st.includes('sikkim')) switchBasin('BASIN-SK-TEESTA');
+      else if (st.includes('kerala')) switchBasin('BASIN-KL-WAYANAD');
+      else if ((window as any).leafletMap && row.coordinates) {
+        (window as any).leafletMap.flyTo(row.coordinates, 13.5, { duration: 1.0 });
+      }
     }
   };
 
   const statesList = [
-    { id: 'ALL', name: 'PAN INDIA' },
-    { id: 'Uttarakhand', name: 'Uttarakhand' },
+    { id: 'ALL', name: 'PAN-INDIA (26 VALLEYS)' },
     { id: 'Himachal Pradesh', name: 'Himachal Pradesh' },
-    { id: 'Kerala', name: 'Kerala' },
+    { id: 'Uttarakhand', name: 'Uttarakhand' },
     { id: 'Sikkim', name: 'Sikkim' },
-    { id: 'Jammu & Kashmir', name: 'Jammu & Kashmir' },
-    { id: 'Maharashtra', name: 'Maharashtra' },
-    { id: 'Karnataka', name: 'Karnataka' },
-    { id: 'Tamil Nadu', name: 'Tamil Nadu' },
-    { id: 'Arunachal Pradesh', name: 'Arunachal Pradesh' },
-    { id: 'Meghalaya', name: 'Meghalaya' },
-    { id: 'Mizoram', name: 'Mizoram' },
-    { id: 'West Bengal', name: 'West Bengal (Hills)' },
-    { id: 'Assam', name: 'Assam (Hills)' },
-    { id: 'Nagaland', name: 'Nagaland' }
+    { id: 'Kerala', name: 'Kerala' }
   ];
 
   return (

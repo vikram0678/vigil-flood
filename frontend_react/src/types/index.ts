@@ -47,6 +47,7 @@ export interface SensorLocation {
 
 export interface Village {
   id: string;
+  basin_id?: string;
   name: string;
   ward: string;
   district?: string;

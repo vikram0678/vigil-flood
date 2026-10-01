@@ -767,7 +767,7 @@ function setBasemap3D(type) {
 // 3. Fetch Initial Telemetry & Villages
 async function fetchInitialData(isFirstLoad = false) {
   try {
-    const res = await fetch("/api/villages");
+    const res = await fetch("/api/villages?basin_id=ALL");
     const data = await res.json();
     allVillages = data.villages || [];
     renderVillageList(allVillages);
@@ -1029,11 +1029,79 @@ function renderSensorHealth(sensors, healthPct) {
 // 10. Render Action Plan & SMS Broadcast
 function renderActionPlan(action) {
   const container = document.getElementById("action-plan-container");
+  const logistics = action.disaster_logistics || {};
+  const routes = action.evaluated_routes || [];
+  const crest = action.projected_flood_crest_m;
+
+  let routesHtml = "";
+  if (routes.length > 0) {
+    routesHtml = `
+      <div style="margin: 10px 0; padding: 8px 10px; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px;">
+        <div style="font-size: 0.72rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+          <span>🛰️ Copernicus 30m DEM Elevation Check</span>
+          <span style="font-size: 0.68rem; color: #94a3b8; font-weight: normal;">Flood Crest: <b style="color:#f59e0b;">${crest || '--'}m ASL</b></span>
+        </div>
+        ${routes.map(r => {
+          const isSafe = r.is_safe !== false && (r.clearance_margin_m === undefined || r.clearance_margin_m > 0);
+          const badgeBg = isSafe ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.15)';
+          const badgeBorder = isSafe ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)';
+          const badgeColor = isSafe ? '#34d399' : '#f87171';
+          const icon = isSafe ? '✅' : '⛔';
+          const marginStr = r.clearance_margin_m !== undefined ? `${r.clearance_margin_m >= 0 ? '+' : ''}${r.clearance_margin_m}m` : '';
+          return `
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.74rem; padding: 4px 6px; margin-bottom: 4px; background: ${badgeBg}; border: 1px solid ${badgeBorder}; border-radius: 6px;">
+              <div style="font-weight: 600; color: #f1f5f9; display: flex; align-items: center; gap: 5px;">
+                <span>${icon}</span>
+                <span title="${r.name}">${r.name.length > 27 ? r.name.substring(0, 25) + '...' : r.name}</span>
+              </div>
+              <div style="font-weight: 700; color: ${badgeColor}; font-size: 0.7rem;">
+                ${marginStr} (${r.min_elevation_m || '--'}m ASL)
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  let vulnHtml = "";
+  const vuln = action.vulnerable_populations || logistics.vulnerable_populations;
+  if (vuln && vuln.children_under_5_count !== undefined) {
+    vulnHtml = `
+      <div style="margin: 8px 0 10px 0; padding: 8px 10px; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(236, 72, 153, 0.25); border-radius: 8px;">
+        <div style="font-size: 0.72rem; font-weight: 700; color: #f472b6; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+          <span>🍼 Special Care Demographics (WorldPop Age/Sex)</span>
+          <span style="font-size: 0.65rem; color: #a5b4fc; font-weight: normal;">100m Satellite Gridded</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; text-align: center;">
+          <div style="background: rgba(244, 114, 182, 0.1); border: 1px solid rgba(244, 114, 182, 0.3); border-radius: 6px; padding: 4px 6px;">
+            <div style="font-size: 0.65rem; color: #cbd5e1;">Infants &lt;5y</div>
+            <div style="font-size: 0.95rem; font-weight: 700; color: #f472b6;">${vuln.children_under_5_count} <span style="font-size: 0.65rem; font-weight: normal;">(${vuln.children_under_5_pct}%)</span></div>
+            <div style="font-size: 0.62rem; color: #94a3b8;">${vuln.pediatric_kits_needed} Ped Kits</div>
+          </div>
+          <div style="background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 6px; padding: 4px 6px;">
+            <div style="font-size: 0.65rem; color: #cbd5e1;">Elderly &gt;65y</div>
+            <div style="font-size: 0.95rem; font-weight: 700; color: #c084fc;">${vuln.elderly_over_65_count} <span style="font-size: 0.65rem; font-weight: normal;">(${vuln.elderly_over_65_pct}%)</span></div>
+            <div style="font-size: 0.62rem; color: #94a3b8;">${vuln.wheelchair_vehicles_needed} Wheelchair Vans</div>
+          </div>
+          <div style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 6px; padding: 4px 6px;">
+            <div style="font-size: 0.65rem; color: #cbd5e1;">Adults (5-64)</div>
+            <div style="font-size: 0.95rem; font-weight: 700; color: #38bdf8;">${vuln.adults_count} <span style="font-size: 0.65rem; font-weight: normal;">(${vuln.adults_pct}%)</span></div>
+            <div style="font-size: 0.62rem; color: #94a3b8;">Active Workforce</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   container.innerHTML = `
     <div class="action-title">📢 ${action.headline}</div>
     <div style="font-size:0.75rem; color:var(--accent-cyan); margin-bottom:6px; font-weight:600;">
       Tier: ${action.escalation_tier}
     </div>
+    ${satExposureHtml}
+    ${vulnHtml}
+    ${routesHtml}
   `;
 
   action.recommended_actions.forEach(act => {
@@ -1207,19 +1275,38 @@ function renderMapGISOverlays(data) {
     shelterLayerGroup.addLayer(shelterMarker);
   });
 
-  // D. Evacuation Routes (🛣️)
+  // D. Evacuation Routes (🛣️) with Copernicus 30m DEM Elevation Analysis
+  const evalRoutesMap = {};
+  if (data.action_plan && data.action_plan.evaluated_routes) {
+    data.action_plan.evaluated_routes.forEach(er => {
+      evalRoutesMap[er.name] = er;
+    });
+  }
+
   const routes = v.evacuation_routes || [];
   routes.forEach(r => {
-    const isSafe = r.safety_score > 50;
+    const evalData = evalRoutesMap[r.name] || r;
+    const isSafe = evalData.is_safe !== false && (evalData.clearance_margin_m === undefined || evalData.clearance_margin_m > 0);
     const pathCoords = r.path || [[v.lat, v.lng], [shelters[0]?.lat || v.lat, shelters[0]?.lng || v.lng]];
 
     const routeLine = L.polyline(pathCoords, {
       color: isSafe ? "#10b981" : "#ef4444",
-      weight: 3.5,
-      dashArray: isSafe ? "6, 8" : "2, 6",
-      opacity: 0.9
+      weight: isSafe ? 4 : 4.5,
+      dashArray: isSafe ? "6, 8" : "3, 6",
+      opacity: 0.95
     });
-    routeLine.bindTooltip(`<b>${r.name}</b><br>Status: ${r.status}`, { sticky: true });
+
+    const clearanceInfo = evalData.clearance_margin_m !== undefined
+      ? `<br>Copernicus 30m DEM Bottleneck: <b>${evalData.min_elevation_m}m ASL</b><br>Flood Crest: <b>${data.action_plan.projected_flood_crest_m || '--'}m ASL</b> (Clearance: <b>${evalData.clearance_margin_m >= 0 ? '+' : ''}${evalData.clearance_margin_m}m</b>)`
+      : '';
+
+    routeLine.bindTooltip(`
+      <div style="font-family:sans-serif; padding:2px;">
+        <div style="font-weight:700; color:${isSafe ? '#34d399' : '#f87171'};">🛣️ ${r.name}</div>
+        <div style="font-size:11px; color:#cbd5e1;">Status: <b>${evalData.status || r.status}</b></div>
+        <div style="font-size:10px; color:#94a3b8;">${clearanceInfo}</div>
+      </div>
+    `, { sticky: true });
     routeLayerGroup.addLayer(routeLine);
   });
 
@@ -2422,9 +2509,49 @@ async function calculateLiveDistrictFoS(districtId) {
           `• Hazard Status: ${res.alert_level} Alert\n` +
           `• Action Directive: ${res.action_code}\n\n` +
           `🛡️ NDMA Guideline: ${res.mitigation_directive}`);
-  } catch (err) {
-    console.error("Error computing dynamic FoS:", err);
+// State / Basin Dropdown Change Listener (Sync with All-India & Basin Views)
+document.addEventListener("DOMContentLoaded", () => {
+  const stateSelect = document.getElementById("state-basin-select");
+  if (stateSelect) {
+    stateSelect.addEventListener("change", async (e) => {
+      const basinId = e.target.value;
+      try {
+        const res = await fetch(`/api/villages?basin_id=${basinId}`);
+        const data = await res.json();
+        allVillages = data.villages || [];
+        renderVillageList(allVillages);
+        updateMapMarkers(allVillages);
+        renderGoogleFloodHexGrid(allVillages);
+        initHydroParticles(allVillages);
+        updateThreatIndex(allVillages);
+
+        // Update header
+        const headerTitle = document.querySelector(".panel-title");
+        if (headerTitle) {
+          headerTitle.textContent = basinId === "ALL" 
+            ? "📍 All-India Pilot Basins" 
+            : `📍 ${data.region || 'Pilot Catchment'}`;
+        }
+        const wardCount = document.querySelector(".panel-header span");
+        if (wardCount) {
+          wardCount.textContent = `${allVillages.length} Wards`;
+        }
+
+        // If villages available, zoom map to fit
+        if (allVillages.length > 0 && map) {
+          if (basinId === "ALL") {
+            map.flyTo([22.5, 78.9], 5, { duration: 1.2 });
+          } else {
+            const bounds = L.latLngBounds(allVillages.map(v => [v.lat, v.lng]));
+            map.fitBounds(bounds, { padding: [30, 30] });
+          }
+        }
+      } catch (err) {
+        console.error("Failed to switch state/basin in vanilla UI:", err);
+      }
+    });
   }
-}
+});
+
 
 

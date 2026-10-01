@@ -9,20 +9,22 @@ body {
   background-color: var(--canvas-deep, #070a13);
   color: var(--text-primary, #f8fafc);
   font-family: var(--font-ui, 'Inter', 'Outfit', -apple-system, sans-serif);
-  background-image: 
+  background-image:
     linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
-  background-size: 40px 40px; /* Cybernetic cyan accent grid */
+  background-size: 40px 40px;
+  /* Cybernetic cyan accent grid */
 }
 
 /* --- 2. TYPOGRAPHY: TABULAR NUMS & FONTS --- */
-.telemetry-value, 
+.telemetry-value,
 .live-number,
 .village-card .risk-score,
 .sensor-item .value,
 .lead-time-box .time {
   font-family: var(--font-mono, 'JetBrains Mono', monospace);
-  font-variant-numeric: tabular-nums; /* Prevents layout shifting during live updates */
+  font-variant-numeric: tabular-nums;
+  /* Prevents layout shifting during live updates */
   font-weight: 700;
 }
 
@@ -69,7 +71,8 @@ body {
 
 .navbar .brand-tagline {
   color: var(--text-muted);
-  -webkit-text-fill-color: var(--text-muted); /* Fix inheritance from parent gradient */
+  -webkit-text-fill-color: var(--text-muted);
+  /* Fix inheritance from parent gradient */
   font-size: 0.75rem;
   font-weight: 500;
 }
@@ -89,12 +92,14 @@ body {
   grid-template-columns: 340px 1fr;
 }
 
-.panel, .village-panel, .deep-dive-panel {
+.panel,
+.village-panel,
+.deep-dive-panel {
   background: var(--surface-primary, rgba(15, 23, 42, 0.94));
   backdrop-filter: blur(20px);
   border: 1px solid var(--border-subtle, rgba(51, 65, 85, 0.6));
   border-radius: var(--radius-md, 10px);
-  box-shadow: var(--shadow-subtle, 0 2px 8px rgba(0,0,0,0.3));
+  box-shadow: var(--shadow-subtle, 0 2px 8px rgba(0, 0, 0, 0.3));
   transition: transform var(--duration-normal) var(--ease-snap);
 }
 
@@ -110,7 +115,7 @@ body {
 
 .village-card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-elevated, 0 8px 24px rgba(0,0,0,0.5));
+  box-shadow: var(--shadow-elevated, 0 8px 24px rgba(0, 0, 0, 0.5));
 }
 
 .village-card.selected {
@@ -127,9 +132,17 @@ body {
 
 /* Breathing Glow Animation for Critical State */
 @keyframes breathing-glow-red {
-  0% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.2); }
-  50% { box-shadow: 0 0 24px rgba(239, 68, 68, 0.6); }
-  100% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.2); }
+  0% {
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+  }
+
+  50% {
+    box-shadow: 0 0 24px rgba(239, 68, 68, 0.6);
+  }
+
+  100% {
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+  }
 }
 
 .village-card.severity-critical {
@@ -142,14 +155,14 @@ body {
   top: 14px;
   left: 14px;
   transform: none;
-  width: 420px;
+  width: 280px;
   z-index: 800;
   transition: width 0.3s var(--ease-smooth);
 }
 
-.universal-search-container:focus-within {
+/* .universal-search-container:focus-within {
   width: 520px;
-}
+} */
 
 .search-input {
   width: 100%;
@@ -197,8 +210,10 @@ body {
 .simulation-dock {
   position: fixed;
   bottom: 0;
-  left: 340px; /* Offset by left panel */
-  right: 420px; /* Offset by right panel */
+  left: 340px;
+  /* Offset by left panel */
+  right: 420px;
+  /* Offset by right panel */
   background: var(--surface-overlay);
   backdrop-filter: blur(30px);
   border-top: 1px solid var(--border-subtle);
@@ -223,7 +238,7 @@ body {
   height: 16px;
   border-radius: 50%;
   background: white;
-  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   cursor: grab;
 }
 
@@ -344,10 +359,13 @@ body {
   height: 0;
   border-left: 16px solid transparent;
   border-right: 16px solid transparent;
-  border-bottom: 28px solid transparent; /* The color is set via JS inline styles, we need to adapt */
-  background: none !important; /* Override inline bg for triangle trick */
+  border-bottom: 28px solid transparent;
+  /* The color is set via JS inline styles, we need to adapt */
+  background: none !important;
+  /* Override inline bg for triangle trick */
   box-shadow: none !important;
 }
+
 .senior-hazard-badge.shape-triangle::after {
   content: "🔺";
   position: absolute;
@@ -356,13 +374,19 @@ body {
   font-size: 14px;
 }
 
-/* Diamond (Flash Flood) */
-.senior-hazard-badge.shape-diamond {
-  transform: rotate(45deg);
-  border-radius: 4px;
+/* All Village Badges are Perfect Upright Circles */
+.senior-hazard-badge,
+.senior-hazard-badge.shape-diamond,
+.senior-hazard-badge.shape-circle,
+.senior-hazard-badge.shape-hexagon,
+.senior-hazard-badge.shape-triangle {
+  transform: none !important;
+  border-radius: 50% !important;
+  clip-path: none !important;
 }
-.senior-hazard-badge.shape-diamond .hazard-geom-symbol {
-  transform: rotate(-45deg);
+
+.senior-hazard-badge .hazard-geom-symbol {
+  transform: none !important;
 }
 
 /* Hexagon (GLOF/Multi) */
@@ -396,16 +420,27 @@ body {
 }
 
 @keyframes radar-ping {
-  0% { width: 100%; height: 100%; opacity: 0.8; border-width: 3px; }
-  100% { width: 350%; height: 350%; opacity: 0; border-width: 0px; }
+  0% {
+    width: 100%;
+    height: 100%;
+    opacity: 0.8;
+    border-width: 3px;
+  }
+
+  100% {
+    width: 150%;
+    height: 150%;
+    opacity: 0;
+    border-width: 0px;
+  }
 }
 
 .senior-elevation-tag {
   background: var(--surface-primary);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
-  padding: 2px 6px;
-  font-size: 0.65rem;
+  padding: 3px 8px;
+  font-size: 0.78rem;
   font-weight: 700;
   font-family: var(--font-mono);
   display: flex;
@@ -421,8 +456,13 @@ body {
 }
 
 @keyframes stream-flow-scroll {
-  from { stroke-dashoffset: 24; }
-  to { stroke-dashoffset: 0; }
+  from {
+    stroke-dashoffset: 24;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 
 /* --- 12. LAYOUT HOTFIXES --- */
@@ -445,6 +485,7 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
 .village-info .village-shelter-preview {
   display: flex;
   flex-wrap: wrap;
@@ -452,7 +493,8 @@ body {
 }
 
 /* Fix Bottom Sandbox Layout Overlaps */
-.simulation-dock, .sandbox-card {
+.simulation-dock,
+.sandbox-card {
   z-index: 1000 !important;
   background: var(--surface-primary) !important;
   backdrop-filter: blur(20px) !important;
@@ -463,6 +505,7 @@ body {
 .navbar .brand-text-container {
   min-width: max-content;
 }
+
 .role-switcher {
   flex-shrink: 0;
 }
@@ -482,6 +525,7 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
 .xai-waterfall-container {
   padding-bottom: 12px;
 }
@@ -504,6 +548,7 @@ body {
   .dashboard-container {
     grid-template-columns: 280px 1fr 300px !important;
   }
+
   .dashboard-container.telemetry-collapsed {
     grid-template-columns: 280px 1fr !important;
   }
@@ -513,6 +558,7 @@ body {
   .dashboard-container {
     grid-template-columns: 360px 1fr 360px !important;
   }
+
   .dashboard-container.telemetry-collapsed {
     grid-template-columns: 360px 1fr !important;
   }
@@ -532,7 +578,8 @@ body {
   transform: none !important;
   width: 100% !important;
   max-width: none !important;
-  z-index: 2000 !important; /* Above all leaflet controls */
+  z-index: 2000 !important;
+  /* Above all leaflet controls */
   border-radius: var(--radius-md) var(--radius-md) 0 0 !important;
   border-left: none !important;
   border-right: none !important;
@@ -562,6 +609,7 @@ body {
   box-sizing: border-box !important;
   padding-right: 24px !important;
 }
+
 .navbar::-webkit-scrollbar,
 .sandbox-compact-preview::-webkit-scrollbar {
   display: none;
@@ -570,11 +618,16 @@ body {
 /* Position Hazard Filter Bar floating above the Sandbox horizontally centered */
 .hazard-filter-bar-container {
   position: absolute !important;
-  bottom: 76px !important;
+  bottom: 48px !important;
   left: 50% !important;
   transform: translateX(-50%) !important;
   top: auto !important;
   z-index: 1000 !important;
+}
+
+/* When Decision Support & XAI right panel is expanded, hide secondary badges (Pan-India, Debris Flow, Cloudburst, GLOF) */
+.dashboard-container:not(.telemetry-collapsed) .hazard-filter-pill .pill-badge {
+  display: none !important;
 }
 
 /* ==========================================================================
@@ -607,13 +660,15 @@ body {
   right: 14px !important;
   left: auto !important;
   bottom: auto !important;
-  z-index: 2500 !important; /* Must be > 2000 to float above expanded Sandbox */
+  z-index: 2500 !important;
+  /* Must be > 2000 to float above expanded Sandbox */
   transition: top 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 /* Fix popover opening direction since the button is now on the right edge */
 .google-layers-popover-sheet {
-  right: 100% !important; /* Open to the left of the button */
+  right: 100% !important;
+  /* Open to the left of the button */
   left: auto !important;
   margin-right: 12px !important;
   bottom: auto !important;
@@ -636,7 +691,8 @@ body {
 .sheet-scroll-body {
   max-height: 280px !important;
   overflow-y: auto !important;
-  padding-right: 8px !important; /* Make room for scrollbar */
+  padding-right: 8px !important;
+  /* Make room for scrollbar */
 }
 
 /* Float National Alerts Drawer above Layers widget */
@@ -648,13 +704,16 @@ body {
 .sheet-scroll-body::-webkit-scrollbar {
   width: 6px;
 }
+
 .sheet-scroll-body::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .sheet-scroll-body::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 10px;
 }
+
 .sheet-scroll-body::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
@@ -670,11 +729,13 @@ main:not(.telemetry-collapsed) .national-alerts-drawer {
 }
 
 main:not(.telemetry-collapsed) .map-nav-controls {
-  top: 60px !important; /* 104px - 44px */
+  top: 60px !important;
+  /* 104px - 44px */
 }
 
 main:not(.telemetry-collapsed) .google-layers-widget-container {
-  top: 266px !important; /* 310px - 44px */
+  top: 266px !important;
+  /* 310px - 44px */
 }
 
 /* ==========================================================================
@@ -698,8 +759,10 @@ main:not(.telemetry-collapsed) .google-layers-widget-container {
   font-size: 0.75rem;
   font-weight: 600;
   font-family: var(--font-ui);
-  white-space: normal; /* Allow long names like Kerala to wrap */
-  width: 210px; /* Fixed width forces it to wrap and prevents horizontal stretching */
+  white-space: normal;
+  /* Allow long names like Kerala to wrap */
+  width: 210px;
+  /* Fixed width forces it to wrap and prevents horizontal stretching */
   text-align: center;
   line-height: 1.4;
   opacity: 0;
@@ -735,38 +798,51 @@ main:not(.telemetry-collapsed) .google-layers-widget-container {
   top: calc(100% + 6px);
 }
 
-/* Prevent all tooltips from bleeding off the edges of the panel by offsetting them */
+/* Prevent all tooltips from bleeding off the edges of the panel by offsetting them (5 buttons: ALL, HP, UK, SK, KL) */
 .basin-quick-tab-btn:nth-child(1)::after {
   left: 0;
   transform: translateX(0) translateY(-5px);
 }
+
 .basin-quick-tab-btn:nth-child(1):hover::after {
   transform: translateX(0) translateY(0);
 }
 
 .basin-quick-tab-btn:nth-child(2)::after {
-  left: -20px;
+  left: -10px;
   transform: translateX(0) translateY(-5px);
 }
+
 .basin-quick-tab-btn:nth-child(2):hover::after {
   transform: translateX(0) translateY(0);
 }
 
 .basin-quick-tab-btn:nth-child(3)::after {
-  left: auto;
-  right: -20px;
-  transform: translateX(0) translateY(-5px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-5px);
 }
+
 .basin-quick-tab-btn:nth-child(3):hover::after {
-  transform: translateX(0) translateY(0);
+  transform: translateX(-50%) translateY(0);
 }
 
 .basin-quick-tab-btn:nth-child(4)::after {
   left: auto;
+  right: -10px;
+  transform: translateX(0) translateY(-5px);
+}
+
+.basin-quick-tab-btn:nth-child(4):hover::after {
+  transform: translateX(0) translateY(0);
+}
+
+.basin-quick-tab-btn:nth-child(5)::after {
+  left: auto;
   right: 0;
   transform: translateX(0) translateY(-5px);
 }
-.basin-quick-tab-btn:nth-child(4):hover::after {
+
+.basin-quick-tab-btn:nth-child(5):hover::after {
   transform: translateX(0) translateY(0);
 }
 
@@ -783,4 +859,50 @@ main:not(.telemetry-collapsed) .google-layers-widget-container {
 .role-btn,
 .hud-pill-btn {
   border-radius: 8px !important;
+}
+
+/* ==========================================================================
+   WHITE THEME MASTER UI/UX OVERRIDES
+   ========================================================================== */
+body.light-theme {
+  background-color: var(--canvas-deep, #f1f5f9) !important;
+  color: var(--text-primary, #0f172a) !important;
+  background-image:
+    linear-gradient(rgba(2, 132, 199, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(2, 132, 199, 0.04) 1px, transparent 1px) !important;
+}
+
+body.light-theme .navbar {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-bottom: 1px solid rgba(203, 213, 225, 0.85) !important;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+body.light-theme .panel,
+body.light-theme .village-panel,
+body.light-theme .deep-dive-panel {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid rgba(203, 213, 225, 0.9) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+  color: #0f172a !important;
+}
+
+body.light-theme .simulation-dock,
+body.light-theme .sandbox-card {
+  background: rgba(255, 255, 255, 0.97) !important;
+  border-top: 1px solid rgba(203, 213, 225, 0.9) !important;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06) !important;
+}
+
+body.light-theme .senior-elevation-tag {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+body.light-theme .basin-quick-tab-btn::after {
+  background: #0f172a !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(2, 132, 199, 0.5) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
 }

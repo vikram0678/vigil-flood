@@ -2,35 +2,48 @@ import React from 'react';
 import { useFlood } from '../../context/FloodContext';
 
 export const Navbar: React.FC = () => {
-  const { 
-    role, 
-    setRole, 
-    setMethodologyOpen, 
+  const {
+    role,
+    setRole,
+    setMethodologyOpen,
     setGeomorphicOpen,
-    theme, 
-    toggleTheme, 
+    theme,
+    toggleTheme,
     startTour,
     basins,
     activeBasinId,
     activeBasin,
-    switchBasin
+    switchBasin,
+    activePage,
+    openTacticalDossier,
+    closeTacticalDossier
   } = useFlood();
 
   return (
     <nav className="navbar">
       {/* Zone 1: Identity & Basin Telemetry Context */}
       <div className="navbar-brand-section">
-        <div className="brand-wrapper">
+        <a
+          href="/"
+          className="brand-wrapper brand-anchor-link"
+          onClick={(e) => {
+            e.preventDefault();
+            closeTacticalDossier();
+            window.location.hash = '';
+          }}
+          title="Return to Vigil-Flood Main Page"
+          style={{ textDecoration: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
+        >
           <div className="logo-badge">🌊</div>
           <div className="brand-text-container">
             <div className="brand-title">
               VIGIL-FLOOD <span className="brand-tagline">| Early Warning</span>
             </div>
             <div className="brand-subtitle">
-              {activeBasin ? `📍 ${activeBasin.name}` : 'Pan-India Multi-Basin System'}
+              {activeBasin ? `📍 ${activeBasin.name}` : '📍 All-India Valleys'}
             </div>
           </div>
-        </div>
+        </a>
 
         {/* 🗺️ Pan-India Basin Selector (Temporarily commented out per user request)
         <div className="basin-selector-container">
@@ -61,7 +74,7 @@ export const Navbar: React.FC = () => {
       <div className="navbar-hud-section">
         <div className="hud-pill-group">
           {/* 🏔️ ISRO Landslide Atlas & NDMA LHZ 147 Districts Registry */}
-          <button 
+          {/* <button 
             id="btn-open-geomorphic-zonation" 
             className="hud-pill-btn isro-btn"
             onClick={() => {
@@ -72,11 +85,11 @@ export const Navbar: React.FC = () => {
             aria-label="Open ISRO Geomorphic Zonation"
           >
             <span>🏔️</span> <span className="btn-text">ISRO Zonation (147)</span>
-          </button>
+          </button> */}
 
           {/* ⚠️ State & National Weather Alerts Table */}
-          <button 
-            id="btn-open-state-alerts" 
+          <button
+            id="btn-open-state-alerts"
             className="hud-pill-btn alerts-btn"
             onClick={() => window.dispatchEvent(new CustomEvent('open-state-alerts-table-modal'))}
             title="Open Location & State-wise Weather Alerts Table"
@@ -85,8 +98,25 @@ export const Navbar: React.FC = () => {
             <span>⚡</span> <span className="btn-text">State Alerts</span>
           </button>
 
-          <button 
-            id="btn-open-methodology" 
+          {/* 🛡️ Dedicated Evacuation & Incident Operations Dashboard */}
+          <button
+            id="btn-open-tactical-dossier"
+            className="hud-pill-btn"
+            onClick={() => activePage === 'tactical_dossier' ? closeTacticalDossier() : openTacticalDossier()}
+            title="Open Dedicated Unified Evacuation Operations Dashboard"
+            aria-label="Open Evacuation Operations Dashboard"
+            style={{
+              background: activePage === 'tactical_dossier' ? 'rgba(56, 189, 248, 0.25)' : undefined,
+              borderColor: activePage === 'tactical_dossier' ? '#38bdf8' : undefined,
+              color: activePage === 'tactical_dossier' ? '#38bdf8' : undefined,
+              fontWeight: 700
+            }}
+          >
+            <span>🛡️</span> <span className="btn-text">Evacuation Ops</span>
+          </button>
+
+          <button
+            id="btn-open-methodology"
             className="hud-pill-btn"
             onClick={() => setMethodologyOpen(true)}
             title="View Scientific Methodology"
@@ -95,8 +125,8 @@ export const Navbar: React.FC = () => {
           </button>
 
           {/* ✨ Interactive Guided Product Tour */}
-          <button 
-            id="btn-start-tour" 
+          <button
+            id="btn-start-tour"
             className="hud-pill-btn tour-btn"
             onClick={startTour}
             title="Take a 60-Second Guided Tour"
@@ -109,10 +139,10 @@ export const Navbar: React.FC = () => {
 
       {/* Zone 3: Emergency Actions, Theme & Role Switcher */}
       <div className="navbar-actions-section">
-        
+
         {/* 🌍 English & Hindi Translator Dropdown */}
         <div className="language-selector-container basin-selector-container" style={{ borderRadius: '12px', marginRight: '16px' }}>
-          <select 
+          <select
             id="lang-select"
             className="basin-select-dropdown"
             defaultValue="en"
@@ -126,8 +156,8 @@ export const Navbar: React.FC = () => {
         </div>
 
         {/* 📢 CAP-SACHET Emergency Cell Broadcast Center */}
-        <button 
-          id="btn-open-broadcast" 
+        <button
+          id="btn-open-broadcast"
           className="nav-emergency-cta-btn"
           onClick={() => window.dispatchEvent(new CustomEvent('open-emergency-broadcast-modal'))}
           title="Open CAP-SACHET & Cell Broadcast Center"
@@ -137,8 +167,8 @@ export const Navbar: React.FC = () => {
         </button>
 
         {/* Theme Mode Toggle (Dark / Light) */}
-        <button 
-          id="btn-theme-toggle" 
+        <button
+          id="btn-theme-toggle"
           className="theme-toggle-btn"
           onClick={toggleTheme}
           title={theme === 'dark' ? "Switch to Light Theme" : "Switch to Dark Theme"}
@@ -149,13 +179,13 @@ export const Navbar: React.FC = () => {
         </button>
 
         <div className="role-switcher">
-          <button 
+          <button
             className={`role-btn ${role === 'authority' ? 'active' : ''}`}
             onClick={() => setRole('authority')}
           >
             Authority
           </button>
-          <button 
+          <button
             className={`role-btn ${role === 'citizen' ? 'active' : ''}`}
             onClick={() => setRole('citizen')}
           >

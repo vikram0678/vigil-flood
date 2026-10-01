@@ -12,7 +12,7 @@ interface HazardFilterOption {
 }
 
 export const HazardFilterBar: React.FC = () => {
-  const { hazardFilter, setHazardFilter } = useFlood();
+  const { hazardFilter, setHazardFilter, isTelemetryCollapsed } = useFlood();
 
   const options: HazardFilterOption[] = [
     {
@@ -66,7 +66,7 @@ export const HazardFilterBar: React.FC = () => {
             >
               <span className="pill-icon">{opt.icon}</span>
               <span className="pill-label">{opt.label}</span>
-              <span className="pill-badge">{opt.badgeText}</span>
+              {isTelemetryCollapsed && <span className="pill-badge">{opt.badgeText}</span>}
             </button>
           );
         })}
