@@ -8,6 +8,7 @@ from backend.app.core.multi_basin_manager import multi_basin_manager
 from backend.app.core.universal_geo_engine import universal_geo_engine
 from backend.app.core.national_weather_hazard_engine import national_weather_hazard_engine
 from backend.app.core.geomorphic_zonation_engine import geomorphic_zonation_engine
+from backend.app.core.earth_engine_connector import earth_engine_connector
 
 router = APIRouter(prefix="/api", tags=["Early Warning API"])
 
@@ -131,6 +132,18 @@ def compute_district_dynamic_fos(district_id: str, req: DynamicFoSRequest):
 
 # --- MULTI-BASIN ENTERPRISE API ENDPOINTS ---
 
+@router.get("/all-live-status")
+def get_all_live_status():
+    """Master Dashboard Endpoint: Returns live AI threat analysis for ALL 26 villages across India."""
+    villages = multi_basin_manager.get_all_villages_live_status()
+    critical_alerts = [v for v in villages if v["risk_level"] in ["HIGH", "CRITICAL"]]
+    return {
+        "status": "success",
+        "total_villages_monitored": len(villages),
+        "total_critical_alerts": len(critical_alerts),
+        "villages": villages
+    }
+
 @router.get("/basins")
 def get_all_basins():
     """Returns catalog of all registered Indian river basins with real-time aggregate threat levels."""
@@ -217,6 +230,14 @@ def get_pilot_region():
 
 @router.get("/villages")
 def get_villages_summary(basin_id: Optional[str] = None):
+    if basin_id and basin_id.upper() == "ALL":
+        villages = multi_basin_manager.get_all_villages_live_status()
+        return {
+            "basin_id": "ALL",
+            "region": "All-India Monitored Valleys",
+            "state": "All States",
+            "villages": villages
+        }
     target_basin = basin_id or multi_basin_manager.active_basin_id
     meta = multi_basin_manager.get_basin_meta(target_basin)
     return {
@@ -270,6 +291,11 @@ def get_active_alerts(basin_id: Optional[str] = None):
         "count": len(critical_alerts),
         "alerts": critical_alerts
     }
+
+@router.get("/earth-engine/status")
+def get_earth_engine_status():
+    """Returns Google Earth Engine cloud project status, connection health, and catalogs."""
+    return earth_engine_connector.get_status()
 
 @router.get("/hydrograph/{village_id}")
 def get_village_hydrograph(village_id: str, basin_id: Optional[str] = None):

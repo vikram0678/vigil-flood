@@ -51,6 +51,12 @@ FRONTEND_DIR = PROJECT_ROOT / "frontend"
 if FRONTEND_REACT_DIST.exists() and (FRONTEND_REACT_DIST / "assets").exists():
     app.mount("/assets", StaticFiles(directory=str(FRONTEND_REACT_DIST / "assets")), name="react-assets")
 
+# 👇 ADD THIS BLOCK TO SERVE DISASTER PHOTOS PROPERLY
+DISASTER_PHOTOS_DIR = PROJECT_ROOT / "frontend_react" / "public" / "disaster_photos"
+if DISASTER_PHOTOS_DIR.exists():
+    app.mount("/disaster_photos", StaticFiles(directory=str(DISASTER_PHOTOS_DIR)), name="disaster-photos")
+
+
 if FRONTEND_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
 

@@ -193,8 +193,13 @@ class SimulationEngine:
             combined_risk=risk_data["combined_risk"]
         )
         
-        # 5. Action & Evacuation Directives
-        action_data = action_engine.generate_action_plan(village, risk_data, lead_time_data)
+        # 5. Action & Evacuation Directives (Augmented with GEE WorldPop & Copernicus 30m DEM)
+        action_data = action_engine.generate_action_plan(
+            village_data=village,
+            risk_data=risk_data,
+            lead_time_data=lead_time_data,
+            telemetry_data=state
+        )
         
         return {
             "village": village,

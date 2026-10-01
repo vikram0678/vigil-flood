@@ -15,9 +15,13 @@ __pycache__/
 node_modules/
 frontend_react/node_modules/
 
-# Environment Variables (Keep template committed)
+# Environment Variables & Cloud Credentials (Keep private)
 .env
 !.env.example
+*.json.key
+vigil-flood-*.json
+*credentials*.json
+*service_account*.json
 
 # OS Generated Files
 .DS_Store
@@ -72,3 +76,4 @@ universal_reusable_ai_assistant_blueprint.md
 aapda_mitra_ai_implementation_guide.md
 *.draft.md
 *.scratch.md
+kaggle

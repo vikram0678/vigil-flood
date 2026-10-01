@@ -1,0 +1,49 @@
+{
+    "village_id": "VIL-11",
+    "village_name": "Samej / Rampur",
+    "title": "Tragic Demise of Samej Village in Rampur Bushahr | A Story of Loss and Resilience",
+    "date": "2024/10/12",
+    "event_date": "2024-07-31",
+    "location": {
+        "state": "Himachal Pradesh",
+        "district": "Shimla & Kullu Border",
+        "tehsil": "Rampur Bushahr",
+        "catchment": "Sutlej River Valley"
+    },
+    "summary": "Nestled on the border of Shimla’s Rampur and Kullu, Samej Village was once a vibrant community filled with life and tradition. Surrounded by the majestic Himalayas, the village was a haven for its residents, offering a peaceful existence with schools, temples, farms, and a primary health center. However, this tranquil existence was shattered overnight on July 31st, when a devastating flood turned Samej into a lifeless expanse of mud and debris. This article delves into the heartbreaking story of Samej Village, chronicling the disaster’s impact on its people, the landscape, and the future.",
+    "sections": [
+        {
+            "heading": "The Night of Devastation",
+            "content": "The night of July 31st, 2024, will forever be etched in the memories of Samej's residents. As the clock struck midnight, the once calm and peaceful village transformed into a scene of chaos. The floodwaters, originating from a nearby drain, mercilessly swept through the village, obliterating everything in their path. The once-thriving community was reduced to rubble, with concrete houses, schools, farms, and even temples submerged under a thick layer of mud. Those who managed to escape owe their lives to sheer luck, having noticed the rising waters just in time to flee to safety."
+        },
+        {
+            "heading": "The Aftermath: A Village Divided",
+            "content": "Samej Village was divided into two parts—one under Shimla's Rampur jurisdiction and the other under Kullu. The area under Rampur was hit the hardest, as it lay directly in the path of the flood. According to resident Vipin, the Rampur side had around 15 houses, all of which were washed away in the deluge. The primary health center, which served as a lifeline for the community, was also destroyed. Today, only one house remains standing, a grim reminder of the vibrant life that once flourished here."
+        },
+        {
+            "heading": "The Human Toll",
+            "content": "The human cost of this disaster is immeasurable. Families who once lived in sturdy concrete homes are now forced to seek shelter in makeshift tents. Their lives have been upended, with no homes, no livelihoods, and no sense of security. The emotional toll is equally devastating; for these villagers, the sense of loss is profound. They have lost not just their homes but also their community, their history, and their future."
+        },
+        {
+            "heading": "The Future of Samej Village",
+            "content": "The road to recovery for Samej Village is long and uncertain. The disaster has laid bare the vulnerabilities of this remote Himalayan community, and rebuilding will require significant resources and support. However, the resilience of the villagers cannot be underestimated. Despite their immense losses, they are determined to rebuild their lives and their village. But it will take time, and the scars of this tragedy will remain."
+        }
+    ],
+    "images": [
+        {
+            "filename": "samjeVillage_1.webp",
+            "url": "/disaster_photos/samej/samjeVillage_1.webp",
+            "caption": "Devastating flash flood debris and mud deposits covering the residential area of Samej Village."
+        },
+        {
+            "filename": "samjeVillage_2.webp",
+            "url": "/disaster_photos/samej/samjeVillage_2.webp",
+            "caption": "Collapsed structures and aftermath showing the only surviving house amidst the boulders."
+        },
+        {
+            "filename": "samjeVillage_3.webp",
+            "url": "/disaster_photos/samej/samjeVillage_3.webp",
+            "caption": "Makeshift emergency shelter tents and community recovery operations by NDRF/SDRF teams."
+        }
+    ]
+}

@@ -10,6 +10,8 @@ from backend.app.core.lead_time_engine import lead_time_engine
 from backend.app.core.action_engine import action_engine
 from backend.app.core.sensor_health import sensor_health_manager
 from backend.app.core.sanitizers import sanitize_and_log_telemetry
+from backend.app.core.live_weather_engine import live_weather_engine
+from backend.app.core.river_cascade_engine import river_cascade_engine
 
 class BasinSummary(BaseModel):
     basin_id: str
@@ -42,13 +44,20 @@ class MultiBasinManager:
         self._initialize_telemetry_states()
 
     def _initialize_basins(self):
-        # 1. Himachal Pradesh - Beas & Sutlej Valleys
-        hp_villages_path = DATA_DIR / "pilot_villages.json"
-        hp_villages = []
-        if hp_villages_path.exists():
-            with open(hp_villages_path, "r", encoding="utf-8") as f:
-                hp_villages = json.load(f)
+        # Load ALL 26 villages from the unified JSON database
+        villages_path = DATA_DIR / "pilot_villages.json"
+        all_villages = []
+        if villages_path.exists():
+            with open(villages_path, "r", encoding="utf-8") as f:
+                all_villages = json.load(f)
 
+        # Distribute villages into their respective basins based on State
+        hp_villages = [v for v in all_villages if v.get("state") == "Himachal Pradesh"]
+        uk_villages = [v for v in all_villages if v.get("state") == "Uttarakhand"]
+        sk_villages = [v for v in all_villages if v.get("state") == "Sikkim"]
+        kl_villages = [v for v in all_villages if v.get("state") == "Kerala"]
+
+        # 1. Himachal Pradesh - Beas & Sutlej Valleys
         self.basins_meta["BASIN-HP-BEAS"] = {
             "basin_id": "BASIN-HP-BEAS",
             "name": "Beas & Sutlej Valleys",
@@ -63,7 +72,7 @@ class MultiBasinManager:
         }
         self.basin_villages["BASIN-HP-BEAS"] = hp_villages
 
-        # 2. Uttarakhand - Alaknanda & Mandakini Basins (Kedarnath / Chamoli / Joshimath)
+        # 2. Uttarakhand - Alaknanda & Mandakini Basins
         self.basins_meta["BASIN-UK-ALAK"] = {
             "basin_id": "BASIN-UK-ALAK",
             "name": "Alaknanda & Mandakini Catchment",
@@ -76,9 +85,9 @@ class MultiBasinManager:
             "hydrology_agency": "Uttarakhand SDMA & CWC Upper Ganga Basin",
             "description": "High-altitude glacial headwaters, fragile shear zones, flash flood runouts, and pilgrim route choke points."
         }
-        self.basin_villages["BASIN-UK-ALAK"] = self._generate_uttarakhand_villages()
+        self.basin_villages["BASIN-UK-ALAK"] = uk_villages
 
-        # 3. Sikkim - Teesta Upper Catchment (Chungthang GLOF Zone)
+        # 3. Sikkim - Teesta Upper Catchment
         self.basins_meta["BASIN-SK-TEESTA"] = {
             "basin_id": "BASIN-SK-TEESTA",
             "name": "Teesta Upper Basin",
@@ -91,9 +100,9 @@ class MultiBasinManager:
             "hydrology_agency": "Sikkim SDMA & CWC Brahmaputra Basin Org",
             "description": "Critical GLOF surge corridor originating from South Lhonak glacial lake down to Chungthang Hydro Dam."
         }
-        self.basin_villages["BASIN-SK-TEESTA"] = self._generate_sikkim_villages()
+        self.basin_villages["BASIN-SK-TEESTA"] = sk_villages
 
-        # 4. Western Ghats - Chaliyar & Kabini Basin (Wayanad / Chooralmala / Idukki)
+        # 4. Western Ghats - Chaliyar & Kabini Basin
         self.basins_meta["BASIN-KL-WAYANAD"] = {
             "basin_id": "BASIN-KL-WAYANAD",
             "name": "Wayanad Chaliyar Basin",
@@ -106,388 +115,9 @@ class MultiBasinManager:
             "hydrology_agency": "Kerala SDMA & CWC Southern Region",
             "description": "High-intensity orographic monsoon downpour zone with vulnerable tea estate valleys and debris runout tracks."
         }
-        self.basin_villages["BASIN-KL-WAYANAD"] = self._generate_wayanad_villages()
+        self.basin_villages["BASIN-KL-WAYANAD"] = kl_villages
 
-    def _generate_uttarakhand_villages(self) -> List[Dict[str, Any]]:
-        return [
-            {
-                "id": "UK-VIL-01",
-                "name": "Kedarnath Valley Base",
-                "ward": "Ward 1 (Upper Mandakini Gorge)",
-                "district": "Rudraprayag",
-                "state": "Uttarakhand",
-                "lat": 30.7346,
-                "lng": 79.0669,
-                "elevation_m": 3584,
-                "slope_deg": 42.0,
-                "soil_type": "Glacial Moraine / Boulders",
-                "distance_to_stream_m": 30,
-                "historical_landslide_count": 8,
-                "historical_flood_count": 6,
-                "population": 2200,
-                "vulnerable_households": 120,
-                "hazard_zones": {
-                    "red_inundation_polygon": [
-                        [30.7420, 79.0620], [30.7420, 79.0720], [30.7300, 79.0740],
-                        [30.7240, 79.0680], [30.7240, 79.0600], [30.7350, 79.0580]
-                    ],
-                    "orange_slope_polygon": [
-                        [30.7460, 79.0580], [30.7460, 79.0760], [30.7280, 79.0780],
-                        [30.7200, 79.0700], [30.7200, 79.0550], [30.7360, 79.0520]
-                    ],
-                    "green_safe_polygon": [
-                        [30.7480, 79.0720], [30.7520, 79.0780], [30.7450, 79.0820], [30.7400, 79.0760]
-                    ]
-                },
-                "river_stream": [
-                    [30.7440, 79.0660], [30.7380, 79.0670], [30.7320, 79.0665],
-                    [30.7250, 79.0640], [30.7180, 79.0620]
-                ],
-                "safe_shelters": [
-                    {"name": "GMVN High-Ground Helipad Complex", "lat": 30.7490, "lng": 30.7490, "capacity": 650, "elevation_m": 3650},
-                    {"name": "Triyuginarayan Temple Elevated Refuge", "lat": 30.6800, "lng": 78.9800, "capacity": 450, "elevation_m": 2200}
-                ],
-                "evacuation_routes": [
-                    {
-                        "name": "Route 1 (East Ridge Elevated Trail)",
-                        "status": "CLEAR - OPEN",
-                        "safety_score": 92,
-                        "path": [[30.7346, 79.0669], [30.7400, 79.0720], [30.7490, 79.0760]]
-                    }
-                ],
-                "sensors": {
-                    "rain_gauge_id": "SENS-KED-RAIN-01",
-                    "soil_moisture_id": "SENS-KED-SOIL-01",
-                    "water_level_id": "SENS-KED-WTR-01",
-                    "tilt_sensor_id": "SENS-KED-TLT-01"
-                },
-                "sensor_locations": [
-                    {"id": "SENS-KED-RAIN-01", "type": "Tipping Bucket Rain Gauge", "lat": 30.7360, "lng": 79.0650},
-                    {"id": "SENS-KED-WTR-01", "type": "River Ultrasonic Level Sensor", "lat": 30.7320, "lng": 79.0660}
-                ]
-            },
-            {
-                "id": "UK-VIL-02",
-                "name": "Joshimath Slopes",
-                "ward": "Ward 4 (Upper Alaknanda Shoulder)",
-                "district": "Chamoli",
-                "state": "Uttarakhand",
-                "lat": 30.5574,
-                "lng": 79.5684,
-                "elevation_m": 1890,
-                "slope_deg": 38.5,
-                "soil_type": "Moraine & Weathered Gneiss",
-                "distance_to_stream_m": 85,
-                "historical_landslide_count": 12,
-                "historical_flood_count": 4,
-                "population": 3800,
-                "vulnerable_households": 240,
-                "hazard_zones": {
-                    "red_inundation_polygon": [
-                        [30.5620, 79.5620], [30.5630, 79.5720], [30.5520, 79.5740],
-                        [30.5480, 79.5660], [30.5550, 79.5580]
-                    ],
-                    "orange_slope_polygon": [
-                        [30.5660, 79.5580], [30.5670, 79.5760], [30.5500, 79.5780], [30.5440, 79.5620]
-                    ],
-                    "green_safe_polygon": [
-                        [30.5700, 79.5680], [30.5740, 79.5750], [30.5680, 79.5800]
-                    ]
-                },
-                "river_stream": [
-                    [30.5640, 79.5660], [30.5580, 79.5680], [30.5510, 79.5700], [30.5450, 79.5720]
-                ],
-                "safe_shelters": [
-                    {"name": "Auli High Ridge ITBP Campus", "lat": 30.5720, "lng": 79.5720, "capacity": 800, "elevation_m": 2400}
-                ],
-                "evacuation_routes": [
-                    {
-                        "name": "Auli Bypass Elevated Corridor",
-                        "status": "CLEAR",
-                        "safety_score": 88,
-                        "path": [[30.5574, 79.5684], [30.5650, 79.5700], [30.5720, 79.5720]]
-                    }
-                ],
-                "sensors": {
-                    "rain_gauge_id": "SENS-JSH-RAIN-01",
-                    "soil_moisture_id": "SENS-JSH-SOIL-01",
-                    "water_level_id": "SENS-JSH-WTR-01",
-                    "tilt_sensor_id": "SENS-JSH-TLT-01"
-                },
-                "sensor_locations": [
-                    {"id": "SENS-JSH-RAIN-01", "type": "Optical Rain Gauge", "lat": 30.5580, "lng": 79.5670},
-                    {"id": "SENS-JSH-WTR-01", "type": "Alaknanda Radar Stage Gauge", "lat": 30.5520, "lng": 79.5690}
-                ]
-            },
-            {
-                "id": "UK-VIL-03",
-                "name": "Chamoli Town",
-                "ward": "Ward 2 (Lower Alaknanda Riverbed)",
-                "district": "Chamoli",
-                "state": "Uttarakhand",
-                "lat": 30.4076,
-                "lng": 79.3242,
-                "elevation_m": 1150,
-                "slope_deg": 31.0,
-                "soil_type": "Alluvial Gravel & Boulders",
-                "distance_to_stream_m": 35,
-                "historical_landslide_count": 6,
-                "historical_flood_count": 5,
-                "population": 4100,
-                "vulnerable_households": 180,
-                "hazard_zones": {
-                    "red_inundation_polygon": [
-                        [30.4140, 79.3180], [30.4150, 79.3280], [30.4020, 79.3300], [30.3980, 79.3200]
-                    ],
-                    "orange_slope_polygon": [
-                        [30.4180, 79.3140], [30.4190, 79.3320], [30.4000, 79.3350], [30.3940, 79.3150]
-                    ],
-                    "green_safe_polygon": [
-                        [30.4200, 79.3260], [30.4250, 79.3320], [30.4180, 79.3380]
-                    ]
-                },
-                "river_stream": [
-                    [30.4160, 79.3220], [30.4090, 79.3240], [30.4010, 79.3260], [30.3950, 79.3280]
-                ],
-                "safe_shelters": [
-                    {"name": "District Sports Stadium High Ground", "lat": 30.4220, "lng": 79.3290, "capacity": 1000, "elevation_m": 1280}
-                ],
-                "evacuation_routes": [
-                    {
-                        "name": "Upper Gopeshwar Link Road",
-                        "status": "CLEAR",
-                        "safety_score": 90,
-                        "path": [[30.4076, 79.3242], [30.4150, 79.3270], [30.4220, 79.3290]]
-                    }
-                ],
-                "sensors": {
-                    "rain_gauge_id": "SENS-CHM-RAIN-01",
-                    "soil_moisture_id": "SENS-CHM-SOIL-01",
-                    "water_level_id": "SENS-CHM-WTR-01",
-                    "tilt_sensor_id": "SENS-CHM-TLT-01"
-                },
-                "sensor_locations": [
-                    {"id": "SENS-CHM-RAIN-01", "type": "Tipping Bucket Rain Gauge", "lat": 30.4090, "lng": 79.3230},
-                    {"id": "SENS-CHM-WTR-01", "type": "River Stage Ultrasonic Sensor", "lat": 30.4040, "lng": 79.3250}
-                ]
-            }
-        ]
 
-    def _generate_sikkim_villages(self) -> List[Dict[str, Any]]:
-        return [
-            {
-                "id": "SK-VIL-01",
-                "name": "Chungthang Dam Zone",
-                "ward": "Ward 1 (Teesta Confluence)",
-                "district": "Mangan",
-                "state": "Sikkim",
-                "lat": 27.6041,
-                "lng": 88.6477,
-                "elevation_m": 1790,
-                "slope_deg": 36.0,
-                "soil_type": "Gneissic Debris & River Gravel",
-                "distance_to_stream_m": 25,
-                "historical_landslide_count": 9,
-                "historical_flood_count": 7,
-                "population": 1850,
-                "vulnerable_households": 95,
-                "hazard_zones": {
-                    "red_inundation_polygon": [
-                        [27.6100, 88.6420], [27.6110, 88.6520], [27.5980, 88.6540], [27.5950, 88.6440]
-                    ],
-                    "orange_slope_polygon": [
-                        [27.6140, 88.6380], [27.6150, 88.6560], [27.5940, 88.6580], [27.5900, 88.6400]
-                    ],
-                    "green_safe_polygon": [
-                        [27.6160, 88.6500], [27.6200, 88.6560], [27.6140, 88.6600]
-                    ]
-                },
-                "river_stream": [
-                    [27.6120, 88.6460], [27.6050, 88.6475], [27.5970, 88.6490], [27.5900, 88.6510]
-                ],
-                "safe_shelters": [
-                    {"name": "Army Transit Camp (High Plateau)", "lat": 27.6180, "lng": 88.6540, "capacity": 500, "elevation_m": 1950}
-                ],
-                "evacuation_routes": [
-                    {
-                        "name": "North Sikkim Highway Upper Bypass",
-                        "status": "CLEAR",
-                        "safety_score": 94,
-                        "path": [[27.6041, 88.6477], [27.6120, 88.6510], [27.6180, 88.6540]]
-                    }
-                ],
-                "sensors": {
-                    "rain_gauge_id": "SENS-CHG-RAIN-01",
-                    "soil_moisture_id": "SENS-CHG-SOIL-01",
-                    "water_level_id": "SENS-CHG-WTR-01",
-                    "tilt_sensor_id": "SENS-CHG-TLT-01"
-                },
-                "sensor_locations": [
-                    {"id": "SENS-CHG-RAIN-01", "type": "Optical Cloudburst Gauge", "lat": 27.6060, "lng": 88.6460},
-                    {"id": "SENS-CHG-WTR-01", "type": "Teesta Dam Surge Radar", "lat": 27.6010, "lng": 88.6480}
-                ]
-            },
-            {
-                "id": "SK-VIL-02",
-                "name": "Lachen Chu Valley",
-                "ward": "Ward 2 (Upper Glacial Runoff)",
-                "district": "Mangan",
-                "state": "Sikkim",
-                "lat": 27.7262,
-                "lng": 88.5583,
-                "elevation_m": 2750,
-                "slope_deg": 44.0,
-                "soil_type": "Glacial Silt & Granite",
-                "distance_to_stream_m": 40,
-                "historical_landslide_count": 11,
-                "historical_flood_count": 5,
-                "population": 1250,
-                "vulnerable_households": 70,
-                "hazard_zones": {
-                    "red_inundation_polygon": [
-                        [27.7320, 88.5520], [27.7330, 88.5620], [27.7200, 88.5640], [27.7170, 88.5540]
-                    ],
-                    "orange_slope_polygon": [
-                        [27.7360, 88.5480], [27.7370, 88.5660], [27.7160, 88.5680], [27.7120, 88.5500]
-                    ],
-                    "green_safe_polygon": [
-                        [27.7380, 88.5600], [27.7420, 88.5660], [27.7360, 88.5700]
-                    ]
-                },
-                "river_stream": [
-                    [27.7340, 88.5560], [27.7270, 88.5580], [27.7200, 88.5600]
-                ],
-                "safe_shelters": [
-                    {"name": "Lachen Monastery High Refuge", "lat": 27.7400, "lng": 88.5640, "capacity": 350, "elevation_m": 2900}
-                ],
-                "evacuation_routes": [
-                    {
-                        "name": "Monastery Ridge Trail",
-                        "status": "CLEAR",
-                        "safety_score": 91,
-                        "path": [[27.7262, 88.5583], [27.7340, 88.5610], [27.7400, 88.5640]]
-                    }
-                ],
-                "sensors": {
-                    "rain_gauge_id": "SENS-LCH-RAIN-01",
-                    "soil_moisture_id": "SENS-LCH-SOIL-01",
-                    "water_level_id": "SENS-LCH-WTR-01",
-                    "tilt_sensor_id": "SENS-LCH-TLT-01"
-                },
-                "sensor_locations": [
-                    {"id": "SENS-LCH-RAIN-01", "type": "Tipping Rain Gauge", "lat": 27.7280, "lng": 88.5570},
-                    {"id": "SENS-LCH-WTR-01", "type": "Lachen Chu Hydro Stage Gauge", "lat": 27.7230, "lng": 88.5590}
-                ]
-            }
-        ]
-
-    def _generate_wayanad_villages(self) -> List[Dict[str, Any]]:
-        return [
-            {
-                "id": "KL-VIL-01",
-                "name": "Chooralmala Hamlet",
-                "ward": "Ward 10 (Iruvanipuzha Debris Runout)",
-                "district": "Wayanad",
-                "state": "Kerala",
-                "lat": 11.5303,
-                "lng": 76.1667,
-                "elevation_m": 720,
-                "slope_deg": 34.0,
-                "soil_type": "Deep Weathered Laterite",
-                "distance_to_stream_m": 20,
-                "historical_landslide_count": 8,
-                "historical_flood_count": 6,
-                "population": 2900,
-                "vulnerable_households": 210,
-                "hazard_zones": {
-                    "red_inundation_polygon": [
-                        [11.5360, 76.1610], [11.5370, 76.1710], [11.5240, 76.1730], [11.5210, 76.1630]
-                    ],
-                    "orange_slope_polygon": [
-                        [11.5400, 76.1570], [11.5410, 76.1750], [11.5200, 76.1770], [11.5160, 76.1590]
-                    ],
-                    "green_safe_polygon": [
-                        [11.5420, 76.1680], [11.5460, 76.1740], [11.5400, 76.1780]
-                    ]
-                },
-                "river_stream": [
-                    [11.5380, 76.1645], [11.5310, 76.1665], [11.5240, 76.1680], [11.5180, 76.1700]
-                ],
-                "safe_shelters": [
-                    {"name": "Meppadi High School Community Shelter", "lat": 11.5440, "lng": 76.1720, "capacity": 750, "elevation_m": 860}
-                ],
-                "evacuation_routes": [
-                    {
-                        "name": "Tea Estate High Ridge Track",
-                        "status": "CLEAR",
-                        "safety_score": 93,
-                        "path": [[11.5303, 76.1667], [11.5380, 76.1690], [11.5440, 76.1720]]
-                    }
-                ],
-                "sensors": {
-                    "rain_gauge_id": "SENS-CHO-RAIN-01",
-                    "soil_moisture_id": "SENS-CHO-SOIL-01",
-                    "water_level_id": "SENS-CHO-WTR-01",
-                    "tilt_sensor_id": "SENS-CHO-TLT-01"
-                },
-                "sensor_locations": [
-                    {"id": "SENS-CHO-RAIN-01", "type": "High-Intensity Rain Gauge", "lat": 11.5320, "lng": 76.1650},
-                    {"id": "SENS-CHO-WTR-01", "type": "Iruvanipuzha Ultrasonic Water Gauge", "lat": 11.5270, "lng": 76.1670}
-                ]
-            },
-            {
-                "id": "KL-VIL-02",
-                "name": "Mundakkai Settlement",
-                "ward": "Ward 11 (Upper Plantation Slope)",
-                "district": "Wayanad",
-                "state": "Kerala",
-                "lat": 11.5472,
-                "lng": 76.1833,
-                "elevation_m": 880,
-                "slope_deg": 37.5,
-                "soil_type": "Lateritic Clay & Boulders",
-                "distance_to_stream_m": 30,
-                "historical_landslide_count": 10,
-                "historical_flood_count": 5,
-                "population": 1600,
-                "vulnerable_households": 140,
-                "hazard_zones": {
-                    "red_inundation_polygon": [
-                        [11.5530, 76.1780], [11.5540, 76.1880], [11.5410, 76.1900], [11.5380, 76.1800]
-                    ],
-                    "orange_slope_polygon": [
-                        [11.5570, 76.1740], [11.5580, 76.1920], [11.5370, 76.1940], [11.5330, 76.1760]
-                    ],
-                    "green_safe_polygon": [
-                        [11.5590, 76.1850], [11.5630, 76.1910], [11.5570, 76.1950]
-                    ]
-                },
-                "river_stream": [
-                    [11.5550, 76.1810], [11.5480, 76.1830], [11.5410, 76.1850]
-                ],
-                "safe_shelters": [
-                    {"name": "Upper Chembra Ridge Plantation Bungalow", "lat": 11.5610, "lng": 76.1890, "capacity": 450, "elevation_m": 1040}
-                ],
-                "evacuation_routes": [
-                    {
-                        "name": "Chembra Peak Foothill Corridor",
-                        "status": "CLEAR",
-                        "safety_score": 90,
-                        "path": [[11.5472, 76.1833], [11.5550, 76.1860], [11.5610, 76.1890]]
-                    }
-                ],
-                "sensors": {
-                    "rain_gauge_id": "SENS-MUN-RAIN-01",
-                    "soil_moisture_id": "SENS-MUN-SOIL-01",
-                    "water_level_id": "SENS-MUN-WTR-01",
-                    "tilt_sensor_id": "SENS-MUN-TLT-01"
-                },
-                "sensor_locations": [
-                    {"id": "SENS-MUN-RAIN-01", "type": "Automatic Rain Gauge", "lat": 11.5490, "lng": 76.1820},
-                    {"id": "SENS-MUN-WTR-01", "type": "Debris Surge Ultrasonic Gauge", "lat": 11.5440, "lng": 76.1840}
-                ]
-            }
-        ]
 
     def _initialize_telemetry_states(self):
         """Initializes realistic baseline state for each village in each basin."""
@@ -568,11 +198,45 @@ class MultiBasinManager:
         if not village:
             return {"status": "error", "message": f"Village '{village_id}' not found in basin '{target_basin}'"}
 
+        # --- LIVE METEOROLOGICAL & HYDROLOGICAL DATA INJECTION ---
+        live_telemetry_payload = live_weather_engine.fetch_live_telemetry()
+        live_data_map = live_telemetry_payload.get("data", {})
+        live_village_telemetry = live_data_map.get(village_id, {})
+        # ---------------------------------------------------------
+
         state = self.basin_states.get(target_basin, {}).get(village_id, {
             "rain_1h": 18.5, "rain_3h": 35.0, "rain_6h": 50.0, "rain_24h": 70.0,
             "forecast_rain_3h": 20.0, "soil_moisture": 48.0, "water_level_m": 1.2,
             "water_level_rise_rate": 0.05, "tilt_deg": 0.2, "timestamp": time.time()
         })
+
+        # --- OVERRIDE BASELINE WITH REAL OPEN-METEO/GLOFAS DATA ---
+        sequence_7d_matrix = None
+        if live_village_telemetry:
+            # 1. Real Past & Current Rainfall
+            state["rain_1h"] = live_village_telemetry.get("rainfall_1h_mm", live_village_telemetry.get("rainfall_mm", state.get("rain_1h", 0.0)))
+            state["rain_3h"] = live_village_telemetry.get("rainfall_3h_mm", state.get("rain_3h", 0.0))
+            state["rain_6h"] = live_village_telemetry.get("rainfall_6h_mm", state.get("rain_6h", 0.0))
+            state["rain_24h"] = live_village_telemetry.get("rainfall_24h_mm", state.get("rain_24h", 0.0))
+            # 2. Real Future Forecast Rainfall
+            state["forecast_rain_3h"] = live_village_telemetry.get("forecast_rain_3h_mm", state.get("forecast_rain_3h", 0.0))
+            state["forecast_rain_6h"] = live_village_telemetry.get("forecast_rain_6h_mm", 0.0)
+            state["forecast_rain_24h"] = live_village_telemetry.get("forecast_rain_24h_mm", 0.0)
+            # 3. Real Soil Moisture
+            state["soil_moisture"] = live_village_telemetry.get("soil_moisture_m3", 0.25) * 100.0
+            # 4. Real River Discharge mapped to Water Level depth
+            discharge = live_village_telemetry.get("river_discharge_m3s", 0)
+            if discharge > 0:
+                state["water_level_m"] = min(7.5, 1.0 + (discharge / 45.0))
+            # 5. Extract Real Empirical 7-Day Matrix for PyTorch LSTM
+            sequence_7d_matrix = live_village_telemetry.get("sequence_7d_matrix")
+            # 6. Real Current Meteorological & Hydrological Telemetry
+            state["temperature_c"] = live_village_telemetry.get("temperature_c", state.get("temperature_c", 18.0))
+            state["humidity_percent"] = live_village_telemetry.get("humidity_percent", state.get("humidity_percent", 70.0))
+            state["weather_code"] = live_village_telemetry.get("weather_code", 0)
+            state["river_discharge_m3s"] = live_village_telemetry.get("river_discharge_m3s", discharge)
+            state["rainfall_rate_mm_hr"] = live_village_telemetry.get("rainfall_mm", state.get("rain_1h", 0.0))
+        # ----------------------------------------------------------
 
         sensor_summary = sensor_health_manager.get_village_sensor_summary(village.get("sensors", {}), state)
 
@@ -612,7 +276,18 @@ class MultiBasinManager:
             "historical_landslide_count": sanitized_telemetry["historical_landslide_count"]
         }
 
-        risk_data = ml_engine.predict_risk(ml_input, water_sensor_online=sensor_summary["water_sensor_usable"])
+        # 1. Evaluate Upstream River Cascade Hydrodynamic Wave Arrival
+        cascade_alerts = river_cascade_engine.evaluate_cascade_effects(live_data_map)
+        village_cascade_alert = cascade_alerts.get(village_id)
+
+        # 2. Run Calibrated AI Prediction (LSTM + GBDT + Soil Lithology + Cascade)
+        risk_data = ml_engine.predict_risk(
+            ml_input, 
+            water_sensor_online=sensor_summary["water_sensor_usable"],
+            sequence_7d=sequence_7d_matrix,
+            village_id=village_id,
+            cascade_alert=village_cascade_alert
+        )
 
         lead_time_data = lead_time_engine.calculate_lead_time(
             rain_1h=ml_input["rain_1h"],
@@ -623,16 +298,71 @@ class MultiBasinManager:
             combined_risk=risk_data["combined_risk"]
         )
 
-        action_data = action_engine.generate_action_plan(village, risk_data, lead_time_data)
+        action_data = action_engine.generate_action_plan(
+            village_data=village,
+            risk_data=risk_data,
+            lead_time_data=lead_time_data,
+            telemetry_data=state
+        )
+
+        # 3. Explicit Past History Timeline (1h, 3h, 6h, 24h, 7d Rain & Soil Moisture Saturation)
+        past_timeline = {
+            "past_1h_rain_mm": round(state.get("rain_1h", 0.0), 2),
+            "past_3h_rain_mm": round(state.get("rain_3h", 0.0), 2),
+            "past_6h_rain_mm": round(state.get("rain_6h", 0.0), 2),
+            "past_24h_rain_mm": round(state.get("rain_24h", 0.0), 2),
+            "past_7d_total_rain_mm": live_village_telemetry.get("history_7d", {}).get("cumulative_7d_rainfall_mm", 0.0),
+            "soil_moisture_saturation_pct": round(state.get("soil_moisture", 0.0), 1),
+            "soil_moisture_m3": round(state.get("soil_moisture", 0.0) / 100.0, 3),
+            "daily_7d_rainfall_array": live_village_telemetry.get("history_7d", {}).get("daily_precipitation_mm", []),
+            "daily_7d_soil_moisture_array": live_village_telemetry.get("history_7d", {}).get("daily_soil_moisture_m3", [])
+        }
+
+        # 4. Explicit Current Live Conditions (Real-Time Sensor & Satellite Telemetry)
+        wmo_codes = {
+            0: "Clear Sky", 1: "Mainly Clear", 2: "Partly Cloudy", 3: "Overcast",
+            45: "Fog", 48: "Depositing Rime Fog",
+            51: "Light Drizzle", 53: "Moderate Drizzle", 55: "Dense Drizzle",
+            61: "Slight Rain", 63: "Moderate Rain", 65: "Heavy Rain",
+            71: "Slight Snow Fall", 73: "Moderate Snow Fall", 75: "Heavy Snow Fall",
+            80: "Slight Rain Showers", 81: "Moderate Rain Showers", 82: "Violent Rain Showers",
+            95: "Thunderstorm", 96: "Thunderstorm with Slight Hail", 99: "Thunderstorm with Heavy Hail"
+        }
+        w_code = int(state.get("weather_code", 0))
+        w_desc = wmo_codes.get(w_code, "Fair / Moderate")
+
+        current_conditions = {
+            "temperature_c": round(float(state.get("temperature_c", 18.0)), 1),
+            "rainfall_rate_mm_hr": round(float(state.get("rainfall_rate_mm_hr", state.get("rain_1h", 0.0))), 2),
+            "rainfall_current_mm": round(float(state.get("rainfall_rate_mm_hr", state.get("rain_1h", 0.0))), 2),
+            "humidity_pct": round(float(state.get("humidity_percent", 70.0)), 1),
+            "soil_moisture_saturation_pct": round(float(state.get("soil_moisture", 0.0)), 1),
+            "soil_moisture_m3": round(float(state.get("soil_moisture", 0.0)) / 100.0, 3),
+            "water_level_m": round(float(state.get("water_level_m", 1.0)), 2),
+            "water_level_rise_rate_m_hr": round(float(state.get("water_level_rise_rate", 0.0)), 2),
+            "river_discharge_m3s": round(float(state.get("river_discharge_m3s", 0.0)), 2),
+            "weather_code": w_code,
+            "weather_condition": w_desc
+        }
 
         return {
             "village": village,
             "basin_id": target_basin,
             "telemetry": state,
+            "current_conditions": current_conditions,
+            "current_data": current_conditions,
+            "current_telemetry": current_conditions,
+            "past_history_timeline": past_timeline,
+            "history_7d": live_village_telemetry.get("history_7d", {}),
+            "forecast_timeline": live_village_telemetry.get("forecast_timeline", {}),
+            "soil_lithology": risk_data.get("soil_lithology", {}),
+            "river_cascade_alert": village_cascade_alert,
             "sensor_health": sensor_summary,
             "risk_analysis": risk_data,
             "lead_time": lead_time_data,
             "action_plan": action_data,
+            "demographics": action_data.get("demographics", {}),
+            "disaster_logistics": action_data.get("disaster_logistics", {}),
             "timestamp": time.time()
         }
 
@@ -645,6 +375,9 @@ class MultiBasinManager:
             if analysis.get("action_plan", {}).get("primary_shelter"):
                 primary_shelter_name = analysis["action_plan"]["primary_shelter"].get("name", "Designated High Ground")
             
+            disaster_logistics = analysis.get("action_plan", {}).get("disaster_logistics", {})
+            demographics = analysis.get("action_plan", {}).get("demographics", {})
+
             summary.append({
                 "id": v["id"],
                 "basin_id": basin_id,
@@ -656,18 +389,39 @@ class MultiBasinManager:
                 "lng": v["lng"],
                 "elevation_m": v["elevation_m"],
                 "slope_deg": v["slope_deg"],
+                "population": demographics.get("population", v.get("population", 1500)),
+                "population_source": demographics.get("source", "Census of India"),
                 "hazard_zones": v.get("hazard_zones", {}),
                 "river_stream": v.get("river_stream", []),
                 "safe_shelters": v.get("safe_shelters", []),
+                "evacuation_routes": v.get("evacuation_routes", []),
+                "sensor_locations": v.get("sensor_locations", []),
                 "risk_percentage": analysis["risk_analysis"]["risk_percentage"],
                 "risk_level": analysis["risk_analysis"]["risk_level"],
                 "risk_badge": analysis["risk_analysis"]["risk_badge"],
                 "lead_time_display": analysis["lead_time"]["window_display"],
                 "model_type": analysis["risk_analysis"]["model_type"],
+                "current_conditions": analysis.get("current_conditions", {}),
+                "current_data": analysis.get("current_conditions", {}),
+                "current_telemetry": analysis.get("current_conditions", {}),
+                "past_history_timeline": analysis.get("past_history_timeline", {}),
+                "forecast_timeline": analysis.get("forecast_timeline", {}),
+                "soil_group": analysis.get("soil_lithology", {}).get("soil_group", "C"),
+                "lithology": analysis.get("soil_lithology", {}).get("lithology_type", "Mountain Loam"),
+                "river_cascade_active": analysis.get("river_cascade_alert") is not None,
                 "data_health_pct": analysis["sensor_health"]["data_health_pct"],
-                "primary_shelter": primary_shelter_name
+                "primary_shelter": primary_shelter_name,
+                "disaster_logistics": disaster_logistics
             })
         return summary
+
+    def get_all_villages_live_status(self) -> List[Dict[str, Any]]:
+        """Returns the live threat status for ALL 26 villages across all basins simultaneously."""
+        master_list = []
+        for basin_id in self.basin_villages.keys():
+            basin_summary = self.get_basin_villages_summary(basin_id)
+            master_list.extend(basin_summary)
+        return master_list
 
     def update_custom_telemetry(self, village_id: str, custom_data: Dict[str, Any], basin_id: Optional[str] = None) -> Dict[str, Any]:
         target_basin = basin_id
