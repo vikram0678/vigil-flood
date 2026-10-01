@@ -767,7 +767,7 @@ function setBasemap3D(type) {
 // 3. Fetch Initial Telemetry & Villages
 async function fetchInitialData(isFirstLoad = false) {
   try {
-    const res = await fetch("/api/villages");
+    const res = await fetch("/api/villages?basin_id=ALL");
     const data = await res.json();
     allVillages = data.villages || [];
     renderVillageList(allVillages);
@@ -1029,11 +1029,79 @@ function renderSensorHealth(sensors, healthPct) {
 // 10. Render Action Plan & SMS Broadcast
 function renderActionPlan(action) {
   const container = document.getElementById("action-plan-container");
+  const logistics = action.disaster_logistics || {};
+  const routes = action.evaluated_routes || [];
+  const crest = action.projected_flood_crest_m;
+
+  let routesHtml = "";
+  if (routes.length > 0) {
+    routesHtml = `
+      <div style="margin: 10px 0; padding: 8px 10px; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px;">
+        <div style="font-size: 0.72rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+          <span>🛰️ Copernicus 30m DEM Elevation Check</span>
+          <span style="font-size: 0.68rem; color: #94a3b8; font-weight: normal;">Flood Crest: <b style="color:#f59e0b;">${crest || '--'}m ASL</b></span>
+        </div>
+        ${routes.map(r => {
+          const isSafe = r.is_safe !== false && (r.clearance_margin_m === undefined || r.clearance_margin_m > 0);
+          const badgeBg = isSafe ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.15)';
+          const badgeBorder = isSafe ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)';
+          const badgeColor = isSafe ? '#34d399' : '#f87171';
+          const icon = isSafe ? '✅' : '⛔';
+          const marginStr = r.clearance_margin_m !== undefined ? `${r.clearance_margin_m >= 0 ? '+' : ''}${r.clearance_margin_m}m` : '';
+          return `
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.74rem; padding: 4px 6px; margin-bottom: 4px; background: ${badgeBg}; border: 1px solid ${badgeBorder}; border-radius: 6px;">
+              <div style="font-weight: 600; color: #f1f5f9; display: flex; align-items: center; gap: 5px;">
+                <span>${icon}</span>
+                <span title="${r.name}">${r.name.length > 27 ? r.name.substring(0, 25) + '...' : r.name}</span>
+              </div>
+              <div style="font-weight: 700; color: ${badgeColor}; font-size: 0.7rem;">
+                ${marginStr} (${r.min_elevation_m || '--'}m ASL)
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  let vulnHtml = "";
+  const vuln = action.vulnerable_populations || logistics.vulnerable_populations;
+  if (vuln && vuln.children_under_5_count !== undefined) {
+    vulnHtml = `
+      <div style="margin: 8px 0 10px 0; padding: 8px 10px; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(236, 72, 153, 0.25); border-radius: 8px;">
+        <div style="font-size: 0.72rem; font-weight: 700; color: #f472b6; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+          <span>🍼 Special Care Demographics (WorldPop Age/Sex)</span>
+          <span style="font-size: 0.65rem; color: #a5b4fc; font-weight: normal;">100m Satellite Gridded</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; text-align: center;">
+          <div style="background: rgba(244, 114, 182, 0.1); border: 1px solid rgba(244, 114, 182, 0.3); border-radius: 6px; padding: 4px 6px;">
+            <div style="font-size: 0.65rem; color: #cbd5e1;">Infants &lt;5y</div>
+            <div style="font-size: 0.95rem; font-weight: 700; color: #f472b6;">${vuln.children_under_5_count} <span style="font-size: 0.65rem; font-weight: normal;">(${vuln.children_under_5_pct}%)</span></div>
+            <div style="font-size: 0.62rem; color: #94a3b8;">${vuln.pediatric_kits_needed} Ped Kits</div>
+          </div>
+          <div style="background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 6px; padding: 4px 6px;">
+            <div style="font-size: 0.65rem; color: #cbd5e1;">Elderly &gt;65y</div>
+            <div style="font-size: 0.95rem; font-weight: 700; color: #c084fc;">${vuln.elderly_over_65_count} <span style="font-size: 0.65rem; font-weight: normal;">(${vuln.elderly_over_65_pct}%)</span></div>
+            <div style="font-size: 0.62rem; color: #94a3b8;">${vuln.wheelchair_vehicles_needed} Wheelchair Vans</div>
+          </div>
+          <div style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 6px; padding: 4px 6px;">
+            <div style="font-size: 0.65rem; color: #cbd5e1;">Adults (5-64)</div>
+            <div style="font-size: 0.95rem; font-weight: 700; color: #38bdf8;">${vuln.adults_count} <span style="font-size: 0.65rem; font-weight: normal;">(${vuln.adults_pct}%)</span></div>
+            <div style="font-size: 0.62rem; color: #94a3b8;">Active Workforce</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   container.innerHTML = `
     <div class="action-title">📢 ${action.headline}</div>
     <div style="font-size:0.75rem; color:var(--accent-cyan); margin-bottom:6px; font-weight:600;">
       Tier: ${action.escalation_tier}
     </div>
+    ${satExposureHtml}
+    ${vulnHtml}
+    ${routesHtml}
   `;
 
   action.recommended_actions.forEach(act => {
@@ -1207,19 +1275,38 @@ function renderMapGISOverlays(data) {
     shelterLayerGroup.addLayer(shelterMarker);
   });
 
-  // D. Evacuation Routes (🛣️)
+  // D. Evacuation Routes (🛣️) with Copernicus 30m DEM Elevation Analysis
+  const evalRoutesMap = {};
+  if (data.action_plan && data.action_plan.evaluated_routes) {
+    data.action_plan.evaluated_routes.forEach(er => {
+      evalRoutesMap[er.name] = er;
+    });
+  }
+
   const routes = v.evacuation_routes || [];
   routes.forEach(r => {
-    const isSafe = r.safety_score > 50;
+    const evalData = evalRoutesMap[r.name] || r;
+    const isSafe = evalData.is_safe !== false && (evalData.clearance_margin_m === undefined || evalData.clearance_margin_m > 0);
     const pathCoords = r.path || [[v.lat, v.lng], [shelters[0]?.lat || v.lat, shelters[0]?.lng || v.lng]];
 
     const routeLine = L.polyline(pathCoords, {
       color: isSafe ? "#10b981" : "#ef4444",
-      weight: 3.5,
-      dashArray: isSafe ? "6, 8" : "2, 6",
-      opacity: 0.9
+      weight: isSafe ? 4 : 4.5,
+      dashArray: isSafe ? "6, 8" : "3, 6",
+      opacity: 0.95
     });
-    routeLine.bindTooltip(`<b>${r.name}</b><br>Status: ${r.status}`, { sticky: true });
+
+    const clearanceInfo = evalData.clearance_margin_m !== undefined
+      ? `<br>Copernicus 30m DEM Bottleneck: <b>${evalData.min_elevation_m}m ASL</b><br>Flood Crest: <b>${data.action_plan.projected_flood_crest_m || '--'}m ASL</b> (Clearance: <b>${evalData.clearance_margin_m >= 0 ? '+' : ''}${evalData.clearance_margin_m}m</b>)`
+      : '';
+
+    routeLine.bindTooltip(`
+      <div style="font-family:sans-serif; padding:2px;">
+        <div style="font-weight:700; color:${isSafe ? '#34d399' : '#f87171'};">🛣️ ${r.name}</div>
+        <div style="font-size:11px; color:#cbd5e1;">Status: <b>${evalData.status || r.status}</b></div>
+        <div style="font-size:10px; color:#94a3b8;">${clearanceInfo}</div>
+      </div>
+    `, { sticky: true });
     routeLayerGroup.addLayer(routeLine);
   });
 
@@ -1577,17 +1664,57 @@ function setupEventListeners() {
   }
 
   // Modal Tab Switching
-  document.querySelectorAll(".modal-tab-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".modal-tab-btn").forEach(b => b.classList.remove("active"));
-      document.querySelectorAll(".modal-tab-pane").forEach(p => p.classList.remove("active"));
+  // H. ISRO & NDMA Geomorphic Zonation (147 Districts) Modal Controls
+  const geomModal = document.getElementById("geomorphic-zonation-modal");
+  const openGeomBtn = document.getElementById("btn-open-geomorphic-zonation");
+  const closeGeomBtn = document.getElementById("btn-close-geomorphic-modal");
 
+  if (openGeomBtn) {
+    openGeomBtn.addEventListener("click", () => {
+      openGeomorphicModal();
+    });
+  }
+
+  if (closeGeomBtn) {
+    closeGeomBtn.addEventListener("click", () => {
+      closeGeomorphicModal();
+    });
+  }
+
+  if (geomModal) {
+    geomModal.addEventListener("click", (e) => {
+      if (e.target === geomModal) {
+        closeGeomorphicModal();
+      }
+    });
+  }
+
+  // Sector Filter Tabs
+  document.querySelectorAll(".geom-sector-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".geom-sector-btn").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
-      const targetTab = btn.dataset.tab;
-      const targetPane = document.getElementById(targetTab);
-      if (targetPane) targetPane.classList.add("active");
+      const sectorId = btn.dataset.sector;
+      activeGeomorphicSector = sectorId;
+      filterAndRenderGeomorphicDistricts();
+      renderGeomorphicSectorSummary(sectorId);
     });
   });
+
+  // Search & Susceptibility Filter
+  const geomSearchInput = document.getElementById("geom-search-input");
+  if (geomSearchInput) {
+    geomSearchInput.addEventListener("input", () => {
+      filterAndRenderGeomorphicDistricts();
+    });
+  }
+
+  const geomSuscSelect = document.getElementById("geom-susceptibility-select");
+  if (geomSuscSelect) {
+    geomSuscSelect.addEventListener("change", () => {
+      filterAndRenderGeomorphicDistricts();
+    });
+  }
 }
 
 // Apply Scenario Preset
@@ -2089,4 +2216,342 @@ function stop3DDroneFlythrough() {
   if (droneBtn) droneBtn.classList.remove("active");
   if (droneText) droneText.innerText = "Start 3D Drone Flythrough";
 }
+
+// =========================================================================
+// ISRO LANDSLIDE ATLAS & NDMA LHZ GEOMORPHIC ZONATION (147 DISTRICTS) MODULE
+// =========================================================================
+
+let geomorphicSectors = [];
+let geomorphicDistricts = [];
+let activeGeomorphicSector = "ALL";
+let isGeomorphicDataLoaded = false;
+let geomorphicDistrictMarker = null;
+
+async function openGeomorphicModal() {
+  const modal = document.getElementById("geomorphic-zonation-modal");
+  if (modal) modal.classList.add("active");
+
+  if (!isGeomorphicDataLoaded) {
+    await loadGeomorphicData();
+  } else {
+    filterAndRenderGeomorphicDistricts();
+  }
+}
+
+function closeGeomorphicModal() {
+  const modal = document.getElementById("geomorphic-zonation-modal");
+  if (modal) modal.classList.remove("active");
+}
+
+async function loadGeomorphicData() {
+  try {
+    const [sectorsRes, districtsRes] = await Promise.all([
+      fetch("/api/geomorphic/sectors").then(r => r.json()),
+      fetch("/api/geomorphic/districts").then(r => r.json())
+    ]);
+
+    geomorphicSectors = sectorsRes.sectors || [];
+    geomorphicDistricts = districtsRes.districts || [];
+    isGeomorphicDataLoaded = true;
+
+    renderGeomorphicSectorSummary(activeGeomorphicSector);
+    filterAndRenderGeomorphicDistricts();
+  } catch (err) {
+    console.error("Error loading geomorphic zonation data:", err);
+    const container = document.getElementById("geom-districts-grid");
+    if (container) {
+      container.innerHTML = `<div style="color:#ef4444; padding:20px;">⚠️ Failed to load ISRO Geomorphic Zonation data. Please ensure backend is running.</div>`;
+    }
+  }
+}
+
+function renderGeomorphicSectorSummary(sectorId) {
+  const banner = document.getElementById("geom-sector-summary-banner");
+  if (!banner) return;
+
+  if (sectorId === "ALL") {
+    const totalDistricts = geomorphicDistricts.length;
+    const vHigh = geomorphicDistricts.filter(d => d.isro_susceptibility_rank === "VERY_HIGH").length;
+    const high = geomorphicDistricts.filter(d => d.isro_susceptibility_rank === "HIGH").length;
+    const totalSlides = geomorphicDistricts.reduce((acc, d) => acc + (d.historical_slide_count || 0), 0);
+
+    banner.innerHTML = `
+      <div class="geom-summary-item">
+        <span class="geom-summary-label">NATIONAL COVERAGE</span>
+        <span class="geom-summary-value" style="color:#38bdf8;">147+ Hilly Districts (12.6% Landmass)</span>
+      </div>
+      <div class="geom-summary-item">
+        <span class="geom-summary-label">VERY HIGH RISK DISTRICTS</span>
+        <span class="geom-summary-value" style="color:#ef4444;">${vHigh} Districts</span>
+      </div>
+      <div class="geom-summary-item">
+        <span class="geom-summary-label">HIGH RISK DISTRICTS</span>
+        <span class="geom-summary-value" style="color:#f97316;">${high} Districts</span>
+      </div>
+      <div class="geom-summary-item">
+        <span class="geom-summary-label">HISTORICAL DISASTER INVENTORY</span>
+        <span class="geom-summary-value" style="color:#10b981;">${totalSlides.toLocaleString()} Logged Events</span>
+      </div>
+    `;
+  } else {
+    const sec = geomorphicSectors.find(s => s.sector_id === sectorId);
+    if (!sec) return;
+
+    banner.innerHTML = `
+      <div style="flex:1; min-width:280px;">
+        <div style="font-size:0.9rem; font-weight:700; color:#38bdf8; margin-bottom:2px;">${sec.name}</div>
+        <div style="font-size:0.75rem; color:var(--text-secondary); line-height:1.3;">${sec.description}</div>
+      </div>
+      <div style="display:flex; gap:16px; flex-wrap:wrap;">
+        <div class="geom-summary-item">
+          <span class="geom-summary-label">MONITORED DISTRICTS</span>
+          <span class="geom-summary-value">${sec.total_districts}</span>
+        </div>
+        <div class="geom-summary-item">
+          <span class="geom-summary-label">VERY HIGH RISK</span>
+          <span class="geom-summary-value" style="color:#ef4444;">${sec.very_high_risk_districts}</span>
+        </div>
+        <div class="geom-summary-item">
+          <span class="geom-summary-label">MEAN MONSOON RAIN</span>
+          <span class="geom-summary-value" style="color:#38bdf8;">${sec.mean_annual_rainfall_mm} mm/yr</span>
+        </div>
+      </div>
+    `;
+  }
+}
+
+function filterAndRenderGeomorphicDistricts() {
+  const container = document.getElementById("geom-districts-grid");
+  const countBadge = document.getElementById("geom-district-count-badge");
+  const searchInput = document.getElementById("geom-search-input");
+  const suscSelect = document.getElementById("geom-susceptibility-select");
+
+  if (!container) return;
+
+  const q = (searchInput ? searchInput.value : "").trim().toLowerCase();
+  const susc = suscSelect ? suscSelect.value : "ALL";
+
+  let filtered = geomorphicDistricts;
+
+  if (activeGeomorphicSector !== "ALL") {
+    filtered = filtered.filter(d => d.sector_id === activeGeomorphicSector);
+  }
+
+  if (susc !== "ALL") {
+    filtered = filtered.filter(d => d.isro_susceptibility_rank === susc);
+  }
+
+  if (q) {
+    filtered = filtered.filter(d =>
+      d.district_name.toLowerCase().includes(q) ||
+      d.state.toLowerCase().includes(q) ||
+      d.primary_river_basin.toLowerCase().includes(q) ||
+      d.geotech.dominant_geology.toLowerCase().includes(q)
+    );
+  }
+
+  if (countBadge) {
+    countBadge.innerText = `${filtered.length} of ${geomorphicDistricts.length} Districts`;
+  }
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:30px;">
+      🔍 No matching districts found for "${q}". Try clearing search filters.
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(d => {
+    const isPilot = !!d.active_pilot_basin_id;
+    const rankClass = d.isro_susceptibility_rank.toLowerCase().replace("_", "-");
+    const rankLabel = d.isro_susceptibility_rank.replace("_", " ");
+    const gt = d.geotech;
+
+    return `
+      <div class="geom-district-card ${isPilot ? 'active-pilot' : ''}" id="geom-card-${d.id}">
+        <div class="geom-card-header">
+          <div>
+            <div class="geom-district-name">
+              ${d.district_name}
+              ${isPilot ? '<span style="font-size:0.65rem; background:rgba(16,185,129,0.2); color:#10b981; border:1px solid #10b981; padding:1px 6px; border-radius:4px; margin-left:4px;">PILOT BASIN ACTIVE</span>' : ''}
+            </div>
+            <div class="geom-district-state">📍 ${d.state} • ${d.primary_river_basin}</div>
+          </div>
+          <span class="geom-risk-badge ${rankClass}">ISRO: ${rankLabel}</span>
+        </div>
+
+        <div class="geom-geotech-specs">
+          <div class="geom-spec-row">
+            <span class="geom-spec-lbl">DOMINANT GEOLOGY</span>
+            <span class="geom-spec-val" title="${gt.dominant_geology}">${gt.dominant_geology.length > 24 ? gt.dominant_geology.substring(0, 22) + '...' : gt.dominant_geology}</span>
+          </div>
+          <div class="geom-spec-row">
+            <span class="geom-spec-lbl">BASELINE FACTOR OF SAFETY</span>
+            <span class="geom-spec-val" style="color:#38bdf8;">FoS: ${gt.baseline_fos.toFixed(2)} (Dry)</span>
+          </div>
+          <div class="geom-spec-row">
+            <span class="geom-spec-lbl">CRITICAL SLOPE RANGE</span>
+            <span class="geom-spec-val">~${gt.critical_slope_deg}° (Friction: ${gt.friction_angle_deg}°)</span>
+          </div>
+          <div class="geom-spec-row">
+            <span class="geom-spec-lbl">HISTORICAL SLIDES</span>
+            <span class="geom-spec-val" style="color:#f59e0b;">${d.historical_slide_count} Recorded Events</span>
+          </div>
+        </div>
+
+        <div class="geom-directive-box">
+          <b>🛡️ NDMA SOP:</b> ${d.ndma_mitigation_directive}
+        </div>
+
+        <div class="geom-card-actions">
+          <button class="geom-fly-btn" onclick="flyToGeomorphicDistrict('${d.id}')">
+            <span>🎯</span> Inspect & Center Map
+          </button>
+          <button class="geom-fly-btn" style="background:rgba(99,102,241,0.15); border-color:rgba(99,102,241,0.4); color:#818cf8;" onclick="calculateLiveDistrictFoS('${d.id}')">
+            <span>⚡</span> Live FoS Analysis
+          </button>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+async function flyToGeomorphicDistrict(districtId) {
+  const d = geomorphicDistricts.find(item => item.id === districtId);
+  if (!d) return;
+
+  // Close modal
+  closeGeomorphicModal();
+
+  const [lat, lng] = d.center_coords;
+
+  // If this district has an active pilot basin, switch basin
+  if (d.active_pilot_basin_id && typeof switchActiveBasin === 'function') {
+    await switchActiveBasin(d.active_pilot_basin_id);
+  }
+
+  // 1. Center 2D Map
+  if (map) {
+    map.flyTo([lat, lng], 11.5, { animate: true, duration: 1.5 });
+
+    // Add high-visibility temporary pulsing beacon marker
+    if (geomorphicDistrictMarker) {
+      map.removeLayer(geomorphicDistrictMarker);
+    }
+
+    const rankColor = d.isro_susceptibility_rank === "VERY_HIGH" ? "#ef4444" : d.isro_susceptibility_rank === "HIGH" ? "#f97316" : "#f59e0b";
+
+    const pulseHtml = `
+      <div style="position:relative; display:flex; align-items:center; justify-content:center;">
+        <div style="position:absolute; width:44px; height:44px; border-radius:50%; background:${rankColor}; opacity:0.35; animation:pulse-ring 1.8s infinite;"></div>
+        <div style="width:22px; height:22px; border-radius:50%; background:${rankColor}; border:2px solid #ffffff; box-shadow:0 0 15px ${rankColor}; display:flex; align-items:center; justify-content:center; font-size:11px;">🏔️</div>
+      </div>
+    `;
+
+    const icon = L.divIcon({
+      html: pulseHtml,
+      className: 'geom-pulse-icon',
+      iconSize: [44, 44],
+      iconAnchor: [22, 22]
+    });
+
+    geomorphicDistrictMarker = L.marker([lat, lng], { icon: icon }).addTo(map);
+    geomorphicDistrictMarker.bindPopup(`
+      <div style="font-family:sans-serif; padding:4px; max-width:240px;">
+        <div style="font-size:12px; font-weight:800; color:${rankColor};">🏔️ ${d.district_name} (${d.state})</div>
+        <div style="font-size:10px; color:#64748b; margin-top:2px;">Sector: <b>${d.sector_name}</b></div>
+        <div style="font-size:10px; color:#1e293b; margin-top:4px;">
+          <b>Primary River:</b> ${d.primary_river_basin}<br>
+          <b>ISRO Rank:</b> ${d.isro_susceptibility_rank}<br>
+          <b>Geology:</b> ${d.geotech.dominant_geology}<br>
+          <b>Baseline FoS:</b> ${d.geotech.baseline_fos}
+        </div>
+        <div style="font-size:9px; color:#0284c7; margin-top:4px; border-top:1px solid #e2e8f0; padding-top:2px;">
+          🛡️ NDMA: ${d.ndma_mitigation_directive}
+        </div>
+      </div>
+    `).openPopup();
+  }
+
+  // 2. Center 3D Map if in 3D mode
+  if (map3d) {
+    map3d.flyTo({
+      center: [lng, lat],
+      zoom: 11.5,
+      pitch: 45,
+      bearing: 0,
+      essential: true
+    });
+  }
+}
+
+async function calculateLiveDistrictFoS(districtId) {
+  const d = geomorphicDistricts.find(item => item.id === districtId);
+  if (!d) return;
+
+  try {
+    const rainVal = parseFloat(document.getElementById("slider-rain")?.value || 65);
+    const soilVal = parseFloat(document.getElementById("slider-soil")?.value || 78);
+
+    const res = await fetch(`/api/geomorphic/districts/${districtId}/dynamic-fos`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        current_rain_1h: rainVal,
+        current_soil_moisture_pct: soilVal
+      })
+    }).then(r => r.json());
+
+    alert(`🔬 LIVE GEOTECHNICAL FoS STABILITY REPORT — ${res.district_name}\n\n` +
+          `• Telemetry: ${rainVal} mm/h Rain | ${soilVal}% Soil Moisture\n` +
+          `• Pore-Water Pressure (u): ${res.pore_water_pressure_kpa} kPa\n` +
+          `• Dynamic Factor of Safety (FoS): ${res.dynamic_fos} (Baseline Dry: ${res.baseline_dry_fos})\n` +
+          `• Hazard Status: ${res.alert_level} Alert\n` +
+          `• Action Directive: ${res.action_code}\n\n` +
+          `🛡️ NDMA Guideline: ${res.mitigation_directive}`);
+// State / Basin Dropdown Change Listener (Sync with All-India & Basin Views)
+document.addEventListener("DOMContentLoaded", () => {
+  const stateSelect = document.getElementById("state-basin-select");
+  if (stateSelect) {
+    stateSelect.addEventListener("change", async (e) => {
+      const basinId = e.target.value;
+      try {
+        const res = await fetch(`/api/villages?basin_id=${basinId}`);
+        const data = await res.json();
+        allVillages = data.villages || [];
+        renderVillageList(allVillages);
+        updateMapMarkers(allVillages);
+        renderGoogleFloodHexGrid(allVillages);
+        initHydroParticles(allVillages);
+        updateThreatIndex(allVillages);
+
+        // Update header
+        const headerTitle = document.querySelector(".panel-title");
+        if (headerTitle) {
+          headerTitle.textContent = basinId === "ALL" 
+            ? "📍 All-India Pilot Basins" 
+            : `📍 ${data.region || 'Pilot Catchment'}`;
+        }
+        const wardCount = document.querySelector(".panel-header span");
+        if (wardCount) {
+          wardCount.textContent = `${allVillages.length} Wards`;
+        }
+
+        // If villages available, zoom map to fit
+        if (allVillages.length > 0 && map) {
+          if (basinId === "ALL") {
+            map.flyTo([22.5, 78.9], 5, { duration: 1.2 });
+          } else {
+            const bounds = L.latLngBounds(allVillages.map(v => [v.lat, v.lng]));
+            map.fitBounds(bounds, { padding: [30, 30] });
+          }
+        }
+      } catch (err) {
+        console.error("Failed to switch state/basin in vanilla UI:", err);
+      }
+    });
+  }
+});
+
+
 

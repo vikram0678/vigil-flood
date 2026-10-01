@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useFlood } from '../../context/FloodContext';
 
 export const MapNavControls: React.FC = () => {
-  const { viewMode, selectedVillageData, selectedVillageId, villages, selectVillage } = useFlood();
+  const { viewMode, setViewMode, selectedVillageData, selectedVillageId, villages, selectVillage } = useFlood();
   const [bearing, setBearing] = useState<number>(0);
   const compassRef = useRef<HTMLButtonElement>(null);
   const isDraggingRef = useRef<boolean>(false);
@@ -227,6 +227,18 @@ export const MapNavControls: React.FC = () => {
           <line x1="2" y1="12" x2="22" y2="12"></line>
           <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
         </svg>
+      </button>
+
+      <div className="map-nav-divider" />
+
+      {/* 🏔️ Google Maps Style 2D / 3D Dimension Switcher Button */}
+      <button 
+        className={`map-nav-btn dimension-toggle-btn ${viewMode === '3d' ? 'active-3d' : ''}`}
+        onClick={() => setViewMode(viewMode === '2d' ? '3d' : '2d')}
+        title={viewMode === '2d' ? "Switch to 3D Mountain Mesh Mode" : "Switch to 2D Tactical Map Mode"}
+        aria-label="Toggle 2D / 3D Mode"
+      >
+        <span className="dimension-badge">{viewMode === '2d' ? '3D' : '2D'}</span>
       </button>
     </div>
   );

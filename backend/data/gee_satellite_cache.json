@@ -1,0 +1,553 @@
+{
+  "VIL-01": {
+    "village_id": "VIL-01",
+    "village_name": "Pandoh",
+    "worldpop_hazard_exposure": 581,
+    "river_bed_elevation_m": 835.0,
+    "routes": [
+      {
+        "name": "Route A (Upper Hill Road via SH-13)",
+        "min_elevation_m": 840.9,
+        "max_elevation_m": 889.7
+      },
+      {
+        "name": "Route B (Riverside Embankment Road)",
+        "min_elevation_m": 835.0,
+        "max_elevation_m": 886.3
+      }
+    ],
+    "demographics_age_breakdown": {
+      "total_exposed": 581,
+      "children_under_5": 42,
+      "elderly_over_65": 49,
+      "adults": 490,
+      "pediatric_kits_needed": 42,
+      "wheelchair_vehicles_needed": 7
+    }
+  },
+  "VIL-02": {
+    "village_id": "VIL-02",
+    "village_name": "Aut",
+    "worldpop_hazard_exposure": 162,
+    "river_bed_elevation_m": 966.2,
+    "routes": [
+      {
+        "name": "Route 1 (North Escape Ridge)",
+        "min_elevation_m": 1190.5,
+        "max_elevation_m": 1272.4
+      }
+    ],
+    "demographics_age_breakdown": {
+      "total_exposed": 162,
+      "children_under_5": 12,
+      "elderly_over_65": 11,
+      "adults": 139,
+      "pediatric_kits_needed": 12,
+      "wheelchair_vehicles_needed": 2
+    }
+  },
+  "VIL-03": {
+    "village_id": "VIL-03",
+    "village_name": "Thalot",
+    "worldpop_hazard_exposure": 71,
+    "river_bed_elevation_m": 1976.1,
+    "routes": [
+      {
+        "name": "Tributary bypass path",
+        "min_elevation_m": 2204.8,
+        "max_elevation_m": 2310.4
+      }
+    ],
+    "demographics_age_breakdown": {
+      "total_exposed": 71,
+      "children_under_5": 5,
+      "elderly_over_65": 6,
+      "adults": 60,
+      "pediatric_kits_needed": 5,
+      "wheelchair_vehicles_needed": 1
+    }
+  },
+  "VIL-04": {
+    "village_id": "VIL-04",
+    "village_name": "Nagwain",
+    "worldpop_hazard_exposure": 238,
+    "river_bed_elevation_m": 1228.7,
+    "routes": [
+      {
+        "name": "Central Village Highway Link",
+        "min_elevation_m": 1282.6,
+        "max_elevation_m": 1437.0
+      }
+    ],
+    "demographics_age_breakdown": {
+      "total_exposed": 238,
+      "children_under_5": 17,
+      "elderly_over_65": 20,
+      "adults": 201,
+      "pediatric_kits_needed": 17,
+      "wheelchair_vehicles_needed": 3
+    }
+  },
+  "VIL-05": {
+    "village_id": "VIL-05",
+    "village_name": "Jhatingri",
+    "worldpop_hazard_exposure": 18,
+    "river_bed_elevation_m": 2175.1,
+    "routes": [
+      {
+        "name": "Ridge Top Trail",
+        "min_elevation_m": 2345.7,
+        "max_elevation_m": 2494.9
+      }
+    ],
+    "demographics_age_breakdown": {
+      "total_exposed": 18,
+      "children_under_5": 1,
+      "elderly_over_65": 1,
+      "adults": 16,
+      "pediatric_kits_needed": 1,
+      "wheelchair_vehicles_needed": 1
+    }
+  },
+  "VIL-06": {
+    "village_id": "VIL-06",
+    "village_name": "Bajaura",
+    "worldpop_hazard_exposure": 365,
+    "river_bed_elevation_m": 1054.5,
+    "routes": [
+      {
+        "name": "Bajaura-Kullu Elevated Highway",
+        "min_elevation_m": 1078.8,
+        "max_elevation_m": 1110.1
+      }
+    ],
+    "demographics_age_breakdown": {
+      "total_exposed": 365,
+      "children_under_5": 27,
+      "elderly_over_65": 24,
+      "adults": 314,
+      "pediatric_kits_needed": 27,
+      "wheelchair_vehicles_needed": 3
+    }
+  },
+  "VIL-07": {
+    "village_id": "VIL-07",
+    "village_name": "Batseri / Sangla",
+    "worldpop_hazard_exposure": 13,
+    "river_bed_elevation_m": 2535.6,
+    "routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "min_elevation_m": 2659.1,
+        "max_elevation_m": 2983.2
+      }
+    ],
+    "demographics_age_breakdown": {
+      "total_exposed": 13,
+      "children_under_5": 1,
+      "elderly_over_65": 1,
+      "adults": 11,
+      "pediatric_kits_needed": 1,
+      "wheelchair_vehicles_needed": 1
+    }
+  },
+  "VIL-08": {
+    "village_id": "VIL-08",
+    "village_name": "Kotropi",
+    "worldpop_hazard_exposure": 40,
+    "river_bed_elevation_m": 1100.6,
+    "routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "min_elevation_m": 1313.6,
+        "max_elevation_m": 1465.4
+      }
+    ],
+    "demographics_age_breakdown": {
+      "total_exposed": 40,
+      "children_under_5": 3,
+      "elderly_over_65": 3,
+      "adults": 34,
+      "pediatric_kits_needed": 3,
+      "wheelchair_vehicles_needed": 1
+    }
+  },
+  "VIL-09": {
+    "village_id": "VIL-09",
+    "village_name": "Kanon / Nirmand",
+    "worldpop_hazard_exposure": 17,
+    "river_bed_elevation_m": 1763.1,
+    "routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "min_elevation_m": 1825.8,
+        "max_elevation_m": 1870.9
+      }
+    ],
+    "demographics_age_breakdown": {
+      "total_exposed": 17,
+      "children_under_5": 1,
+      "elderly_over_65": 1,
+      "adults": 15,
+      "pediatric_kits_needed": 1,
+      "wheelchair_vehicles_needed": 1
+    }
+  },
+  "VIL-10": {
+    "village_id": "VIL-10",
+    "village_name": "Janglikh",
+    "worldpop_hazard_exposure": 12,
+    "river_bed_elevation_m": 2120.4,
+    "routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "min_elevation_m": 2334.6,
+        "max_elevation_m": 2455.1
+      }
+    ],
+    "demographics_age_breakdown": {
+      "total_exposed": 12,
+      "children_under_5": 1,
+      "elderly_over_65": 1,
+      "adults": 10,
+      "pediatric_kits_needed": 1,
+      "wheelchair_vehicles_needed": 1
+    }
+  },
+  "VIL-11": {
+    "village_id": "VIL-11",
+    "village_name": "Samej / Rampur",
+    "worldpop_hazard_exposure": 39,
+    "river_bed_elevation_m": 942.0,
+    "routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "min_elevation_m": 1105.8,
+        "max_elevation_m": 1200.9
+      }
+    ],
+    "demographics_age_breakdown": {
+      "total_exposed": 39,
+      "children_under_5": 2,
+      "elderly_over_65": 3,
+      "adults": 34,
+      "pediatric_kits_needed": 2,
+      "wheelchair_vehicles_needed": 1
+    }
+  },
+  "VIL-12": {
+    "village_id": "VIL-12",
+    "village_name": "Dharali / Harsil",
+    "worldpop_hazard_exposure": 22,
+    "river_bed_elevation_m": 2461.5,
+    "routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "min_elevation_m": 2613.6,
+        "max_elevation_m": 2805.2
+      }
+    ],
+    "demographics_age_breakdown": {
+      "total_exposed": 22,
+      "children_under_5": 2,
+      "elderly_over_65": 1,
+      "adults": 19,
+      "pediatric_kits_needed": 2,
+      "wheelchair_vehicles_needed": 1
+    }
+  },
+  "VIL-13": {
+    "village_id": "VIL-13",
+    "village_name": "Sayanchatti",
+    "worldpop_hazard_exposure": 1,
+    "river_bed_elevation_m": 2866.8,
+    "routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "min_elevation_m": 3083.3,
+        "max_elevation_m": 3168.8
+      }
+    ],
+    "demographics_age_breakdown": {
+      "total_exposed": 1,
+      "children_under_5": 0,
+      "elderly_over_65": 0,
+      "adults": 1,
+      "pediatric_kits_needed": 0,
+      "wheelchair_vehicles_needed": 0
+    }
+  },
+  "VIL-14": {
+    "village_id": "VIL-14",
+    "village_name": "Tamak / Niti Valley",
+    "worldpop_hazard_exposure": 0,
+    "river_bed_elevation_m": 4508.3,
+    "routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "min_elevation_m": 4422.4,
+        "max_elevation_m": 4760.6
+      }
+    ],
+    "demographics_age_breakdown": {
+      "total_exposed": 0,
+      "children_under_5": 0,
+      "elderly_over_65": 0,
+      "adults": 0,
+      "pediatric_kits_needed": 0,
+      "wheelchair_vehicles_needed": 0
+    }
+  },
+  "VIL-15": {
+    "village_id": "VIL-15",
+    "village_name": "Paturi / Oath",
+    "worldpop_hazard_exposure": 47,
+    "river_bed_elevation_m": 1205.1,
+    "routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "min_elevation_m": 1150.0,
+        "max_elevation_m": 1258.7
+      }
+    ],
+    "demographics_age_breakdown": {
+      "total_exposed": 47,
+      "children_under_5": 4,
+      "elderly_over_65": 4,
+      "adults": 39,
+      "pediatric_kits_needed": 4,
+      "wheelchair_vehicles_needed": 1
+    }
+  },
+  "VIL-16": {
+    "village_id": "VIL-16",
+    "village_name": "Okhimath",
+    "worldpop_hazard_exposure": 32,
+    "river_bed_elevation_m": 999.3,
+    "routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "min_elevation_m": 1013.6,
+        "max_elevation_m": 1213.9
+      }
+    ],
+    "demographics_age_breakdown": {
+      "total_exposed": 32,
+      "children_under_5": 3,
+      "elderly_over_65": 3,
+      "adults": 26,
+      "pediatric_kits_needed": 3,
+      "wheelchair_vehicles_needed": 1
+    }
+  },
+  "VIL-17": {
+    "village_id": "VIL-17",
+    "village_name": "Chungthang",
+    "worldpop_hazard_exposure": 4,
+    "river_bed_elevation_m": 1527.0,
+    "routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "min_elevation_m": 1574.0,
+        "max_elevation_m": 1895.9
+      }
+    ],
+    "demographics_age_breakdown": {
+      "total_exposed": 4,
+      "children_under_5": 0,
+      "elderly_over_65": 0,
+      "adults": 4,
+      "pediatric_kits_needed": 0,
+      "wheelchair_vehicles_needed": 0
+    }
+  },
+  "VIL-18": {
+    "village_id": "VIL-18",
+    "village_name": "Rafong",
+    "worldpop_hazard_exposure": 150,
+    "river_bed_elevation_m": 709.8,
+    "routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "min_elevation_m": 845.7,
+        "max_elevation_m": 1031.7
+      }
+    ],
+    "demographics_age_breakdown": {
+      "total_exposed": 150,
+      "children_under_5": 10,
+      "elderly_over_65": 6,
+      "adults": 134,
+      "pediatric_kits_needed": 10,
+      "wheelchair_vehicles_needed": 1
+    }
+  },
+  "VIL-19": {
+    "village_id": "VIL-19",
+    "village_name": "Rimbi",
+    "worldpop_hazard_exposure": 31,
+    "river_bed_elevation_m": 989.4,
+    "routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "min_elevation_m": 1316.2,
+        "max_elevation_m": 1410.4
+      }
+    ],
+    "demographics_age_breakdown": {
+      "total_exposed": 31,
+      "children_under_5": 2,
+      "elderly_over_65": 2,
+      "adults": 27,
+      "pediatric_kits_needed": 2,
+      "wheelchair_vehicles_needed": 1
+    }
+  },
+  "VIL-20": {
+    "village_id": "VIL-20",
+    "village_name": "Melli Bazaar",
+    "worldpop_hazard_exposure": 66,
+    "river_bed_elevation_m": 215,
+    "routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "min_elevation_m": 306.2,
+        "max_elevation_m": 372.9
+      }
+    ],
+    "demographics_age_breakdown": {
+      "total_exposed": 66,
+      "children_under_5": 4,
+      "elderly_over_65": 4,
+      "adults": 58,
+      "pediatric_kits_needed": 4,
+      "wheelchair_vehicles_needed": 1
+    }
+  },
+  "VIL-21": {
+    "village_id": "VIL-21",
+    "village_name": "Dikchu",
+    "worldpop_hazard_exposure": 22,
+    "river_bed_elevation_m": 574.2,
+    "routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "min_elevation_m": 726.9,
+        "max_elevation_m": 798.1
+      }
+    ],
+    "demographics_age_breakdown": {
+      "total_exposed": 22,
+      "children_under_5": 1,
+      "elderly_over_65": 1,
+      "adults": 20,
+      "pediatric_kits_needed": 1,
+      "wheelchair_vehicles_needed": 1
+    }
+  },
+  "VIL-22": {
+    "village_id": "VIL-22",
+    "village_name": "Chooralmala",
+    "worldpop_hazard_exposure": 75,
+    "river_bed_elevation_m": 637.5,
+    "routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "min_elevation_m": 826.9,
+        "max_elevation_m": 889.0
+      }
+    ],
+    "demographics_age_breakdown": {
+      "total_exposed": 75,
+      "children_under_5": 5,
+      "elderly_over_65": 5,
+      "adults": 65,
+      "pediatric_kits_needed": 5,
+      "wheelchair_vehicles_needed": 1
+    }
+  },
+  "VIL-23": {
+    "village_id": "VIL-23",
+    "village_name": "Mundakkai",
+    "worldpop_hazard_exposure": 46,
+    "river_bed_elevation_m": 821.5,
+    "routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "min_elevation_m": 841.1,
+        "max_elevation_m": 899.5
+      }
+    ],
+    "demographics_age_breakdown": {
+      "total_exposed": 46,
+      "children_under_5": 3,
+      "elderly_over_65": 3,
+      "adults": 40,
+      "pediatric_kits_needed": 3,
+      "wheelchair_vehicles_needed": 1
+    }
+  },
+  "VIL-24": {
+    "village_id": "VIL-24",
+    "village_name": "Pettimudi",
+    "worldpop_hazard_exposure": 3,
+    "river_bed_elevation_m": 1845.4,
+    "routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "min_elevation_m": 1837.5,
+        "max_elevation_m": 1870.2
+      }
+    ],
+    "demographics_age_breakdown": {
+      "total_exposed": 3,
+      "children_under_5": 0,
+      "elderly_over_65": 0,
+      "adults": 3,
+      "pediatric_kits_needed": 0,
+      "wheelchair_vehicles_needed": 0
+    }
+  },
+  "VIL-25": {
+    "village_id": "VIL-25",
+    "village_name": "Kottakamboor",
+    "worldpop_hazard_exposure": 5,
+    "river_bed_elevation_m": 1842.4,
+    "routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "min_elevation_m": 1830.3,
+        "max_elevation_m": 1944.8
+      }
+    ],
+    "demographics_age_breakdown": {
+      "total_exposed": 5,
+      "children_under_5": 0,
+      "elderly_over_65": 0,
+      "adults": 5,
+      "pediatric_kits_needed": 0,
+      "wheelchair_vehicles_needed": 0
+    }
+  },
+  "VIL-26": {
+    "village_id": "VIL-26",
+    "village_name": "Kavalappara",
+    "worldpop_hazard_exposure": 12,
+    "river_bed_elevation_m": 651.7,
+    "routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "min_elevation_m": 881.1,
+        "max_elevation_m": 1071.4
+      }
+    ],
+    "demographics_age_breakdown": {
+      "total_exposed": 12,
+      "children_under_5": 1,
+      "elderly_over_65": 1,
+      "adults": 10,
+      "pediatric_kits_needed": 1,
+      "wheelchair_vehicles_needed": 1
+    }
+  }
+}

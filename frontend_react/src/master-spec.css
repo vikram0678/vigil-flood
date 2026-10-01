@@ -1,0 +1,908 @@
+/* 
+  VIGIL-FLOOD - MASTER UI/UX SPECIFICATION STYLES
+  Version: 3.0 (Production)
+  These styles override previous implementations to enforce the 20+ years senior UI/UX spec.
+*/
+
+/* --- 1. GLOBAL ATMOSPHERE & CANVAS --- */
+body {
+  background-color: var(--canvas-deep, #070a13);
+  color: var(--text-primary, #f8fafc);
+  font-family: var(--font-ui, 'Inter', 'Outfit', -apple-system, sans-serif);
+  background-image:
+    linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  /* Cybernetic cyan accent grid */
+}
+
+/* --- 2. TYPOGRAPHY: TABULAR NUMS & FONTS --- */
+.telemetry-value,
+.live-number,
+.village-card .risk-score,
+.sensor-item .value,
+.lead-time-box .time {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-variant-numeric: tabular-nums;
+  /* Prevents layout shifting during live updates */
+  font-weight: 700;
+}
+
+.hero-metric {
+  font-size: 1.85rem;
+  font-weight: 900;
+  line-height: 1.0;
+  letter-spacing: -0.02em;
+}
+
+.section-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.micro-badge {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* --- 3. TOP NAVBAR (MISSION COMMAND HUD) --- */
+.navbar {
+  height: 52px;
+  background: var(--surface-primary, rgba(15, 23, 42, 0.94));
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-subtle, rgba(51, 65, 85, 0.6));
+  z-index: 1000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+}
+
+.navbar .brand-title {
+  background: linear-gradient(135deg, #38bdf8, #6366f1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+  font-size: 1.15rem;
+}
+
+.navbar .brand-tagline {
+  color: var(--text-muted);
+  -webkit-text-fill-color: var(--text-muted);
+  /* Fix inheritance from parent gradient */
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* --- 4. DASHBOARD LAYOUT & PANELS --- */
+.dashboard-container {
+  display: grid;
+  /* Left Panel (340px) + Map (1fr) + Right Drawer (420px) */
+  grid-template-columns: 340px 1fr 420px;
+  gap: 16px;
+  padding: 16px;
+  height: calc(100vh - 52px);
+  box-sizing: border-box;
+}
+
+.dashboard-container.telemetry-collapsed {
+  grid-template-columns: 340px 1fr;
+}
+
+.panel,
+.village-panel,
+.deep-dive-panel {
+  background: var(--surface-primary, rgba(15, 23, 42, 0.94));
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle, rgba(51, 65, 85, 0.6));
+  border-radius: var(--radius-md, 10px);
+  box-shadow: var(--shadow-subtle, 0 2px 8px rgba(0, 0, 0, 0.3));
+  transition: transform var(--duration-normal) var(--ease-snap);
+}
+
+/* --- 5. VILLAGE THREAT CARDS (Left Panel) --- */
+.village-card {
+  background: var(--surface-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-3, 12px);
+  margin-bottom: var(--space-2, 8px);
+  transition: all var(--duration-fast, 0.22s) var(--ease-smooth);
+}
+
+.village-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-elevated, 0 8px 24px rgba(0, 0, 0, 0.5));
+}
+
+.village-card.selected {
+  border-left: 4px solid var(--border-active);
+  background: var(--surface-elevated);
+  box-shadow: var(--shadow-glow-cyan);
+}
+
+.village-card.severity-critical:hover,
+.village-card.severity-critical.selected {
+  border-left-color: var(--risk-critical);
+  box-shadow: var(--shadow-glow-red);
+}
+
+/* Breathing Glow Animation for Critical State */
+@keyframes breathing-glow-red {
+  0% {
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+  }
+
+  50% {
+    box-shadow: 0 0 24px rgba(239, 68, 68, 0.6);
+  }
+
+  100% {
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+  }
+}
+
+.village-card.severity-critical {
+  animation: breathing-glow-red 3s infinite;
+}
+
+/* --- 6. UNIVERSAL SEARCH CONSOLE --- */
+.universal-search-container {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  transform: none;
+  width: 280px;
+  z-index: 800;
+  transition: width 0.3s var(--ease-smooth);
+}
+
+/* .universal-search-container:focus-within {
+  width: 520px;
+} */
+
+.search-input {
+  width: 100%;
+  background: var(--surface-overlay);
+  backdrop-filter: blur(25px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  padding: 12px 20px;
+  color: var(--text-primary);
+  box-shadow: var(--shadow-float);
+  font-family: var(--font-ui);
+}
+
+/* --- 7. RIGHT DRAWER (XAI Engine) --- */
+.deep-dive-panel {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+/* Evacuation Countdown Block */
+.evac-countdown-block {
+  text-align: center;
+  padding: 24px;
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+}
+
+.evac-countdown-block .hero-metric {
+  color: var(--risk-critical);
+}
+
+/* TreeSHAP Bars */
+.xai-bar-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+/* --- 8. BOTTOM DOCK (Sandbox) --- */
+.simulation-dock {
+  position: fixed;
+  bottom: 0;
+  left: 340px;
+  /* Offset by left panel */
+  right: 420px;
+  /* Offset by right panel */
+  background: var(--surface-overlay);
+  backdrop-filter: blur(30px);
+  border-top: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  z-index: 750;
+  transition: transform var(--duration-normal) var(--ease-snap);
+}
+
+.telemetry-collapsed .simulation-dock {
+  right: 16px;
+}
+
+/* Glassmorphic Sliders */
+.sim-slider-track {
+  background: linear-gradient(90deg, #38bdf8, #f59e0b, #ef4444);
+  height: 6px;
+  border-radius: 3px;
+}
+
+.sim-slider-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  cursor: grab;
+}
+
+/* --- 9. XAI TREESHAP WATERFALL --- */
+.xai-waterfall-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.xai-bar-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.xai-bar-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+}
+
+.xai-driver-tag {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.xai-waterfall-track {
+  position: relative;
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.xai-waterfall-centerline {
+  position: absolute;
+  left: 50%;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  background: var(--border-subtle);
+  z-index: 2;
+}
+
+.xai-waterfall-fill {
+  position: absolute;
+  height: 100%;
+  top: 0;
+  border-radius: 3px;
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s ease;
+  z-index: 1;
+}
+
+.xai-baseline-annotation {
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 8px;
+  border-top: 1px dashed var(--border-subtle);
+  padding-top: 8px;
+}
+
+.xai-net-score-badge {
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 800;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: var(--risk-critical);
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  margin-top: 4px;
+  box-shadow: var(--shadow-glow-red);
+}
+
+/* --- 10. MAP MARKERS: GEOMETRY & RADAR PING --- */
+.senior-leaflet-marker-anchor {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.senior-hazard-pin-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--duration-fast) var(--ease-spring);
+  z-index: 100;
+}
+
+.senior-hazard-pin-wrapper:hover {
+  transform: scale(1.22) translateY(-4px);
+  z-index: 999 !important;
+}
+
+/* Base geometry shape shared styles */
+.senior-hazard-badge {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 28px;
+  height: 28px;
+  color: white;
+  border: 2px solid white;
+  font-size: 14px;
+  position: relative;
+  z-index: 5;
+}
+
+/* Triangle (Landslide) */
+.senior-hazard-badge.shape-triangle {
+  width: 0;
+  height: 0;
+  border-left: 16px solid transparent;
+  border-right: 16px solid transparent;
+  border-bottom: 28px solid transparent;
+  /* The color is set via JS inline styles, we need to adapt */
+  background: none !important;
+  /* Override inline bg for triangle trick */
+  box-shadow: none !important;
+}
+
+.senior-hazard-badge.shape-triangle::after {
+  content: "🔺";
+  position: absolute;
+  top: 6px;
+  left: -8px;
+  font-size: 14px;
+}
+
+/* All Village Badges are Perfect Upright Circles */
+.senior-hazard-badge,
+.senior-hazard-badge.shape-diamond,
+.senior-hazard-badge.shape-circle,
+.senior-hazard-badge.shape-hexagon,
+.senior-hazard-badge.shape-triangle {
+  transform: none !important;
+  border-radius: 50% !important;
+  clip-path: none !important;
+}
+
+.senior-hazard-badge .hazard-geom-symbol {
+  transform: none !important;
+}
+
+/* Hexagon (GLOF/Multi) */
+.senior-hazard-badge.shape-hexagon {
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  border-radius: 0;
+}
+
+/* Radar Ping Rings */
+.dual-radar-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.critical-pulse .ring-1,
+.danger-pulse .ring-1 {
+  animation: radar-ping 2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.critical-pulse .ring-2,
+.danger-pulse .ring-2 {
+  animation: radar-ping 2s cubic-bezier(0.16, 1, 0.3, 1) infinite 650ms;
+}
+
+@keyframes radar-ping {
+  0% {
+    width: 100%;
+    height: 100%;
+    opacity: 0.8;
+    border-width: 3px;
+  }
+
+  100% {
+    width: 150%;
+    height: 150%;
+    opacity: 0;
+    border-width: 0px;
+  }
+}
+
+.senior-elevation-tag {
+  background: var(--surface-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 3px 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+  box-shadow: var(--shadow-subtle);
+}
+
+/* --- 11. MAP RIVERS: HYDRODYNAMIC FLOW --- */
+.animated-stream-flow-pulse {
+  stroke-dasharray: 8 16;
+  animation: stream-flow-scroll 1.5s linear infinite;
+}
+
+@keyframes stream-flow-scroll {
+  from {
+    stroke-dashoffset: 24;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* --- 12. LAYOUT HOTFIXES --- */
+/* Fix SVG ring squishing in left panel */
+.village-risk-ring-container {
+  width: 40px !important;
+  height: 40px !important;
+  flex-shrink: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* Fix text wrapping in village info */
+.village-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.village-info .village-shelter-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* Fix Bottom Sandbox Layout Overlaps */
+.simulation-dock,
+.sandbox-card {
+  z-index: 1000 !important;
+  background: var(--surface-primary) !important;
+  backdrop-filter: blur(20px) !important;
+  border-top: 1px solid var(--border-active) !important;
+}
+
+/* Fix Top Navbar cutoffs */
+.navbar .brand-text-container {
+  min-width: max-content;
+}
+
+.role-switcher {
+  flex-shrink: 0;
+}
+
+/* Fix Right Panel TreeSHAP visual overlapping */
+.xai-bar-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.xai-bar-label-row span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.xai-waterfall-container {
+  padding-bottom: 12px;
+}
+
+/* Remove global dark map filter as it corrupts satellite/vector colors. Dark map is handled by GISMap2D basemap toggle */
+
+/* ==========================================================================
+   LAYOUT GRID OVERRIDES: Complete Control of Left & Right Sidebars
+   ========================================================================== */
+.dashboard-container {
+  grid-template-columns: 320px 1fr 340px !important;
+}
+
+/* Right Panel Collapsed Only */
+.dashboard-container.telemetry-collapsed {
+  grid-template-columns: 320px 1fr !important;
+}
+
+@media (max-width: 1400px) {
+  .dashboard-container {
+    grid-template-columns: 280px 1fr 300px !important;
+  }
+
+  .dashboard-container.telemetry-collapsed {
+    grid-template-columns: 280px 1fr !important;
+  }
+}
+
+@media (min-width: 1900px) {
+  .dashboard-container {
+    grid-template-columns: 360px 1fr 360px !important;
+  }
+
+  .dashboard-container.telemetry-collapsed {
+    grid-template-columns: 360px 1fr !important;
+  }
+}
+
+/* Ensure center-panel is relative so the absolute dock aligns to it, not the whole screen */
+.center-panel {
+  position: relative !important;
+}
+
+/* Position Bottom Sandbox as a FULL WIDTH DOCK inside the Map area ONLY */
+#tour-sandbox-card.full-width-dock {
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  transform: none !important;
+  width: 100% !important;
+  max-width: none !important;
+  z-index: 2000 !important;
+  /* Above all leaflet controls */
+  border-radius: var(--radius-md) var(--radius-md) 0 0 !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  margin: 0 !important;
+}
+
+/* Make sure header flexbox works cleanly */
+.sandbox-title-group {
+  flex-direction: row !important;
+  align-items: center !important;
+}
+
+/* Fix text wrapping inside the Sandbox header metrics */
+.sandbox-compact-preview {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  gap: 8px !important;
+}
+
+/* Navbar Flex Fix - ensure it doesn't push off screen */
+.navbar {
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  padding-right: 24px !important;
+}
+
+.navbar::-webkit-scrollbar,
+.sandbox-compact-preview::-webkit-scrollbar {
+  display: none;
+}
+
+/* Position Hazard Filter Bar floating above the Sandbox horizontally centered */
+.hazard-filter-bar-container {
+  position: absolute !important;
+  bottom: 48px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  top: auto !important;
+  z-index: 1000 !important;
+}
+
+/* When Decision Support & XAI right panel is expanded, hide secondary badges (Pan-India, Debris Flow, Cloudburst, GLOF) */
+.dashboard-container:not(.telemetry-collapsed) .hazard-filter-pill .pill-badge {
+  display: none !important;
+}
+
+/* ==========================================================================
+   DESKTOP RIGHT-SIDE MAP NAVIGATION & LAYERS CONTROLS
+   Follows Google Maps / Mapbox established UX patterns.
+   ========================================================================== */
+
+/* Move Nav Controls Stack to the Right, below the National Alerts pill */
+.map-nav-controls {
+  position: absolute !important;
+  top: 104px !important;
+  right: 14px !important;
+  left: auto !important;
+  bottom: auto !important;
+  z-index: 750 !important;
+  transition: top 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Equalize the width of the top-right toggle buttons for neatness */
+.telemetry-expand-floating-btn,
+.drawer-toggle-tab-closed {
+  width: 235px !important;
+  justify-content: flex-start !important;
+}
+
+/* Move Layers Control to the Right, directly below the Nav Controls Stack */
+.google-layers-widget-container {
+  position: absolute !important;
+  top: 310px !important;
+  right: 14px !important;
+  left: auto !important;
+  bottom: auto !important;
+  z-index: 2500 !important;
+  /* Must be > 2000 to float above expanded Sandbox */
+  transition: top 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Fix popover opening direction since the button is now on the right edge */
+.google-layers-popover-sheet {
+  right: 100% !important;
+  /* Open to the left of the button */
+  left: auto !important;
+  margin-right: 12px !important;
+  bottom: auto !important;
+  top: 0 !important;
+}
+
+/* Hide the "Layers" text to keep only the icon */
+.layers-btn-label {
+  display: none !important;
+}
+
+/* Make the trigger button perfectly square and add dark border for visibility */
+.google-layers-trigger-btn {
+  padding: 8px !important;
+  justify-content: center !important;
+  border: 2px solid #1e293b !important;
+}
+
+/* Decrease the height of the layers sheet so it doesn't get cut off */
+.sheet-scroll-body {
+  max-height: 280px !important;
+  overflow-y: auto !important;
+  padding-right: 8px !important;
+  /* Make room for scrollbar */
+}
+
+/* Float National Alerts Drawer above Layers widget */
+.national-alerts-drawer {
+  z-index: 3000 !important;
+}
+
+/* Neat scrollbar for the layers sheet */
+.sheet-scroll-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sheet-scroll-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sheet-scroll-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.sheet-scroll-body::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ==========================================================================
+   DYNAMIC SHIFT UP FOR RIGHT-SIDE MAP CONTROLS
+   When the Right Panel (Decision Support) is OPEN, the floating toggle 
+   button disappears. We dynamically shift the remaining controls UP 
+   by 44px to fill the gap and keep the layout neat.
+   ========================================================================== */
+main:not(.telemetry-collapsed) .national-alerts-drawer {
+  top: 14px !important;
+}
+
+main:not(.telemetry-collapsed) .map-nav-controls {
+  top: 60px !important;
+  /* 104px - 44px */
+}
+
+main:not(.telemetry-collapsed) .google-layers-widget-container {
+  top: 266px !important;
+  /* 310px - 44px */
+}
+
+/* ==========================================================================
+   CUSTOM NEAT TOOLTIPS FOR STATE BUTTONS (HP, UK, SK, KL)
+   ========================================================================== */
+.basin-quick-tab-btn {
+  position: relative;
+  overflow: visible !important;
+}
+
+.basin-quick-tab-btn::after {
+  content: attr(data-location-tooltip);
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-5px);
+  background: rgba(15, 23, 42, 0.98);
+  color: #f8fafc;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: var(--font-ui);
+  white-space: normal;
+  /* Allow long names like Kerala to wrap */
+  width: 210px;
+  /* Fixed width forces it to wrap and prevents horizontal stretching */
+  text-align: center;
+  line-height: 1.4;
+  opacity: 0;
+  pointer-events: none;
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.8);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1000;
+}
+
+.basin-quick-tab-btn:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.basin-quick-tab-btn::before {
+  content: '';
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 0 5px 5px 5px;
+  border-style: solid;
+  border-color: transparent transparent rgba(56, 189, 248, 0.5) transparent;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1000;
+}
+
+.basin-quick-tab-btn:hover::before {
+  opacity: 1;
+  top: calc(100% + 6px);
+}
+
+/* Prevent all tooltips from bleeding off the edges of the panel by offsetting them (5 buttons: ALL, HP, UK, SK, KL) */
+.basin-quick-tab-btn:nth-child(1)::after {
+  left: 0;
+  transform: translateX(0) translateY(-5px);
+}
+
+.basin-quick-tab-btn:nth-child(1):hover::after {
+  transform: translateX(0) translateY(0);
+}
+
+.basin-quick-tab-btn:nth-child(2)::after {
+  left: -10px;
+  transform: translateX(0) translateY(-5px);
+}
+
+.basin-quick-tab-btn:nth-child(2):hover::after {
+  transform: translateX(0) translateY(0);
+}
+
+.basin-quick-tab-btn:nth-child(3)::after {
+  left: 50%;
+  transform: translateX(-50%) translateY(-5px);
+}
+
+.basin-quick-tab-btn:nth-child(3):hover::after {
+  transform: translateX(-50%) translateY(0);
+}
+
+.basin-quick-tab-btn:nth-child(4)::after {
+  left: auto;
+  right: -10px;
+  transform: translateX(0) translateY(-5px);
+}
+
+.basin-quick-tab-btn:nth-child(4):hover::after {
+  transform: translateX(0) translateY(0);
+}
+
+.basin-quick-tab-btn:nth-child(5)::after {
+  left: auto;
+  right: 0;
+  transform: translateX(0) translateY(-5px);
+}
+
+.basin-quick-tab-btn:nth-child(5):hover::after {
+  transform: translateX(0) translateY(0);
+}
+
+/* ==========================================================================
+   NAVBAR COMPONENT BORDER RADIUS REFINEMENT (Rounded Rects instead of Pills)
+   ========================================================================== */
+.nav-emergency-cta-btn,
+.role-switcher,
+.live-pill,
+.hud-pill-group {
+  border-radius: 12px !important;
+}
+
+.role-btn,
+.hud-pill-btn {
+  border-radius: 8px !important;
+}
+
+/* ==========================================================================
+   WHITE THEME MASTER UI/UX OVERRIDES
+   ========================================================================== */
+body.light-theme {
+  background-color: var(--canvas-deep, #f1f5f9) !important;
+  color: var(--text-primary, #0f172a) !important;
+  background-image:
+    linear-gradient(rgba(2, 132, 199, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(2, 132, 199, 0.04) 1px, transparent 1px) !important;
+}
+
+body.light-theme .navbar {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-bottom: 1px solid rgba(203, 213, 225, 0.85) !important;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+body.light-theme .panel,
+body.light-theme .village-panel,
+body.light-theme .deep-dive-panel {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid rgba(203, 213, 225, 0.9) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+  color: #0f172a !important;
+}
+
+body.light-theme .simulation-dock,
+body.light-theme .sandbox-card {
+  background: rgba(255, 255, 255, 0.97) !important;
+  border-top: 1px solid rgba(203, 213, 225, 0.9) !important;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06) !important;
+}
+
+body.light-theme .senior-elevation-tag {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+body.light-theme .basin-quick-tab-btn::after {
+  background: #0f172a !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(2, 132, 199, 0.5) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
+}

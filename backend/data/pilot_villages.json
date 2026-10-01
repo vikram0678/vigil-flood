@@ -6,7 +6,7 @@
     "district": "Mandi",
     "state": "Himachal Pradesh",
     "lat": 31.6702,
-    "lng": 77.0560,
+    "lng": 77.056,
     "elevation_m": 880,
     "slope_deg": 32.5,
     "soil_type": "Loamy Sand / Gravel",
@@ -17,48 +17,114 @@
     "vulnerable_households": 85,
     "hazard_zones": {
       "red_inundation_polygon": [
-        [31.6840, 77.0620],
-        [31.6840, 77.0670],
-        [31.6740, 77.0620],
-        [31.6660, 77.0600],
-        [31.6640, 77.0560],
-        [31.6660, 77.0540],
-        [31.6740, 77.0570]
+        [
+          31.684,
+          77.062
+        ],
+        [
+          31.684,
+          77.067
+        ],
+        [
+          31.674,
+          77.062
+        ],
+        [
+          31.666,
+          77.06
+        ],
+        [
+          31.664,
+          77.056
+        ],
+        [
+          31.666,
+          77.054
+        ],
+        [
+          31.674,
+          77.057
+        ]
       ],
       "orange_slope_polygon": [
-        [31.6850, 77.0580],
-        [31.6850, 77.0690],
-        [31.6730, 77.0650],
-        [31.6630, 77.0620],
-        [31.6630, 77.0520],
-        [31.6730, 77.0530]
+        [
+          31.685,
+          77.058
+        ],
+        [
+          31.685,
+          77.069
+        ],
+        [
+          31.673,
+          77.065
+        ],
+        [
+          31.663,
+          77.062
+        ],
+        [
+          31.663,
+          77.052
+        ],
+        [
+          31.673,
+          77.053
+        ]
       ],
       "green_safe_polygon": [
-        [31.6720, 77.0480],
-        [31.6770, 77.0490],
-        [31.6760, 77.0520],
-        [31.6710, 77.0510]
+        [
+          31.672,
+          77.048
+        ],
+        [
+          31.677,
+          77.049
+        ],
+        [
+          31.676,
+          77.052
+        ],
+        [
+          31.671,
+          77.051
+        ]
       ]
     },
     "river_stream": [
-      [31.6840, 77.0645],
-      [31.6780, 77.0615],
-      [31.6720, 77.0580],
-      [31.6680, 77.0570],
-      [31.6640, 77.0575]
+      [
+        31.684,
+        77.0645
+      ],
+      [
+        31.678,
+        77.0615
+      ],
+      [
+        31.672,
+        77.058
+      ],
+      [
+        31.668,
+        77.057
+      ],
+      [
+        31.664,
+        77.0575
+      ]
     ],
     "safe_shelters": [
       {
         "name": "Govt Senior Secondary School (Upper Ridge)",
         "lat": 31.6745,
-        "lng": 77.0500,
+        "lng": 77.05,
         "capacity": 400,
         "elevation_m": 990
       },
       {
         "name": "Community Hall Pandoh West",
-        "lat": 31.6680,
-        "lng": 77.0480,
+        "lat": 31.668,
+        "lng": 77.048,
         "capacity": 250,
         "elevation_m": 950
       }
@@ -69,9 +135,18 @@
         "status": "CLEAR",
         "safety_score": 95,
         "path": [
-          [31.6702, 77.0560],
-          [31.6725, 77.0530],
-          [31.6745, 77.0500]
+          [
+            31.6702,
+            77.056
+          ],
+          [
+            31.6725,
+            77.053
+          ],
+          [
+            31.6745,
+            77.05
+          ]
         ]
       },
       {
@@ -79,9 +154,18 @@
         "status": "AVOID - FLOOD PRONE",
         "safety_score": 20,
         "path": [
-          [31.6702, 77.0560],
-          [31.6680, 77.0580],
-          [31.6650, 77.0532]
+          [
+            31.6702,
+            77.056
+          ],
+          [
+            31.668,
+            77.058
+          ],
+          [
+            31.665,
+            77.0532
+          ]
         ]
       }
     ],
@@ -95,26 +179,26 @@
       {
         "id": "SENS-PND-RAIN-01",
         "type": "Rain Gauge",
-        "lat": 31.6710,
-        "lng": 77.0540
+        "lat": 31.671,
+        "lng": 77.054
       },
       {
         "id": "SENS-PND-SOIL-01",
         "type": "Soil Moisture",
-        "lat": 31.6690,
-        "lng": 77.0520
+        "lat": 31.669,
+        "lng": 77.052
       },
       {
         "id": "SENS-PND-WTR-01",
         "type": "River Gauge",
         "lat": 31.6702,
-        "lng": 77.0560
+        "lng": 77.056
       },
       {
         "id": "SENS-PND-TLT-01",
         "type": "Slope Tilt",
-        "lat": 31.6730,
-        "lng": 77.0500
+        "lat": 31.673,
+        "lng": 77.05
       }
     ]
   },
@@ -880,6 +964,3386 @@
         "type": "Slope Tilt",
         "lat": 31.8525,
         "lng": 77.156
+      }
+    ]
+  },
+  {
+    "id": "VIL-07",
+    "name": "Batseri / Sangla",
+    "ward": "Ward 2 (High Risk Zone)",
+    "district": "Kinnaur",
+    "state": "Himachal Pradesh",
+    "lat": 31.423,
+    "lng": 78.261,
+    "elevation_m": 903,
+    "slope_deg": 25.2,
+    "soil_type": "Fragile Moraine / Weathered Rock",
+    "distance_to_stream_m": 18,
+    "historical_landslide_count": 9,
+    "historical_flood_count": 1,
+    "population": 951,
+    "vulnerable_households": 162,
+    "hazard_zones": {
+      "red_inundation_polygon": [
+        [
+          31.4241,
+          78.2609
+        ],
+        [
+          31.4264,
+          78.2636
+        ],
+        [
+          31.4223,
+          78.2575
+        ],
+        [
+          31.4191,
+          78.2619
+        ],
+        [
+          31.4235,
+          78.2653
+        ],
+        [
+          31.4193,
+          78.2617
+        ]
+      ],
+      "orange_slope_polygon": [
+        [
+          31.4313,
+          78.2667
+        ],
+        [
+          31.4206,
+          78.258
+        ],
+        [
+          31.4224,
+          78.2613
+        ],
+        [
+          31.4292,
+          78.2589
+        ],
+        [
+          31.4201,
+          78.2652
+        ]
+      ],
+      "green_safe_polygon": [
+        [
+          31.4184,
+          78.2524
+        ],
+        [
+          31.4175,
+          78.2588
+        ],
+        [
+          31.4218,
+          78.2522
+        ],
+        [
+          31.4206,
+          78.2544
+        ]
+      ]
+    },
+    "river_stream": [
+      [
+        31.4181,
+        78.2607
+      ],
+      [
+        31.4265,
+        78.2545
+      ],
+      [
+        31.4282,
+        78.2686
+      ],
+      [
+        31.4252,
+        78.2596
+      ],
+      [
+        31.423,
+        78.2661
+      ]
+    ],
+    "safe_shelters": [
+      {
+        "name": "Batseri / Sangla Relief Camp",
+        "lat": 31.419,
+        "lng": 78.257,
+        "capacity": 354,
+        "elevation_m": 1214
+      }
+    ],
+    "evacuation_routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "status": "CLEAR",
+        "safety_score": 78,
+        "path": [
+          [
+            31.423,
+            78.261
+          ],
+          [
+            31.421,
+            78.259
+          ],
+          [
+            31.419,
+            78.257
+          ]
+        ]
+      }
+    ],
+    "sensors": {
+      "rain_gauge_id": "SENS-VIL-07-RAIN",
+      "soil_moisture_id": "SENS-VIL-07-SOIL",
+      "water_level_id": "SENS-VIL-07-WTR",
+      "tilt_sensor_id": "SENS-VIL-07-TLT"
+    },
+    "sensor_locations": [
+      {
+        "id": "SENS-VIL-07-RAIN",
+        "type": "Rain Gauge",
+        "lat": 31.424,
+        "lng": 78.262
+      },
+      {
+        "id": "SENS-VIL-07-SOIL",
+        "type": "Soil Moisture",
+        "lat": 31.425,
+        "lng": 78.26
+      },
+      {
+        "id": "SENS-VIL-07-WTR",
+        "type": "River Gauge",
+        "lat": 31.422,
+        "lng": 78.263
+      },
+      {
+        "id": "SENS-VIL-07-TLT",
+        "type": "Slope Tilt",
+        "lat": 31.426,
+        "lng": 78.264
+      }
+    ]
+  },
+  {
+    "id": "VIL-08",
+    "name": "Kotropi",
+    "ward": "Ward 1 (High Risk Zone)",
+    "district": "Mandi",
+    "state": "Himachal Pradesh",
+    "lat": 31.854,
+    "lng": 76.908,
+    "elevation_m": 1645,
+    "slope_deg": 28.4,
+    "soil_type": "Fragile Moraine / Weathered Rock",
+    "distance_to_stream_m": 21,
+    "historical_landslide_count": 8,
+    "historical_flood_count": 4,
+    "population": 1009,
+    "vulnerable_households": 109,
+    "hazard_zones": {
+      "red_inundation_polygon": [
+        [
+          31.8576,
+          76.9117
+        ],
+        [
+          31.8589,
+          76.9035
+        ],
+        [
+          31.8543,
+          76.9056
+        ],
+        [
+          31.8544,
+          76.9034
+        ],
+        [
+          31.8534,
+          76.9059
+        ],
+        [
+          31.8579,
+          76.9112
+        ]
+      ],
+      "orange_slope_polygon": [
+        [
+          31.8626,
+          76.9053
+        ],
+        [
+          31.8538,
+          76.9164
+        ],
+        [
+          31.86,
+          76.912
+        ],
+        [
+          31.8568,
+          76.9112
+        ],
+        [
+          31.8582,
+          76.9067
+        ]
+      ],
+      "green_safe_polygon": [
+        [
+          31.8453,
+          76.9017
+        ],
+        [
+          31.8514,
+          76.9044
+        ],
+        [
+          31.8462,
+          76.9059
+        ],
+        [
+          31.8474,
+          76.9037
+        ]
+      ]
+    },
+    "river_stream": [
+      [
+        31.8531,
+        76.9105
+      ],
+      [
+        31.8592,
+        76.9016
+      ],
+      [
+        31.8593,
+        76.9011
+      ],
+      [
+        31.861,
+        76.9037
+      ],
+      [
+        31.8591,
+        76.9155
+      ]
+    ],
+    "safe_shelters": [
+      {
+        "name": "Kotropi Relief Camp",
+        "lat": 31.85,
+        "lng": 76.904,
+        "capacity": 270,
+        "elevation_m": 2121
+      }
+    ],
+    "evacuation_routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "status": "CLEAR",
+        "safety_score": 78,
+        "path": [
+          [
+            31.854,
+            76.908
+          ],
+          [
+            31.852,
+            76.906
+          ],
+          [
+            31.85,
+            76.904
+          ]
+        ]
+      }
+    ],
+    "sensors": {
+      "rain_gauge_id": "SENS-VIL-08-RAIN",
+      "soil_moisture_id": "SENS-VIL-08-SOIL",
+      "water_level_id": "SENS-VIL-08-WTR",
+      "tilt_sensor_id": "SENS-VIL-08-TLT"
+    },
+    "sensor_locations": [
+      {
+        "id": "SENS-VIL-08-RAIN",
+        "type": "Rain Gauge",
+        "lat": 31.855,
+        "lng": 76.909
+      },
+      {
+        "id": "SENS-VIL-08-SOIL",
+        "type": "Soil Moisture",
+        "lat": 31.856,
+        "lng": 76.907
+      },
+      {
+        "id": "SENS-VIL-08-WTR",
+        "type": "River Gauge",
+        "lat": 31.853,
+        "lng": 76.91
+      },
+      {
+        "id": "SENS-VIL-08-TLT",
+        "type": "Slope Tilt",
+        "lat": 31.857,
+        "lng": 76.911
+      }
+    ]
+  },
+  {
+    "id": "VIL-09",
+    "name": "Kanon / Nirmand",
+    "ward": "Ward 5 (High Risk Zone)",
+    "district": "Kullu",
+    "state": "Himachal Pradesh",
+    "lat": 31.464,
+    "lng": 77.587,
+    "elevation_m": 1584,
+    "slope_deg": 28.9,
+    "soil_type": "Fragile Moraine / Weathered Rock",
+    "distance_to_stream_m": 28,
+    "historical_landslide_count": 5,
+    "historical_flood_count": 6,
+    "population": 2835,
+    "vulnerable_households": 114,
+    "hazard_zones": {
+      "red_inundation_polygon": [
+        [
+          31.4605,
+          77.5892
+        ],
+        [
+          31.4686,
+          77.587
+        ],
+        [
+          31.4679,
+          77.5879
+        ],
+        [
+          31.4637,
+          77.5875
+        ],
+        [
+          31.4606,
+          77.5829
+        ],
+        [
+          31.4687,
+          77.591
+        ]
+      ],
+      "orange_slope_polygon": [
+        [
+          31.467,
+          77.5895
+        ],
+        [
+          31.4705,
+          77.5843
+        ],
+        [
+          31.4691,
+          77.5934
+        ],
+        [
+          31.4713,
+          77.5905
+        ],
+        [
+          31.4636,
+          77.594
+        ]
+      ],
+      "green_safe_polygon": [
+        [
+          31.4551,
+          77.5799
+        ],
+        [
+          31.4605,
+          77.5827
+        ],
+        [
+          31.4597,
+          77.5815
+        ],
+        [
+          31.4617,
+          77.5859
+        ]
+      ]
+    },
+    "river_stream": [
+      [
+        31.4709,
+        77.5947
+      ],
+      [
+        31.463,
+        77.5916
+      ],
+      [
+        31.4604,
+        77.584
+      ],
+      [
+        31.4593,
+        77.5792
+      ],
+      [
+        31.4611,
+        77.5842
+      ]
+    ],
+    "safe_shelters": [
+      {
+        "name": "Kanon / Nirmand Relief Camp",
+        "lat": 31.46,
+        "lng": 77.583,
+        "capacity": 777,
+        "elevation_m": 2040
+      }
+    ],
+    "evacuation_routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "status": "CLEAR",
+        "safety_score": 90,
+        "path": [
+          [
+            31.464,
+            77.587
+          ],
+          [
+            31.462,
+            77.585
+          ],
+          [
+            31.46,
+            77.583
+          ]
+        ]
+      }
+    ],
+    "sensors": {
+      "rain_gauge_id": "SENS-VIL-09-RAIN",
+      "soil_moisture_id": "SENS-VIL-09-SOIL",
+      "water_level_id": "SENS-VIL-09-WTR",
+      "tilt_sensor_id": "SENS-VIL-09-TLT"
+    },
+    "sensor_locations": [
+      {
+        "id": "SENS-VIL-09-RAIN",
+        "type": "Rain Gauge",
+        "lat": 31.465,
+        "lng": 77.588
+      },
+      {
+        "id": "SENS-VIL-09-SOIL",
+        "type": "Soil Moisture",
+        "lat": 31.466,
+        "lng": 77.586
+      },
+      {
+        "id": "SENS-VIL-09-WTR",
+        "type": "River Gauge",
+        "lat": 31.463,
+        "lng": 77.589
+      },
+      {
+        "id": "SENS-VIL-09-TLT",
+        "type": "Slope Tilt",
+        "lat": 31.467,
+        "lng": 77.59
+      }
+    ]
+  },
+  {
+    "id": "VIL-10",
+    "name": "Janglikh",
+    "ward": "Ward 1 (High Risk Zone)",
+    "district": "Shimla",
+    "state": "Himachal Pradesh",
+    "lat": 31.258,
+    "lng": 77.925,
+    "elevation_m": 1495,
+    "slope_deg": 37.7,
+    "soil_type": "Fragile Moraine / Weathered Rock",
+    "distance_to_stream_m": 66,
+    "historical_landslide_count": 10,
+    "historical_flood_count": 5,
+    "population": 1453,
+    "vulnerable_households": 175,
+    "hazard_zones": {
+      "red_inundation_polygon": [
+        [
+          31.2591,
+          77.9235
+        ],
+        [
+          31.2567,
+          77.9283
+        ],
+        [
+          31.2623,
+          77.9239
+        ],
+        [
+          31.2617,
+          77.9247
+        ],
+        [
+          31.2577,
+          77.9262
+        ],
+        [
+          31.2587,
+          77.9299
+        ]
+      ],
+      "orange_slope_polygon": [
+        [
+          31.2643,
+          77.9258
+        ],
+        [
+          31.2659,
+          77.9264
+        ],
+        [
+          31.2582,
+          77.9263
+        ],
+        [
+          31.264,
+          77.9221
+        ],
+        [
+          31.2617,
+          77.933
+        ]
+      ],
+      "green_safe_polygon": [
+        [
+          31.2502,
+          77.9214
+        ],
+        [
+          31.2552,
+          77.9182
+        ],
+        [
+          31.2568,
+          77.9176
+        ],
+        [
+          31.257,
+          77.924
+        ]
+      ]
+    },
+    "river_stream": [
+      [
+        31.254,
+        77.9288
+      ],
+      [
+        31.2518,
+        77.9291
+      ],
+      [
+        31.2601,
+        77.9319
+      ],
+      [
+        31.2629,
+        77.9222
+      ],
+      [
+        31.2651,
+        77.932
+      ]
+    ],
+    "safe_shelters": [
+      {
+        "name": "Janglikh Relief Camp",
+        "lat": 31.254,
+        "lng": 77.921,
+        "capacity": 420,
+        "elevation_m": 1871
+      }
+    ],
+    "evacuation_routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "status": "CLEAR",
+        "safety_score": 90,
+        "path": [
+          [
+            31.258,
+            77.925
+          ],
+          [
+            31.256,
+            77.923
+          ],
+          [
+            31.254,
+            77.921
+          ]
+        ]
+      }
+    ],
+    "sensors": {
+      "rain_gauge_id": "SENS-VIL-10-RAIN",
+      "soil_moisture_id": "SENS-VIL-10-SOIL",
+      "water_level_id": "SENS-VIL-10-WTR",
+      "tilt_sensor_id": "SENS-VIL-10-TLT"
+    },
+    "sensor_locations": [
+      {
+        "id": "SENS-VIL-10-RAIN",
+        "type": "Rain Gauge",
+        "lat": 31.259,
+        "lng": 77.926
+      },
+      {
+        "id": "SENS-VIL-10-SOIL",
+        "type": "Soil Moisture",
+        "lat": 31.26,
+        "lng": 77.924
+      },
+      {
+        "id": "SENS-VIL-10-WTR",
+        "type": "River Gauge",
+        "lat": 31.257,
+        "lng": 77.927
+      },
+      {
+        "id": "SENS-VIL-10-TLT",
+        "type": "Slope Tilt",
+        "lat": 31.261,
+        "lng": 77.928
+      }
+    ]
+  },
+  {
+    "id": "VIL-11",
+    "name": "Samej / Rampur",
+    "ward": "Ward 5 (High Risk Zone)",
+    "district": "Shimla",
+    "state": "Himachal Pradesh",
+    "lat": 31.442,
+    "lng": 77.633,
+    "elevation_m": 983,
+    "slope_deg": 25.6,
+    "soil_type": "Fragile Moraine / Weathered Rock",
+    "distance_to_stream_m": 32,
+    "historical_landslide_count": 8,
+    "historical_flood_count": 5,
+    "population": 2957,
+    "vulnerable_households": 109,
+    "hazard_zones": {
+      "red_inundation_polygon": [
+        [
+          31.4464,
+          77.6325
+        ],
+        [
+          31.4444,
+          77.6293
+        ],
+        [
+          31.4371,
+          77.6322
+        ],
+        [
+          31.4404,
+          77.6356
+        ],
+        [
+          31.4437,
+          77.6293
+        ],
+        [
+          31.4457,
+          77.6325
+        ]
+      ],
+      "orange_slope_polygon": [
+        [
+          31.4473,
+          77.6387
+        ],
+        [
+          31.4427,
+          77.6414
+        ],
+        [
+          31.4393,
+          77.6332
+        ],
+        [
+          31.445,
+          77.6374
+        ],
+        [
+          31.4499,
+          77.6386
+        ]
+      ],
+      "green_safe_polygon": [
+        [
+          31.4363,
+          77.6314
+        ],
+        [
+          31.4366,
+          77.628
+        ],
+        [
+          31.4397,
+          77.6308
+        ],
+        [
+          31.4346,
+          77.628
+        ]
+      ]
+    },
+    "river_stream": [
+      [
+        31.4459,
+        77.6396
+      ],
+      [
+        31.444,
+        77.6387
+      ],
+      [
+        31.4347,
+        77.6395
+      ],
+      [
+        31.4477,
+        77.6279
+      ],
+      [
+        31.4477,
+        77.6269
+      ]
+    ],
+    "safe_shelters": [
+      {
+        "name": "Samej / Rampur Relief Camp",
+        "lat": 31.438,
+        "lng": 77.629,
+        "capacity": 626,
+        "elevation_m": 2539
+      }
+    ],
+    "evacuation_routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "status": "CLEAR",
+        "safety_score": 95,
+        "path": [
+          [
+            31.442,
+            77.633
+          ],
+          [
+            31.44,
+            77.631
+          ],
+          [
+            31.438,
+            77.629
+          ]
+        ]
+      }
+    ],
+    "sensors": {
+      "rain_gauge_id": "SENS-VIL-11-RAIN",
+      "soil_moisture_id": "SENS-VIL-11-SOIL",
+      "water_level_id": "SENS-VIL-11-WTR",
+      "tilt_sensor_id": "SENS-VIL-11-TLT"
+    },
+    "sensor_locations": [
+      {
+        "id": "SENS-VIL-11-RAIN",
+        "type": "Rain Gauge",
+        "lat": 31.443,
+        "lng": 77.634
+      },
+      {
+        "id": "SENS-VIL-11-SOIL",
+        "type": "Soil Moisture",
+        "lat": 31.444,
+        "lng": 77.632
+      },
+      {
+        "id": "SENS-VIL-11-WTR",
+        "type": "River Gauge",
+        "lat": 31.441,
+        "lng": 77.635
+      },
+      {
+        "id": "SENS-VIL-11-TLT",
+        "type": "Slope Tilt",
+        "lat": 31.445,
+        "lng": 77.636
+      }
+    ]
+  },
+  {
+    "id": "VIL-12",
+    "name": "Dharali / Harsil",
+    "ward": "Ward 3 (High Risk Zone)",
+    "district": "Uttarkashi",
+    "state": "Uttarakhand",
+    "lat": 31.036,
+    "lng": 78.739,
+    "elevation_m": 1396,
+    "slope_deg": 25.5,
+    "soil_type": "Fragile Moraine / Weathered Rock",
+    "distance_to_stream_m": 27,
+    "historical_landslide_count": 10,
+    "historical_flood_count": 2,
+    "population": 2849,
+    "vulnerable_households": 169,
+    "hazard_zones": {
+      "red_inundation_polygon": [
+        [
+          31.0344,
+          78.7403
+        ],
+        [
+          31.0402,
+          78.7421
+        ],
+        [
+          31.0355,
+          78.7345
+        ],
+        [
+          31.0338,
+          78.7438
+        ],
+        [
+          31.0353,
+          78.7404
+        ],
+        [
+          31.0386,
+          78.7407
+        ]
+      ],
+      "orange_slope_polygon": [
+        [
+          31.0431,
+          78.7365
+        ],
+        [
+          31.0368,
+          78.741
+        ],
+        [
+          31.0414,
+          78.7376
+        ],
+        [
+          31.0343,
+          78.7376
+        ],
+        [
+          31.0439,
+          78.7456
+        ]
+      ],
+      "green_safe_polygon": [
+        [
+          31.0295,
+          78.7328
+        ],
+        [
+          31.0274,
+          78.7345
+        ],
+        [
+          31.0301,
+          78.7314
+        ],
+        [
+          31.0343,
+          78.7338
+        ]
+      ]
+    },
+    "river_stream": [
+      [
+        31.0379,
+        78.7353
+      ],
+      [
+        31.0304,
+        78.7321
+      ],
+      [
+        31.0424,
+        78.741
+      ],
+      [
+        31.0377,
+        78.7378
+      ],
+      [
+        31.0375,
+        78.7353
+      ]
+    ],
+    "safe_shelters": [
+      {
+        "name": "Dharali / Harsil Relief Camp",
+        "lat": 31.032,
+        "lng": 78.735,
+        "capacity": 353,
+        "elevation_m": 2463
+      }
+    ],
+    "evacuation_routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "status": "CLEAR",
+        "safety_score": 90,
+        "path": [
+          [
+            31.036,
+            78.739
+          ],
+          [
+            31.034,
+            78.737
+          ],
+          [
+            31.032,
+            78.735
+          ]
+        ]
+      }
+    ],
+    "sensors": {
+      "rain_gauge_id": "SENS-VIL-12-RAIN",
+      "soil_moisture_id": "SENS-VIL-12-SOIL",
+      "water_level_id": "SENS-VIL-12-WTR",
+      "tilt_sensor_id": "SENS-VIL-12-TLT"
+    },
+    "sensor_locations": [
+      {
+        "id": "SENS-VIL-12-RAIN",
+        "type": "Rain Gauge",
+        "lat": 31.037,
+        "lng": 78.74
+      },
+      {
+        "id": "SENS-VIL-12-SOIL",
+        "type": "Soil Moisture",
+        "lat": 31.038,
+        "lng": 78.738
+      },
+      {
+        "id": "SENS-VIL-12-WTR",
+        "type": "River Gauge",
+        "lat": 31.035,
+        "lng": 78.741
+      },
+      {
+        "id": "SENS-VIL-12-TLT",
+        "type": "Slope Tilt",
+        "lat": 31.039,
+        "lng": 78.742
+      }
+    ]
+  },
+  {
+    "id": "VIL-13",
+    "name": "Sayanchatti",
+    "ward": "Ward 4 (High Risk Zone)",
+    "district": "Uttarkashi",
+    "state": "Uttarakhand",
+    "lat": 30.887,
+    "lng": 78.379,
+    "elevation_m": 1940,
+    "slope_deg": 36.7,
+    "soil_type": "Fragile Moraine / Weathered Rock",
+    "distance_to_stream_m": 89,
+    "historical_landslide_count": 10,
+    "historical_flood_count": 6,
+    "population": 947,
+    "vulnerable_households": 61,
+    "hazard_zones": {
+      "red_inundation_polygon": [
+        [
+          30.882,
+          78.3826
+        ],
+        [
+          30.8825,
+          78.3805
+        ],
+        [
+          30.8827,
+          78.3818
+        ],
+        [
+          30.8861,
+          78.3834
+        ],
+        [
+          30.8821,
+          78.3818
+        ],
+        [
+          30.8865,
+          78.3796
+        ]
+      ],
+      "orange_slope_polygon": [
+        [
+          30.8915,
+          78.3816
+        ],
+        [
+          30.8885,
+          78.3857
+        ],
+        [
+          30.8844,
+          78.3773
+        ],
+        [
+          30.8896,
+          78.384
+        ],
+        [
+          30.8894,
+          78.387
+        ]
+      ],
+      "green_safe_polygon": [
+        [
+          30.8797,
+          78.378
+        ],
+        [
+          30.8808,
+          78.3754
+        ],
+        [
+          30.8797,
+          78.377
+        ],
+        [
+          30.8855,
+          78.3734
+        ]
+      ]
+    },
+    "river_stream": [
+      [
+        30.8859,
+        78.383
+      ],
+      [
+        30.883,
+        78.3809
+      ],
+      [
+        30.8824,
+        78.3847
+      ],
+      [
+        30.8906,
+        78.3797
+      ],
+      [
+        30.8806,
+        78.3849
+      ]
+    ],
+    "safe_shelters": [
+      {
+        "name": "Sayanchatti Relief Camp",
+        "lat": 30.883,
+        "lng": 78.375,
+        "capacity": 385,
+        "elevation_m": 2232
+      }
+    ],
+    "evacuation_routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "status": "CLEAR",
+        "safety_score": 79,
+        "path": [
+          [
+            30.887,
+            78.379
+          ],
+          [
+            30.885,
+            78.377
+          ],
+          [
+            30.883,
+            78.375
+          ]
+        ]
+      }
+    ],
+    "sensors": {
+      "rain_gauge_id": "SENS-VIL-13-RAIN",
+      "soil_moisture_id": "SENS-VIL-13-SOIL",
+      "water_level_id": "SENS-VIL-13-WTR",
+      "tilt_sensor_id": "SENS-VIL-13-TLT"
+    },
+    "sensor_locations": [
+      {
+        "id": "SENS-VIL-13-RAIN",
+        "type": "Rain Gauge",
+        "lat": 30.888,
+        "lng": 78.38
+      },
+      {
+        "id": "SENS-VIL-13-SOIL",
+        "type": "Soil Moisture",
+        "lat": 30.889,
+        "lng": 78.378
+      },
+      {
+        "id": "SENS-VIL-13-WTR",
+        "type": "River Gauge",
+        "lat": 30.886,
+        "lng": 78.381
+      },
+      {
+        "id": "SENS-VIL-13-TLT",
+        "type": "Slope Tilt",
+        "lat": 30.89,
+        "lng": 78.382
+      }
+    ]
+  },
+  {
+    "id": "VIL-14",
+    "name": "Tamak / Niti Valley",
+    "ward": "Ward 3 (High Risk Zone)",
+    "district": "Chamoli",
+    "state": "Uttarakhand",
+    "lat": 30.73,
+    "lng": 79.79,
+    "elevation_m": 1548,
+    "slope_deg": 31.7,
+    "soil_type": "Fragile Moraine / Weathered Rock",
+    "distance_to_stream_m": 96,
+    "historical_landslide_count": 4,
+    "historical_flood_count": 5,
+    "population": 1395,
+    "vulnerable_households": 144,
+    "hazard_zones": {
+      "red_inundation_polygon": [
+        [
+          30.7313,
+          79.7875
+        ],
+        [
+          30.7281,
+          79.7911
+        ],
+        [
+          30.7313,
+          79.789
+        ],
+        [
+          30.731,
+          79.7947
+        ],
+        [
+          30.7319,
+          79.7924
+        ],
+        [
+          30.7305,
+          79.786
+        ]
+      ],
+      "orange_slope_polygon": [
+        [
+          30.7379,
+          79.7928
+        ],
+        [
+          30.7366,
+          79.7923
+        ],
+        [
+          30.7311,
+          79.7909
+        ],
+        [
+          30.7317,
+          79.7971
+        ],
+        [
+          30.7315,
+          79.7925
+        ]
+      ],
+      "green_safe_polygon": [
+        [
+          30.7224,
+          79.781
+        ],
+        [
+          30.7253,
+          79.7841
+        ],
+        [
+          30.7214,
+          79.7853
+        ],
+        [
+          30.7243,
+          79.7831
+        ]
+      ]
+    },
+    "river_stream": [
+      [
+        30.7231,
+        79.7902
+      ],
+      [
+        30.727,
+        79.7958
+      ],
+      [
+        30.7226,
+        79.7927
+      ],
+      [
+        30.7252,
+        79.794
+      ],
+      [
+        30.7284,
+        79.7974
+      ]
+    ],
+    "safe_shelters": [
+      {
+        "name": "Tamak / Niti Valley Relief Camp",
+        "lat": 30.726,
+        "lng": 79.786,
+        "capacity": 278,
+        "elevation_m": 1857
+      }
+    ],
+    "evacuation_routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "status": "CLEAR",
+        "safety_score": 78,
+        "path": [
+          [
+            30.73,
+            79.79
+          ],
+          [
+            30.728,
+            79.788
+          ],
+          [
+            30.726,
+            79.786
+          ]
+        ]
+      }
+    ],
+    "sensors": {
+      "rain_gauge_id": "SENS-VIL-14-RAIN",
+      "soil_moisture_id": "SENS-VIL-14-SOIL",
+      "water_level_id": "SENS-VIL-14-WTR",
+      "tilt_sensor_id": "SENS-VIL-14-TLT"
+    },
+    "sensor_locations": [
+      {
+        "id": "SENS-VIL-14-RAIN",
+        "type": "Rain Gauge",
+        "lat": 30.731,
+        "lng": 79.791
+      },
+      {
+        "id": "SENS-VIL-14-SOIL",
+        "type": "Soil Moisture",
+        "lat": 30.732,
+        "lng": 79.789
+      },
+      {
+        "id": "SENS-VIL-14-WTR",
+        "type": "River Gauge",
+        "lat": 30.729,
+        "lng": 79.792
+      },
+      {
+        "id": "SENS-VIL-14-TLT",
+        "type": "Slope Tilt",
+        "lat": 30.733,
+        "lng": 79.793
+      }
+    ]
+  },
+  {
+    "id": "VIL-15",
+    "name": "Paturi / Oath",
+    "ward": "Ward 1 (High Risk Zone)",
+    "district": "Chamoli",
+    "state": "Uttarakhand",
+    "lat": 30.41,
+    "lng": 79.33,
+    "elevation_m": 1526,
+    "slope_deg": 29.0,
+    "soil_type": "Fragile Moraine / Weathered Rock",
+    "distance_to_stream_m": 86,
+    "historical_landslide_count": 6,
+    "historical_flood_count": 4,
+    "population": 1923,
+    "vulnerable_households": 160,
+    "hazard_zones": {
+      "red_inundation_polygon": [
+        [
+          30.4093,
+          79.3343
+        ],
+        [
+          30.4074,
+          79.3342
+        ],
+        [
+          30.4113,
+          79.3261
+        ],
+        [
+          30.4069,
+          79.3336
+        ],
+        [
+          30.4108,
+          79.3309
+        ],
+        [
+          30.4074,
+          79.33
+        ]
+      ],
+      "orange_slope_polygon": [
+        [
+          30.4134,
+          79.3339
+        ],
+        [
+          30.4153,
+          79.3282
+        ],
+        [
+          30.4127,
+          79.3321
+        ],
+        [
+          30.409,
+          79.332
+        ],
+        [
+          30.4074,
+          79.3377
+        ]
+      ],
+      "green_safe_polygon": [
+        [
+          30.4087,
+          79.3287
+        ],
+        [
+          30.404,
+          79.3213
+        ],
+        [
+          30.4066,
+          79.3218
+        ],
+        [
+          30.4081,
+          79.3261
+        ]
+      ]
+    },
+    "river_stream": [
+      [
+        30.4154,
+        79.3324
+      ],
+      [
+        30.4175,
+        79.3366
+      ],
+      [
+        30.4179,
+        79.3378
+      ],
+      [
+        30.4136,
+        79.3322
+      ],
+      [
+        30.4067,
+        79.325
+      ]
+    ],
+    "safe_shelters": [
+      {
+        "name": "Paturi / Oath Relief Camp",
+        "lat": 30.406,
+        "lng": 79.326,
+        "capacity": 352,
+        "elevation_m": 2203
+      }
+    ],
+    "evacuation_routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "status": "CLEAR",
+        "safety_score": 85,
+        "path": [
+          [
+            30.41,
+            79.33
+          ],
+          [
+            30.408,
+            79.328
+          ],
+          [
+            30.406,
+            79.326
+          ]
+        ]
+      }
+    ],
+    "sensors": {
+      "rain_gauge_id": "SENS-VIL-15-RAIN",
+      "soil_moisture_id": "SENS-VIL-15-SOIL",
+      "water_level_id": "SENS-VIL-15-WTR",
+      "tilt_sensor_id": "SENS-VIL-15-TLT"
+    },
+    "sensor_locations": [
+      {
+        "id": "SENS-VIL-15-RAIN",
+        "type": "Rain Gauge",
+        "lat": 30.411,
+        "lng": 79.331
+      },
+      {
+        "id": "SENS-VIL-15-SOIL",
+        "type": "Soil Moisture",
+        "lat": 30.412,
+        "lng": 79.329
+      },
+      {
+        "id": "SENS-VIL-15-WTR",
+        "type": "River Gauge",
+        "lat": 30.409,
+        "lng": 79.332
+      },
+      {
+        "id": "SENS-VIL-15-TLT",
+        "type": "Slope Tilt",
+        "lat": 30.413,
+        "lng": 79.333
+      }
+    ]
+  },
+  {
+    "id": "VIL-16",
+    "name": "Okhimath",
+    "ward": "Ward 4 (High Risk Zone)",
+    "district": "Rudraprayag",
+    "state": "Uttarakhand",
+    "lat": 30.505,
+    "lng": 79.088,
+    "elevation_m": 2180,
+    "slope_deg": 39.6,
+    "soil_type": "Fragile Moraine / Weathered Rock",
+    "distance_to_stream_m": 67,
+    "historical_landslide_count": 7,
+    "historical_flood_count": 8,
+    "population": 696,
+    "vulnerable_households": 159,
+    "hazard_zones": {
+      "red_inundation_polygon": [
+        [
+          30.502,
+          79.091
+        ],
+        [
+          30.5034,
+          79.0867
+        ],
+        [
+          30.5064,
+          79.086
+        ],
+        [
+          30.5013,
+          79.0882
+        ],
+        [
+          30.5053,
+          79.085
+        ],
+        [
+          30.5038,
+          79.0867
+        ]
+      ],
+      "orange_slope_polygon": [
+        [
+          30.5024,
+          79.0851
+        ],
+        [
+          30.5116,
+          79.0959
+        ],
+        [
+          30.5021,
+          79.0932
+        ],
+        [
+          30.5045,
+          79.0967
+        ],
+        [
+          30.5099,
+          79.0856
+        ]
+      ],
+      "green_safe_polygon": [
+        [
+          30.5007,
+          79.0818
+        ],
+        [
+          30.4972,
+          79.0821
+        ],
+        [
+          30.4984,
+          79.0796
+        ],
+        [
+          30.5015,
+          79.0801
+        ]
+      ]
+    },
+    "river_stream": [
+      [
+        30.5004,
+        79.0816
+      ],
+      [
+        30.5104,
+        79.0908
+      ],
+      [
+        30.4974,
+        79.0889
+      ],
+      [
+        30.5102,
+        79.094
+      ],
+      [
+        30.5014,
+        79.0891
+      ]
+    ],
+    "safe_shelters": [
+      {
+        "name": "Okhimath Relief Camp",
+        "lat": 30.501,
+        "lng": 79.084,
+        "capacity": 346,
+        "elevation_m": 1530
+      }
+    ],
+    "evacuation_routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "status": "CLEAR",
+        "safety_score": 74,
+        "path": [
+          [
+            30.505,
+            79.088
+          ],
+          [
+            30.503,
+            79.086
+          ],
+          [
+            30.501,
+            79.084
+          ]
+        ]
+      }
+    ],
+    "sensors": {
+      "rain_gauge_id": "SENS-VIL-16-RAIN",
+      "soil_moisture_id": "SENS-VIL-16-SOIL",
+      "water_level_id": "SENS-VIL-16-WTR",
+      "tilt_sensor_id": "SENS-VIL-16-TLT"
+    },
+    "sensor_locations": [
+      {
+        "id": "SENS-VIL-16-RAIN",
+        "type": "Rain Gauge",
+        "lat": 30.506,
+        "lng": 79.089
+      },
+      {
+        "id": "SENS-VIL-16-SOIL",
+        "type": "Soil Moisture",
+        "lat": 30.507,
+        "lng": 79.087
+      },
+      {
+        "id": "SENS-VIL-16-WTR",
+        "type": "River Gauge",
+        "lat": 30.504,
+        "lng": 79.09
+      },
+      {
+        "id": "SENS-VIL-16-TLT",
+        "type": "Slope Tilt",
+        "lat": 30.508,
+        "lng": 79.091
+      }
+    ]
+  },
+  {
+    "id": "VIL-17",
+    "name": "Chungthang",
+    "ward": "Ward 2 (High Risk Zone)",
+    "district": "Mangan",
+    "state": "Sikkim",
+    "lat": 27.603,
+    "lng": 88.647,
+    "elevation_m": 1340,
+    "slope_deg": 26.6,
+    "soil_type": "Fragile Moraine / Weathered Rock",
+    "distance_to_stream_m": 59,
+    "historical_landslide_count": 9,
+    "historical_flood_count": 1,
+    "population": 719,
+    "vulnerable_households": 112,
+    "hazard_zones": {
+      "red_inundation_polygon": [
+        [
+          27.5987,
+          88.6474
+        ],
+        [
+          27.6021,
+          88.6448
+        ],
+        [
+          27.5998,
+          88.6458
+        ],
+        [
+          27.6024,
+          88.6491
+        ],
+        [
+          27.6003,
+          88.6446
+        ],
+        [
+          27.5997,
+          88.6495
+        ]
+      ],
+      "orange_slope_polygon": [
+        [
+          27.6047,
+          88.6449
+        ],
+        [
+          27.6049,
+          88.6503
+        ],
+        [
+          27.6075,
+          88.6554
+        ],
+        [
+          27.6011,
+          88.6487
+        ],
+        [
+          27.6078,
+          88.6513
+        ]
+      ],
+      "green_safe_polygon": [
+        [
+          27.5973,
+          88.6409
+        ],
+        [
+          27.6,
+          88.6416
+        ],
+        [
+          27.5988,
+          88.641
+        ],
+        [
+          27.5971,
+          88.6421
+        ]
+      ]
+    },
+    "river_stream": [
+      [
+        27.6028,
+        88.6463
+      ],
+      [
+        27.5954,
+        88.6517
+      ],
+      [
+        27.6068,
+        88.6449
+      ],
+      [
+        27.5976,
+        88.6486
+      ],
+      [
+        27.6102,
+        88.6541
+      ]
+    ],
+    "safe_shelters": [
+      {
+        "name": "Chungthang Relief Camp",
+        "lat": 27.599,
+        "lng": 88.643,
+        "capacity": 458,
+        "elevation_m": 1389
+      }
+    ],
+    "evacuation_routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "status": "CLEAR",
+        "safety_score": 75,
+        "path": [
+          [
+            27.603,
+            88.647
+          ],
+          [
+            27.601,
+            88.645
+          ],
+          [
+            27.599,
+            88.643
+          ]
+        ]
+      }
+    ],
+    "sensors": {
+      "rain_gauge_id": "SENS-VIL-17-RAIN",
+      "soil_moisture_id": "SENS-VIL-17-SOIL",
+      "water_level_id": "SENS-VIL-17-WTR",
+      "tilt_sensor_id": "SENS-VIL-17-TLT"
+    },
+    "sensor_locations": [
+      {
+        "id": "SENS-VIL-17-RAIN",
+        "type": "Rain Gauge",
+        "lat": 27.604,
+        "lng": 88.648
+      },
+      {
+        "id": "SENS-VIL-17-SOIL",
+        "type": "Soil Moisture",
+        "lat": 27.605,
+        "lng": 88.646
+      },
+      {
+        "id": "SENS-VIL-17-WTR",
+        "type": "River Gauge",
+        "lat": 27.602,
+        "lng": 88.649
+      },
+      {
+        "id": "SENS-VIL-17-TLT",
+        "type": "Slope Tilt",
+        "lat": 27.606,
+        "lng": 88.65
+      }
+    ]
+  },
+  {
+    "id": "VIL-18",
+    "name": "Rafong",
+    "ward": "Ward 1 (High Risk Zone)",
+    "district": "Mangan",
+    "state": "Sikkim",
+    "lat": 27.495,
+    "lng": 88.528,
+    "elevation_m": 1296,
+    "slope_deg": 42.2,
+    "soil_type": "Fragile Moraine / Weathered Rock",
+    "distance_to_stream_m": 68,
+    "historical_landslide_count": 5,
+    "historical_flood_count": 2,
+    "population": 2077,
+    "vulnerable_households": 42,
+    "hazard_zones": {
+      "red_inundation_polygon": [
+        [
+          27.4928,
+          88.5238
+        ],
+        [
+          27.4962,
+          88.5325
+        ],
+        [
+          27.491,
+          88.5296
+        ],
+        [
+          27.4985,
+          88.5297
+        ],
+        [
+          27.4961,
+          88.5252
+        ],
+        [
+          27.4971,
+          88.5289
+        ]
+      ],
+      "orange_slope_polygon": [
+        [
+          27.495,
+          88.5297
+        ],
+        [
+          27.4976,
+          88.5331
+        ],
+        [
+          27.4922,
+          88.5313
+        ],
+        [
+          27.5005,
+          88.5256
+        ],
+        [
+          27.497,
+          88.5258
+        ]
+      ],
+      "green_safe_polygon": [
+        [
+          27.4936,
+          88.5203
+        ],
+        [
+          27.4919,
+          88.5203
+        ],
+        [
+          27.4882,
+          88.5234
+        ],
+        [
+          27.4884,
+          88.5238
+        ]
+      ]
+    },
+    "river_stream": [
+      [
+        27.4985,
+        88.523
+      ],
+      [
+        27.4971,
+        88.5232
+      ],
+      [
+        27.4906,
+        88.5292
+      ],
+      [
+        27.4951,
+        88.5325
+      ],
+      [
+        27.4932,
+        88.5248
+      ]
+    ],
+    "safe_shelters": [
+      {
+        "name": "Rafong Relief Camp",
+        "lat": 27.491,
+        "lng": 88.524,
+        "capacity": 541,
+        "elevation_m": 2249
+      }
+    ],
+    "evacuation_routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "status": "CLEAR",
+        "safety_score": 93,
+        "path": [
+          [
+            27.495,
+            88.528
+          ],
+          [
+            27.493,
+            88.526
+          ],
+          [
+            27.491,
+            88.524
+          ]
+        ]
+      }
+    ],
+    "sensors": {
+      "rain_gauge_id": "SENS-VIL-18-RAIN",
+      "soil_moisture_id": "SENS-VIL-18-SOIL",
+      "water_level_id": "SENS-VIL-18-WTR",
+      "tilt_sensor_id": "SENS-VIL-18-TLT"
+    },
+    "sensor_locations": [
+      {
+        "id": "SENS-VIL-18-RAIN",
+        "type": "Rain Gauge",
+        "lat": 27.496,
+        "lng": 88.529
+      },
+      {
+        "id": "SENS-VIL-18-SOIL",
+        "type": "Soil Moisture",
+        "lat": 27.497,
+        "lng": 88.527
+      },
+      {
+        "id": "SENS-VIL-18-WTR",
+        "type": "River Gauge",
+        "lat": 27.494,
+        "lng": 88.53
+      },
+      {
+        "id": "SENS-VIL-18-TLT",
+        "type": "Slope Tilt",
+        "lat": 27.498,
+        "lng": 88.531
+      }
+    ]
+  },
+  {
+    "id": "VIL-19",
+    "name": "Rimbi",
+    "ward": "Ward 4 (High Risk Zone)",
+    "district": "Gyalshing",
+    "state": "Sikkim",
+    "lat": 27.279,
+    "lng": 88.196,
+    "elevation_m": 1946,
+    "slope_deg": 33.8,
+    "soil_type": "Fragile Moraine / Weathered Rock",
+    "distance_to_stream_m": 75,
+    "historical_landslide_count": 3,
+    "historical_flood_count": 8,
+    "population": 2165,
+    "vulnerable_households": 90,
+    "hazard_zones": {
+      "red_inundation_polygon": [
+        [
+          27.2837,
+          88.194
+        ],
+        [
+          27.2821,
+          88.1948
+        ],
+        [
+          27.2794,
+          88.1961
+        ],
+        [
+          27.2759,
+          88.1925
+        ],
+        [
+          27.279,
+          88.2008
+        ],
+        [
+          27.2751,
+          88.1943
+        ]
+      ],
+      "orange_slope_polygon": [
+        [
+          27.287,
+          88.1932
+        ],
+        [
+          27.2872,
+          88.1947
+        ],
+        [
+          27.2778,
+          88.2049
+        ],
+        [
+          27.2878,
+          88.1986
+        ],
+        [
+          27.2798,
+          88.203
+        ]
+      ],
+      "green_safe_polygon": [
+        [
+          27.2749,
+          88.1892
+        ],
+        [
+          27.2733,
+          88.1896
+        ],
+        [
+          27.2718,
+          88.19
+        ],
+        [
+          27.2739,
+          88.1909
+        ]
+      ]
+    },
+    "river_stream": [
+      [
+        27.2848,
+        88.1899
+      ],
+      [
+        27.2826,
+        88.1981
+      ],
+      [
+        27.2712,
+        88.1966
+      ],
+      [
+        27.2796,
+        88.1928
+      ],
+      [
+        27.2743,
+        88.204
+      ]
+    ],
+    "safe_shelters": [
+      {
+        "name": "Rimbi Relief Camp",
+        "lat": 27.275,
+        "lng": 88.192,
+        "capacity": 538,
+        "elevation_m": 1006
+      }
+    ],
+    "evacuation_routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "status": "CLEAR",
+        "safety_score": 85,
+        "path": [
+          [
+            27.279,
+            88.196
+          ],
+          [
+            27.277,
+            88.194
+          ],
+          [
+            27.275,
+            88.192
+          ]
+        ]
+      }
+    ],
+    "sensors": {
+      "rain_gauge_id": "SENS-VIL-19-RAIN",
+      "soil_moisture_id": "SENS-VIL-19-SOIL",
+      "water_level_id": "SENS-VIL-19-WTR",
+      "tilt_sensor_id": "SENS-VIL-19-TLT"
+    },
+    "sensor_locations": [
+      {
+        "id": "SENS-VIL-19-RAIN",
+        "type": "Rain Gauge",
+        "lat": 27.28,
+        "lng": 88.197
+      },
+      {
+        "id": "SENS-VIL-19-SOIL",
+        "type": "Soil Moisture",
+        "lat": 27.281,
+        "lng": 88.195
+      },
+      {
+        "id": "SENS-VIL-19-WTR",
+        "type": "River Gauge",
+        "lat": 27.278,
+        "lng": 88.198
+      },
+      {
+        "id": "SENS-VIL-19-TLT",
+        "type": "Slope Tilt",
+        "lat": 27.282,
+        "lng": 88.199
+      }
+    ]
+  },
+  {
+    "id": "VIL-20",
+    "name": "Melli Bazaar",
+    "ward": "Ward 2 (High Risk Zone)",
+    "district": "Namchi",
+    "state": "Sikkim",
+    "lat": 27.091,
+    "lng": 88.455,
+    "elevation_m": 1347,
+    "slope_deg": 41.3,
+    "soil_type": "Fragile Moraine / Weathered Rock",
+    "distance_to_stream_m": 90,
+    "historical_landslide_count": 8,
+    "historical_flood_count": 6,
+    "population": 573,
+    "vulnerable_households": 77,
+    "hazard_zones": {
+      "red_inundation_polygon": [
+        [
+          27.0959,
+          88.4515
+        ],
+        [
+          27.0932,
+          88.4539
+        ],
+        [
+          27.0877,
+          88.4534
+        ],
+        [
+          27.0911,
+          88.4549
+        ],
+        [
+          27.0921,
+          88.4532
+        ],
+        [
+          27.0937,
+          88.4586
+        ]
+      ],
+      "orange_slope_polygon": [
+        [
+          27.0984,
+          88.4611
+        ],
+        [
+          27.0893,
+          88.4566
+        ],
+        [
+          27.097,
+          88.4561
+        ],
+        [
+          27.0888,
+          88.4563
+        ],
+        [
+          27.088,
+          88.4581
+        ]
+      ],
+      "green_safe_polygon": [
+        [
+          27.0856,
+          88.4472
+        ],
+        [
+          27.0821,
+          88.4498
+        ],
+        [
+          27.0832,
+          88.4531
+        ],
+        [
+          27.0897,
+          88.4486
+        ]
+      ]
+    },
+    "river_stream": [
+      [
+        27.0835,
+        88.4483
+      ],
+      [
+        27.0958,
+        88.4537
+      ],
+      [
+        27.0876,
+        88.4614
+      ],
+      [
+        27.0977,
+        88.4626
+      ],
+      [
+        27.0887,
+        88.4472
+      ]
+    ],
+    "safe_shelters": [
+      {
+        "name": "Melli Bazaar Relief Camp",
+        "lat": 27.087,
+        "lng": 88.451,
+        "capacity": 730,
+        "elevation_m": 1614
+      }
+    ],
+    "evacuation_routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "status": "CLEAR",
+        "safety_score": 79,
+        "path": [
+          [
+            27.091,
+            88.455
+          ],
+          [
+            27.089,
+            88.453
+          ],
+          [
+            27.087,
+            88.451
+          ]
+        ]
+      }
+    ],
+    "sensors": {
+      "rain_gauge_id": "SENS-VIL-20-RAIN",
+      "soil_moisture_id": "SENS-VIL-20-SOIL",
+      "water_level_id": "SENS-VIL-20-WTR",
+      "tilt_sensor_id": "SENS-VIL-20-TLT"
+    },
+    "sensor_locations": [
+      {
+        "id": "SENS-VIL-20-RAIN",
+        "type": "Rain Gauge",
+        "lat": 27.092,
+        "lng": 88.456
+      },
+      {
+        "id": "SENS-VIL-20-SOIL",
+        "type": "Soil Moisture",
+        "lat": 27.093,
+        "lng": 88.454
+      },
+      {
+        "id": "SENS-VIL-20-WTR",
+        "type": "River Gauge",
+        "lat": 27.09,
+        "lng": 88.457
+      },
+      {
+        "id": "SENS-VIL-20-TLT",
+        "type": "Slope Tilt",
+        "lat": 27.094,
+        "lng": 88.458
+      }
+    ]
+  },
+  {
+    "id": "VIL-21",
+    "name": "Dikchu",
+    "ward": "Ward 1 (High Risk Zone)",
+    "district": "Gangtok",
+    "state": "Sikkim",
+    "lat": 27.399,
+    "lng": 88.514,
+    "elevation_m": 2185,
+    "slope_deg": 27.9,
+    "soil_type": "Fragile Moraine / Weathered Rock",
+    "distance_to_stream_m": 25,
+    "historical_landslide_count": 6,
+    "historical_flood_count": 2,
+    "population": 2967,
+    "vulnerable_households": 98,
+    "hazard_zones": {
+      "red_inundation_polygon": [
+        [
+          27.3977,
+          88.5163
+        ],
+        [
+          27.3976,
+          88.5135
+        ],
+        [
+          27.3957,
+          88.5155
+        ],
+        [
+          27.4026,
+          88.515
+        ],
+        [
+          27.3995,
+          88.518
+        ],
+        [
+          27.3976,
+          88.512
+        ]
+      ],
+      "orange_slope_polygon": [
+        [
+          27.402,
+          88.5173
+        ],
+        [
+          27.3961,
+          88.5124
+        ],
+        [
+          27.4024,
+          88.5227
+        ],
+        [
+          27.402,
+          88.5168
+        ],
+        [
+          27.4057,
+          88.5154
+        ]
+      ],
+      "green_safe_polygon": [
+        [
+          27.3924,
+          88.5078
+        ],
+        [
+          27.39,
+          88.5051
+        ],
+        [
+          27.3962,
+          88.5097
+        ],
+        [
+          27.3924,
+          88.5073
+        ]
+      ]
+    },
+    "river_stream": [
+      [
+        27.3979,
+        88.5128
+      ],
+      [
+        27.3994,
+        88.5102
+      ],
+      [
+        27.4058,
+        88.5192
+      ],
+      [
+        27.4013,
+        88.5136
+      ],
+      [
+        27.3952,
+        88.5072
+      ]
+    ],
+    "safe_shelters": [
+      {
+        "name": "Dikchu Relief Camp",
+        "lat": 27.395,
+        "lng": 88.51,
+        "capacity": 329,
+        "elevation_m": 1810
+      }
+    ],
+    "evacuation_routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "status": "CLEAR",
+        "safety_score": 74,
+        "path": [
+          [
+            27.399,
+            88.514
+          ],
+          [
+            27.397,
+            88.512
+          ],
+          [
+            27.395,
+            88.51
+          ]
+        ]
+      }
+    ],
+    "sensors": {
+      "rain_gauge_id": "SENS-VIL-21-RAIN",
+      "soil_moisture_id": "SENS-VIL-21-SOIL",
+      "water_level_id": "SENS-VIL-21-WTR",
+      "tilt_sensor_id": "SENS-VIL-21-TLT"
+    },
+    "sensor_locations": [
+      {
+        "id": "SENS-VIL-21-RAIN",
+        "type": "Rain Gauge",
+        "lat": 27.4,
+        "lng": 88.515
+      },
+      {
+        "id": "SENS-VIL-21-SOIL",
+        "type": "Soil Moisture",
+        "lat": 27.401,
+        "lng": 88.513
+      },
+      {
+        "id": "SENS-VIL-21-WTR",
+        "type": "River Gauge",
+        "lat": 27.398,
+        "lng": 88.516
+      },
+      {
+        "id": "SENS-VIL-21-TLT",
+        "type": "Slope Tilt",
+        "lat": 27.402,
+        "lng": 88.517
+      }
+    ]
+  },
+  {
+    "id": "VIL-22",
+    "name": "Chooralmala",
+    "ward": "Ward 4 (High Risk Zone)",
+    "district": "Wayanad",
+    "state": "Kerala",
+    "lat": 11.53,
+    "lng": 76.16,
+    "elevation_m": 1354,
+    "slope_deg": 29.1,
+    "soil_type": "Fragile Moraine / Weathered Rock",
+    "distance_to_stream_m": 78,
+    "historical_landslide_count": 5,
+    "historical_flood_count": 2,
+    "population": 773,
+    "vulnerable_households": 32,
+    "hazard_zones": {
+      "red_inundation_polygon": [
+        [
+          11.5309,
+          76.1641
+        ],
+        [
+          11.5345,
+          76.1612
+        ],
+        [
+          11.5302,
+          76.159
+        ],
+        [
+          11.5314,
+          76.1626
+        ],
+        [
+          11.5326,
+          76.1551
+        ],
+        [
+          11.5274,
+          76.1622
+        ]
+      ],
+      "orange_slope_polygon": [
+        [
+          11.5312,
+          76.1656
+        ],
+        [
+          11.5309,
+          76.1628
+        ],
+        [
+          11.5383,
+          76.1661
+        ],
+        [
+          11.5322,
+          76.1588
+        ],
+        [
+          11.5348,
+          76.1625
+        ]
+      ],
+      "green_safe_polygon": [
+        [
+          11.525,
+          76.1575
+        ],
+        [
+          11.5241,
+          76.1531
+        ],
+        [
+          11.5216,
+          76.1588
+        ],
+        [
+          11.5244,
+          76.1533
+        ]
+      ]
+    },
+    "river_stream": [
+      [
+        11.534,
+        76.1645
+      ],
+      [
+        11.5249,
+        76.1544
+      ],
+      [
+        11.5328,
+        76.1655
+      ],
+      [
+        11.5312,
+        76.1569
+      ],
+      [
+        11.5222,
+        76.1634
+      ]
+    ],
+    "safe_shelters": [
+      {
+        "name": "Chooralmala Relief Camp",
+        "lat": 11.526,
+        "lng": 76.156,
+        "capacity": 768,
+        "elevation_m": 2355
+      }
+    ],
+    "evacuation_routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "status": "CLEAR",
+        "safety_score": 92,
+        "path": [
+          [
+            11.53,
+            76.16
+          ],
+          [
+            11.528,
+            76.158
+          ],
+          [
+            11.526,
+            76.156
+          ]
+        ]
+      }
+    ],
+    "sensors": {
+      "rain_gauge_id": "SENS-VIL-22-RAIN",
+      "soil_moisture_id": "SENS-VIL-22-SOIL",
+      "water_level_id": "SENS-VIL-22-WTR",
+      "tilt_sensor_id": "SENS-VIL-22-TLT"
+    },
+    "sensor_locations": [
+      {
+        "id": "SENS-VIL-22-RAIN",
+        "type": "Rain Gauge",
+        "lat": 11.531,
+        "lng": 76.161
+      },
+      {
+        "id": "SENS-VIL-22-SOIL",
+        "type": "Soil Moisture",
+        "lat": 11.532,
+        "lng": 76.159
+      },
+      {
+        "id": "SENS-VIL-22-WTR",
+        "type": "River Gauge",
+        "lat": 11.529,
+        "lng": 76.162
+      },
+      {
+        "id": "SENS-VIL-22-TLT",
+        "type": "Slope Tilt",
+        "lat": 11.533,
+        "lng": 76.163
+      }
+    ]
+  },
+  {
+    "id": "VIL-23",
+    "name": "Mundakkai",
+    "ward": "Ward 4 (High Risk Zone)",
+    "district": "Wayanad",
+    "state": "Kerala",
+    "lat": 11.545,
+    "lng": 76.152,
+    "elevation_m": 1042,
+    "slope_deg": 44.1,
+    "soil_type": "Fragile Moraine / Weathered Rock",
+    "distance_to_stream_m": 36,
+    "historical_landslide_count": 5,
+    "historical_flood_count": 1,
+    "population": 1967,
+    "vulnerable_households": 183,
+    "hazard_zones": {
+      "red_inundation_polygon": [
+        [
+          11.5461,
+          76.1565
+        ],
+        [
+          11.5448,
+          76.1531
+        ],
+        [
+          11.5442,
+          76.1535
+        ],
+        [
+          11.5449,
+          76.1475
+        ],
+        [
+          11.5462,
+          76.147
+        ],
+        [
+          11.54,
+          76.1496
+        ]
+      ],
+      "orange_slope_polygon": [
+        [
+          11.5432,
+          76.1543
+        ],
+        [
+          11.5444,
+          76.153
+        ],
+        [
+          11.5469,
+          76.1562
+        ],
+        [
+          11.5428,
+          76.1529
+        ],
+        [
+          11.5447,
+          76.1534
+        ]
+      ],
+      "green_safe_polygon": [
+        [
+          11.5363,
+          76.1435
+        ],
+        [
+          11.538,
+          76.1474
+        ],
+        [
+          11.537,
+          76.1455
+        ],
+        [
+          11.537,
+          76.144
+        ]
+      ]
+    },
+    "river_stream": [
+      [
+        11.5518,
+        76.1599
+      ],
+      [
+        11.539,
+        76.1536
+      ],
+      [
+        11.5526,
+        76.1443
+      ],
+      [
+        11.5451,
+        76.1565
+      ],
+      [
+        11.5463,
+        76.1583
+      ]
+    ],
+    "safe_shelters": [
+      {
+        "name": "Mundakkai Relief Camp",
+        "lat": 11.541,
+        "lng": 76.148,
+        "capacity": 242,
+        "elevation_m": 1362
+      }
+    ],
+    "evacuation_routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "status": "CLEAR",
+        "safety_score": 75,
+        "path": [
+          [
+            11.545,
+            76.152
+          ],
+          [
+            11.543,
+            76.15
+          ],
+          [
+            11.541,
+            76.148
+          ]
+        ]
+      }
+    ],
+    "sensors": {
+      "rain_gauge_id": "SENS-VIL-23-RAIN",
+      "soil_moisture_id": "SENS-VIL-23-SOIL",
+      "water_level_id": "SENS-VIL-23-WTR",
+      "tilt_sensor_id": "SENS-VIL-23-TLT"
+    },
+    "sensor_locations": [
+      {
+        "id": "SENS-VIL-23-RAIN",
+        "type": "Rain Gauge",
+        "lat": 11.546,
+        "lng": 76.153
+      },
+      {
+        "id": "SENS-VIL-23-SOIL",
+        "type": "Soil Moisture",
+        "lat": 11.547,
+        "lng": 76.151
+      },
+      {
+        "id": "SENS-VIL-23-WTR",
+        "type": "River Gauge",
+        "lat": 11.544,
+        "lng": 76.154
+      },
+      {
+        "id": "SENS-VIL-23-TLT",
+        "type": "Slope Tilt",
+        "lat": 11.548,
+        "lng": 76.155
+      }
+    ]
+  },
+  {
+    "id": "VIL-24",
+    "name": "Pettimudi",
+    "ward": "Ward 2 (High Risk Zone)",
+    "district": "Idukki",
+    "state": "Kerala",
+    "lat": 10.15,
+    "lng": 77.03,
+    "elevation_m": 961,
+    "slope_deg": 38.5,
+    "soil_type": "Fragile Moraine / Weathered Rock",
+    "distance_to_stream_m": 50,
+    "historical_landslide_count": 9,
+    "historical_flood_count": 6,
+    "population": 2308,
+    "vulnerable_households": 148,
+    "hazard_zones": {
+      "red_inundation_polygon": [
+        [
+          10.146,
+          77.028
+        ],
+        [
+          10.1533,
+          77.0286
+        ],
+        [
+          10.1481,
+          77.0295
+        ],
+        [
+          10.1484,
+          77.0291
+        ],
+        [
+          10.1512,
+          77.0268
+        ],
+        [
+          10.152,
+          77.0273
+        ]
+      ],
+      "orange_slope_polygon": [
+        [
+          10.1532,
+          77.0383
+        ],
+        [
+          10.1493,
+          77.0306
+        ],
+        [
+          10.1501,
+          77.038
+        ],
+        [
+          10.1541,
+          77.0335
+        ],
+        [
+          10.1553,
+          77.0284
+        ]
+      ],
+      "green_safe_polygon": [
+        [
+          10.1412,
+          77.0254
+        ],
+        [
+          10.1436,
+          77.0224
+        ],
+        [
+          10.1478,
+          77.029
+        ],
+        [
+          10.1449,
+          77.0229
+        ]
+      ]
+    },
+    "river_stream": [
+      [
+        10.1524,
+        77.0349
+      ],
+      [
+        10.1424,
+        77.026
+      ],
+      [
+        10.1497,
+        77.0354
+      ],
+      [
+        10.1489,
+        77.0301
+      ],
+      [
+        10.1539,
+        77.0292
+      ]
+    ],
+    "safe_shelters": [
+      {
+        "name": "Pettimudi Relief Camp",
+        "lat": 10.146,
+        "lng": 77.026,
+        "capacity": 237,
+        "elevation_m": 1922
+      }
+    ],
+    "evacuation_routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "status": "CLEAR",
+        "safety_score": 87,
+        "path": [
+          [
+            10.15,
+            77.03
+          ],
+          [
+            10.148,
+            77.028
+          ],
+          [
+            10.146,
+            77.026
+          ]
+        ]
+      }
+    ],
+    "sensors": {
+      "rain_gauge_id": "SENS-VIL-24-RAIN",
+      "soil_moisture_id": "SENS-VIL-24-SOIL",
+      "water_level_id": "SENS-VIL-24-WTR",
+      "tilt_sensor_id": "SENS-VIL-24-TLT"
+    },
+    "sensor_locations": [
+      {
+        "id": "SENS-VIL-24-RAIN",
+        "type": "Rain Gauge",
+        "lat": 10.151,
+        "lng": 77.031
+      },
+      {
+        "id": "SENS-VIL-24-SOIL",
+        "type": "Soil Moisture",
+        "lat": 10.152,
+        "lng": 77.029
+      },
+      {
+        "id": "SENS-VIL-24-WTR",
+        "type": "River Gauge",
+        "lat": 10.149,
+        "lng": 77.032
+      },
+      {
+        "id": "SENS-VIL-24-TLT",
+        "type": "Slope Tilt",
+        "lat": 10.153,
+        "lng": 77.033
+      }
+    ]
+  },
+  {
+    "id": "VIL-25",
+    "name": "Kottakamboor",
+    "ward": "Ward 1 (High Risk Zone)",
+    "district": "Idukki",
+    "state": "Kerala",
+    "lat": 10.165,
+    "lng": 77.218,
+    "elevation_m": 1205,
+    "slope_deg": 27.8,
+    "soil_type": "Fragile Moraine / Weathered Rock",
+    "distance_to_stream_m": 19,
+    "historical_landslide_count": 10,
+    "historical_flood_count": 2,
+    "population": 2002,
+    "vulnerable_households": 65,
+    "hazard_zones": {
+      "red_inundation_polygon": [
+        [
+          10.1673,
+          77.2212
+        ],
+        [
+          10.1642,
+          77.2216
+        ],
+        [
+          10.1698,
+          77.2146
+        ],
+        [
+          10.17,
+          77.2223
+        ],
+        [
+          10.1692,
+          77.2142
+        ],
+        [
+          10.1667,
+          77.2177
+        ]
+      ],
+      "orange_slope_polygon": [
+        [
+          10.1649,
+          77.2224
+        ],
+        [
+          10.1682,
+          77.2178
+        ],
+        [
+          10.1639,
+          77.2233
+        ],
+        [
+          10.1694,
+          77.2264
+        ],
+        [
+          10.1692,
+          77.2187
+        ]
+      ],
+      "green_safe_polygon": [
+        [
+          10.1636,
+          77.2154
+        ],
+        [
+          10.1639,
+          77.2091
+        ],
+        [
+          10.1636,
+          77.2093
+        ],
+        [
+          10.1561,
+          77.2129
+        ]
+      ]
+    },
+    "river_stream": [
+      [
+        10.1608,
+        77.2258
+      ],
+      [
+        10.1729,
+        77.2223
+      ],
+      [
+        10.1633,
+        77.2142
+      ],
+      [
+        10.1715,
+        77.2205
+      ],
+      [
+        10.1621,
+        77.2105
+      ]
+    ],
+    "safe_shelters": [
+      {
+        "name": "Kottakamboor Relief Camp",
+        "lat": 10.161,
+        "lng": 77.214,
+        "capacity": 548,
+        "elevation_m": 1600
+      }
+    ],
+    "evacuation_routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "status": "CLEAR",
+        "safety_score": 89,
+        "path": [
+          [
+            10.165,
+            77.218
+          ],
+          [
+            10.163,
+            77.216
+          ],
+          [
+            10.161,
+            77.214
+          ]
+        ]
+      }
+    ],
+    "sensors": {
+      "rain_gauge_id": "SENS-VIL-25-RAIN",
+      "soil_moisture_id": "SENS-VIL-25-SOIL",
+      "water_level_id": "SENS-VIL-25-WTR",
+      "tilt_sensor_id": "SENS-VIL-25-TLT"
+    },
+    "sensor_locations": [
+      {
+        "id": "SENS-VIL-25-RAIN",
+        "type": "Rain Gauge",
+        "lat": 10.166,
+        "lng": 77.219
+      },
+      {
+        "id": "SENS-VIL-25-SOIL",
+        "type": "Soil Moisture",
+        "lat": 10.167,
+        "lng": 77.217
+      },
+      {
+        "id": "SENS-VIL-25-WTR",
+        "type": "River Gauge",
+        "lat": 10.164,
+        "lng": 77.22
+      },
+      {
+        "id": "SENS-VIL-25-TLT",
+        "type": "Slope Tilt",
+        "lat": 10.168,
+        "lng": 77.221
+      }
+    ]
+  },
+  {
+    "id": "VIL-26",
+    "name": "Kavalappara",
+    "ward": "Ward 1 (High Risk Zone)",
+    "district": "Malappuram",
+    "state": "Kerala",
+    "lat": 11.365,
+    "lng": 76.14,
+    "elevation_m": 969,
+    "slope_deg": 29.2,
+    "soil_type": "Fragile Moraine / Weathered Rock",
+    "distance_to_stream_m": 41,
+    "historical_landslide_count": 9,
+    "historical_flood_count": 6,
+    "population": 624,
+    "vulnerable_households": 49,
+    "hazard_zones": {
+      "red_inundation_polygon": [
+        [
+          11.3685,
+          76.1351
+        ],
+        [
+          11.3634,
+          76.1365
+        ],
+        [
+          11.366,
+          76.1364
+        ],
+        [
+          11.3698,
+          76.1404
+        ],
+        [
+          11.3649,
+          76.1368
+        ],
+        [
+          11.3682,
+          76.1404
+        ]
+      ],
+      "orange_slope_polygon": [
+        [
+          11.3736,
+          76.1486
+        ],
+        [
+          11.3656,
+          76.1389
+        ],
+        [
+          11.3673,
+          76.1432
+        ],
+        [
+          11.3738,
+          76.1469
+        ],
+        [
+          11.3647,
+          76.1442
+        ]
+      ],
+      "green_safe_polygon": [
+        [
+          11.3576,
+          76.1381
+        ],
+        [
+          11.3611,
+          76.1359
+        ],
+        [
+          11.358,
+          76.1356
+        ],
+        [
+          11.3589,
+          76.1313
+        ]
+      ]
+    },
+    "river_stream": [
+      [
+        11.3637,
+        76.1347
+      ],
+      [
+        11.3605,
+        76.1432
+      ],
+      [
+        11.3658,
+        76.1469
+      ],
+      [
+        11.3601,
+        76.1465
+      ],
+      [
+        11.3683,
+        76.1408
+      ]
+    ],
+    "safe_shelters": [
+      {
+        "name": "Kavalappara Relief Camp",
+        "lat": 11.361,
+        "lng": 76.136,
+        "capacity": 331,
+        "elevation_m": 1454
+      }
+    ],
+    "evacuation_routes": [
+      {
+        "name": "Main Highway Escape Route",
+        "status": "CLEAR",
+        "safety_score": 75,
+        "path": [
+          [
+            11.365,
+            76.14
+          ],
+          [
+            11.363,
+            76.138
+          ],
+          [
+            11.361,
+            76.136
+          ]
+        ]
+      }
+    ],
+    "sensors": {
+      "rain_gauge_id": "SENS-VIL-26-RAIN",
+      "soil_moisture_id": "SENS-VIL-26-SOIL",
+      "water_level_id": "SENS-VIL-26-WTR",
+      "tilt_sensor_id": "SENS-VIL-26-TLT"
+    },
+    "sensor_locations": [
+      {
+        "id": "SENS-VIL-26-RAIN",
+        "type": "Rain Gauge",
+        "lat": 11.366,
+        "lng": 76.141
+      },
+      {
+        "id": "SENS-VIL-26-SOIL",
+        "type": "Soil Moisture",
+        "lat": 11.367,
+        "lng": 76.139
+      },
+      {
+        "id": "SENS-VIL-26-WTR",
+        "type": "River Gauge",
+        "lat": 11.364,
+        "lng": 76.142
+      },
+      {
+        "id": "SENS-VIL-26-TLT",
+        "type": "Slope Tilt",
+        "lat": 11.368,
+        "lng": 76.143
       }
     ]
   }

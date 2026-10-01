@@ -32,6 +32,10 @@
     </div>
 
     <div class="nav-actions">
+      <button id="btn-open-geomorphic-zonation" class="nav-action-btn" title="ISRO Landslide Atlas & NDMA LHZ 147 Districts Registry">
+        <span>🏔️</span> ISRO & NDMA Zonation (147 Districts)
+      </button>
+
       <button id="btn-open-methodology" class="nav-action-btn">
         <span>ℹ️</span> Scientific Methodology
       </button>
@@ -58,6 +62,25 @@
         <span style="font-size:0.75rem; color:var(--text-muted);">6 Wards</span>
       </div>
       <div class="panel-body">
+        <!-- State / Basin Dropdown Selector -->
+        <div class="state-dropdown-section" style="margin-bottom: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+            <label for="state-basin-select" style="font-size: 0.72rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">
+              🗺️ Filter State:
+            </label>
+            <span style="font-size: 0.65rem; font-weight: 700; color: #38bdf8; background: rgba(56, 189, 248, 0.12); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(56, 189, 248, 0.3);">
+              ⚡ Descending Risk
+            </span>
+          </div>
+          <select id="state-basin-select" style="width: 100%; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 6px; padding: 7px 10px; color: #f8fafc; font-size: 0.8rem; font-weight: 600; cursor: pointer; outline: none;">
+            <option value="ALL" selected>🌐 All States (All 26 Villages Monitored)</option>
+            <option value="BASIN-HP-BEAS">🏔️ Himachal Pradesh (11 Wards - Beas & Sutlej)</option>
+            <option value="BASIN-UK-ALAK">⛰️ Uttarakhand (5 Wards - Alaknanda Valley)</option>
+            <option value="BASIN-SK-TEESTA">🌊 Sikkim (5 Wards - Teesta River Basin)</option>
+            <option value="BASIN-KL-WAYANAD">🌧️ Kerala (5 Wards - Wayanad Chaliyar)</option>
+          </select>
+        </div>
+
         <!-- Threat Index -->
         <div class="threat-meter-card">
           <div class="threat-header">
@@ -646,6 +669,71 @@
             </div>
           </div>
           <canvas id="hydrograph-canvas" width="680" height="220"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ISRO Landslide Atlas & NDMA LHZ (147 Districts) Geomorphic Zonation Modal -->
+  <div id="geomorphic-zonation-modal" class="modal-overlay">
+    <div class="modal-card geomorphic-modal-card">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span style="font-size:1.8rem;">🏔️</span>
+          <div>
+            <h2 class="modal-title">ISRO Landslide Atlas & NDMA LHZ Geomorphic Zonation</h2>
+            <div style="font-size:0.82rem; color:var(--text-muted);">
+              Comprehensive 147+ Mountain Districts Registry • 3 Physiographic Sectors • Geotechnical Baseline Parameters
+            </div>
+          </div>
+        </div>
+        <button id="btn-close-geomorphic-modal" class="modal-close-btn">&times;</button>
+      </div>
+
+      <div class="modal-body" style="padding:16px 24px 24px 24px;">
+        <!-- Top Sector Filter Tabs -->
+        <div class="geomorphic-sector-tabs">
+          <button class="geom-sector-btn active" data-sector="ALL">
+            🌐 All Sectors (147+ Districts)
+          </button>
+          <button class="geom-sector-btn" data-sector="SEC-NW-HIM">
+            🏔️ NW & Central Himalayas (SEC-NW-HIM)
+          </button>
+          <button class="geom-sector-btn" data-sector="SEC-WG-SOU">
+            🌴 Western Ghats & South (SEC-WG-SOU)
+          </button>
+          <button class="geom-sector-btn" data-sector="SEC-NE-HIL">
+            ⛰️ North-Eastern Hills (SEC-NE-HIL)
+          </button>
+        </div>
+
+        <!-- Sector Aggregate Summary Banner -->
+        <div id="geom-sector-summary-banner" class="geom-summary-banner">
+          <!-- Populated dynamically via JS -->
+        </div>
+
+        <!-- Filter Controls Bar -->
+        <div class="geom-filter-bar">
+          <div class="geom-search-wrapper">
+            <span class="geom-search-icon">🔍</span>
+            <input type="text" id="geom-search-input" placeholder="Search by district, state, river basin, or rock formation..." class="geom-search-input">
+          </div>
+
+          <div style="display:flex; gap:10px; align-items:center;">
+            <select id="geom-susceptibility-select" class="geom-select">
+              <option value="ALL">All Risk Categories</option>
+              <option value="VERY_HIGH">🔴 Very High Susceptibility</option>
+              <option value="HIGH">🟠 High Susceptibility</option>
+              <option value="MODERATE">🟡 Moderate Susceptibility</option>
+            </select>
+
+            <span id="geom-district-count-badge" class="geom-count-badge">Loading...</span>
+          </div>
+        </div>
+
+        <!-- Dynamic Districts Grid Container -->
+        <div id="geom-districts-grid" class="geom-districts-grid">
+          <!-- Populated via JS -->
         </div>
       </div>
     </div>

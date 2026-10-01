@@ -8,9 +8,13 @@ import { WhatIfSandbox } from './components/simulation/WhatIfSandbox';
 import { DeepDiveAnalysis } from './components/analysis/DeepDiveAnalysis';
 import { HydrographModal } from './components/modals/HydrographModal';
 import { MethodologyModal } from './components/modals/MethodologyModal';
+import { EmergencyBroadcastModal } from './components/modals/EmergencyBroadcastModal';
+import { StateAlertsTableModal } from './components/modals/StateAlertsTableModal';
+import { GeomorphicZonationModal } from './components/modals/GeomorphicZonationModal';
 import { CitizenView } from './components/citizen/CitizenView';
 import { AapdaMitraBot } from './components/aapda_mitra/AapdaMitraBot';
 import { ProductTourModal } from './components/tour/ProductTourModal';
+import { TacticalDossierDashboard } from './components/analysis/TacticalDossierDashboard';
 
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
@@ -53,7 +57,15 @@ class ErrorBoundary extends React.Component<
 
 const DashboardContent: React.FC = () => {
   useWebSocket();
-  const { role, villages, selectedVillageId } = useFlood();
+  const { 
+    role, 
+    villages, 
+    selectedVillageId, 
+    isTelemetryCollapsed, 
+    toggleTelemetryPanel,
+    activePage,
+    closeTacticalDossier 
+  } = useFlood();
   const [mobileTab, setMobileTab] = React.useState<'map' | 'villages' | 'telemetry'>('map');
 
   // Auto-switch to map on mobile when a village is selected
@@ -67,59 +79,84 @@ const DashboardContent: React.FC = () => {
 
   return (
     <>
+      {/* Global Persistent Navbar with identical UI/UX throughout the site */}
       <Navbar />
 
-      {/* Authority Command Center View */}
-      {role === 'authority' && (
-        <main className="dashboard-container">
-          {/* Mobile Navigation Tabs (Shown on screens <= 1024px) */}
-          <div className="mobile-tab-bar">
-            <button 
-              className={`mobile-tab-btn ${mobileTab === 'map' ? 'active' : ''}`}
-              onClick={() => setMobileTab('map')}
-            >
-              🗺️ <span>Live Map & Sim</span>
-            </button>
-            <button 
-              className={`mobile-tab-btn ${mobileTab === 'villages' ? 'active' : ''}`}
-              onClick={() => setMobileTab('villages')}
-            >
-              📍 <span>Villages ({villages.length})</span>
-            </button>
-            <button 
-              className={`mobile-tab-btn ${mobileTab === 'telemetry' ? 'active' : ''}`}
-              onClick={() => setMobileTab('telemetry')}
-            >
-              🛡️ <span>AI Telemetry</span>
-            </button>
-          </div>
+      {/* View 1: Full-Page Tactical Evacuation & Historical Disaster Dashboard */}
+      {activePage === 'tactical_dossier' ? (
+        <TacticalDossierDashboard onBack={closeTacticalDossier} />
+      ) : (
+        <>
+          {/* Authority Command Center View */}
+          {role === 'authority' && (
+            <main className={`dashboard-container ${isTelemetryCollapsed ? 'telemetry-collapsed' : ''}`}>
+              {/* Mobile Navigation Tabs (Shown on screens <= 1024px) */}
+              <div className="mobile-tab-bar">
+                <button 
+                  className={`mobile-tab-btn ${mobileTab === 'map' ? 'active' : ''}`}
+                  onClick={() => setMobileTab('map')}
+                >
+                  🗺️ <span>Live Map &amp; Sim</span>
+                </button>
+                <button 
+                  className={`mobile-tab-btn ${mobileTab === 'villages' ? 'active' : ''}`}
+                  onClick={() => setMobileTab('villages')}
+                >
+                  📍 <span>Villages ({villages.length})</span>
+                </button>
+                <button 
+                  className={`mobile-tab-btn ${mobileTab === 'telemetry' ? 'active' : ''}`}
+                  onClick={() => setMobileTab('telemetry')}
+                >
+                  🛡️ <span>AI Telemetry</span>
+                </button>
+              </div>
 
-          {/* Left Column: Monitored Catchments */}
-          <div className={`col-wrapper col-villages ${mobileTab === 'villages' ? 'mobile-visible' : ''}`}>
-            <PilotCatchmentPanel />
-          </div>
+              {/* Left Column: Monitored Catchments */}
+              <div className={`col-wrapper col-villages ${mobileTab === 'villages' ? 'mobile-visible' : ''}`}>
+                <PilotCatchmentPanel />
+              </div>
 
-          {/* Center Column: GIS Map & What-If Simulation Sandbox */}
-          <section className={`center-panel col-wrapper col-map ${mobileTab === 'map' ? 'mobile-visible' : ''}`}>
-            <MapContainer />
-            <WhatIfSandbox />
-          </section>
+              {/* Center Column: GIS Map & What-If Simulation Sandbox (Extends fully when right panel is collapsed) */}
+              <section className={`center-panel col-wrapper col-map ${mobileTab === 'map' ? 'mobile-visible' : ''}`}>
+                <MapContainer />
+                <WhatIfSandbox />
 
-          {/* Right Column: Deep-Dive AI Telemetry, XAI, & Action Directives */}
-          <div className={`col-wrapper col-telemetry ${mobileTab === 'telemetry' ? 'mobile-visible' : ''}`}>
-            <DeepDiveAnalysis />
-          </div>
-        </main>
-      )}
+                {/* Floating Expand Tab on Right Edge of Map when Collapsed */}
+                {isTelemetryCollapsed && (
+                  <button 
+                    type="button" 
+                    className="telemetry-expand-floating-btn"
+                    onClick={toggleTelemetryPanel}
+                    title="Open Decision Support & XAI panel"
+                    aria-label="Open Decision Support & XAI panel"
+                  >
+                    <span className="expand-pill-icon">◀</span>
+                    <span>🛡️ Decision Support & XAI</span>
+                  </button>
+                )}
+              </section>
 
-      {/* Citizen Alert & Evacuation View */}
-      {role === 'citizen' && (
-        <CitizenView />
+              {/* Right Column: Deep-Dive AI Telemetry, XAI, & Action Directives (Slides horizontally) */}
+              <div className={`col-wrapper col-telemetry ${isTelemetryCollapsed ? 'collapsed-right' : ''} ${mobileTab === 'telemetry' ? 'mobile-visible' : ''}`}>
+                <DeepDiveAnalysis />
+              </div>
+            </main>
+          )}
+
+          {/* Citizen Alert & Evacuation View */}
+          {role === 'citizen' && (
+            <CitizenView />
+          )}
+        </>
       )}
 
       {/* Modals */}
       <HydrographModal />
       <MethodologyModal />
+      <EmergencyBroadcastModal />
+      <StateAlertsTableModal />
+      <GeomorphicZonationModal />
 
       {/* Aapda Mitra AI Disaster Decision Assistant */}
       <AapdaMitraBot />

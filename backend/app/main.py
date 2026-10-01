@@ -19,6 +19,7 @@ from fastapi.responses import FileResponse
 from backend.app.config import APP_NAME, APP_VERSION
 from backend.app.api.routes import router as api_router
 from backend.app.api.websocket import ws_router
+from backend.app.api.broadcast import router as broadcast_router
 from backend.app.aapda_mitra.router import router as aapda_mitra_router
 from backend.app.core.ml_engine import ml_engine
 
@@ -40,6 +41,7 @@ app.add_middleware(
 # Include Routers
 app.include_router(api_router)
 app.include_router(ws_router)
+app.include_router(broadcast_router)
 app.include_router(aapda_mitra_router)
 
 # Intelligent Dual-Engine Frontend Serving (React TSX Build with Seamless Vanilla Fallback)
@@ -48,6 +50,12 @@ FRONTEND_DIR = PROJECT_ROOT / "frontend"
 
 if FRONTEND_REACT_DIST.exists() and (FRONTEND_REACT_DIST / "assets").exists():
     app.mount("/assets", StaticFiles(directory=str(FRONTEND_REACT_DIST / "assets")), name="react-assets")
+
+# 👇 ADD THIS BLOCK TO SERVE DISASTER PHOTOS PROPERLY
+DISASTER_PHOTOS_DIR = PROJECT_ROOT / "frontend_react" / "public" / "disaster_photos"
+if DISASTER_PHOTOS_DIR.exists():
+    app.mount("/disaster_photos", StaticFiles(directory=str(DISASTER_PHOTOS_DIR)), name="disaster-photos")
+
 
 if FRONTEND_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
