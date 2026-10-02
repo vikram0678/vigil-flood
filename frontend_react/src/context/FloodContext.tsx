@@ -9,6 +9,7 @@ import {
   Basemap3D,
   BasinSummary
 } from '../types';
+import { Language, getTranslation, applyGoogleTranslate } from '../utils/translations';
 
 interface FloodContextType {
   basins: BasinSummary[];
@@ -88,6 +89,12 @@ interface FloodContextType {
   toggleWaterSensor: () => Promise<void>;
   refreshData: () => Promise<void>;
   updateVillagesFromTelemetry: (villages: Village[]) => void;
+  // Loading State
+  isLoadingVillages: boolean;
+  // Multi-Language Localization
+  language: Language;
+  setLanguage: (lang: Language) => void;
+  t: (key: string) => string;
   // Full-page Tactical Dossier Routing
   activePage: 'command_center' | 'tactical_dossier';
   setActivePage: (page: 'command_center' | 'tactical_dossier') => void;
@@ -104,9 +111,14 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [activeBasinId, setActiveBasinId] = useState<string>("ALL");
   const [allVillages, setAllVillages] = useState<Village[]>([]);
   const [villages, setVillages] = useState<Village[]>([]);
+  const [isLoadingVillages, setIsLoadingVillages] = useState<boolean>(true);
+  const [language, setLanguageState] = useState<Language>(() => {
+    const saved = localStorage.getItem('vigil_language') as Language;
+    return saved === 'hi' ? 'hi' : 'en';
+  });
   const [selectedVillageId, setSelectedVillageId] = useState<string | null>(null);
   const [selectedVillageData, setSelectedVillageData] = useState<VillageDetailResponse | null>(null);
-  const [role, setRole] = useState<RoleMode>("authority");
+  const [role, setRoleState] = useState<RoleMode>("authority");
   const [viewMode, setViewMode] = useState<ViewMode>("2d");
   const [basemap2D, setBasemap2D] = useState<Basemap2D>("google_floodhub");
   const [basemap3D, setBasemap3D] = useState<Basemap3D>("google_hybrid");
@@ -217,6 +229,16 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   }, []);
 
+  const setLanguage = useCallback((lang: Language) => {
+    setLanguageState(lang);
+    localStorage.setItem('vigil_language', lang);
+    applyGoogleTranslate(lang);
+  }, []);
+
+  const t = useCallback((key: string) => {
+    return getTranslation(key, language);
+  }, [language]);
+
   const [hazardFilter, setHazardFilter] = useState<'ALL' | 'LANDSLIDE' | 'FLASH_FLOOD' | 'MULTI_HAZARD'>('ALL');
 
   const [layers, setLayers] = useState({
@@ -243,6 +265,7 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   // Fetch all basins and active basin villages
   const refreshData = useCallback(async () => {
+    setIsLoadingVillages(true);
     try {
       // 1. Fetch Basins Catalog
       const basinsRes = await fetch("/api/basins");
@@ -276,6 +299,8 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       }
     } catch (err) {
       console.error("Failed to fetch basins/villages list:", err);
+    } finally {
+      setIsLoadingVillages(false);
     }
   }, [activeBasinId]);
 
@@ -283,6 +308,7 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setActiveBasinId(basinId);
     setSelectedVillageId(null);
     setSelectedVillageData(null);
+    setIsLoadingVillages(true);
     try {
       if (basinId === "ALL") {
         if (allVillages.length > 0) {
@@ -313,6 +339,8 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       }
     } catch (err) {
       console.error(`Failed to switch basin to ${basinId}:`, err);
+    } finally {
+      setIsLoadingVillages(false);
     }
   }, [allVillages]);
 
@@ -397,6 +425,16 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       console.error(`Failed to load details for ${villageId}:`, err);
     }
   }, [selectedVillageId]);
+
+  const setRole = useCallback((newRole: RoleMode) => {
+    setRoleState(newRole);
+    if (newRole === 'citizen') {
+      if (!selectedVillageId) {
+        const topVillageId = villages.length > 0 ? villages[0].id : (allVillages.length > 0 ? allVillages[0].id : 'VIL-01');
+        selectVillage(topVillageId);
+      }
+    }
+  }, [selectedVillageId, villages, allVillages, selectVillage]);
 
   useEffect(() => {
     refreshData();
@@ -514,6 +552,10 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     toggleWaterSensor,
     refreshData,
     updateVillagesFromTelemetry,
+    isLoadingVillages,
+    language,
+    setLanguage,
+    t,
     activePage,
     setActivePage,
     dossierVillageId,
@@ -526,6 +568,10 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     activeBasin,
     villages,
     allVillages,
+    isLoadingVillages,
+    language,
+    setLanguage,
+    t,
     selectedVillageId,
     selectedVillageData,
     role,
@@ -552,6 +598,7 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setIsTelemetryCollapsed,
     toggleTelemetryPanel,
     toggleTheme,
+    setRole,
     switchBasin,
     selectVillage,
     setHydrographOpen,

@@ -16,7 +16,10 @@ export const Navbar: React.FC = () => {
     switchBasin,
     activePage,
     openTacticalDossier,
-    closeTacticalDossier
+    closeTacticalDossier,
+    language,
+    setLanguage,
+    t
   } = useFlood();
 
   return (
@@ -37,56 +40,23 @@ export const Navbar: React.FC = () => {
           <div className="logo-badge">🌊</div>
           <div className="brand-text-container">
             <div className="brand-title">
-              VIGIL-FLOOD <span className="brand-tagline">| Early Warning</span>
+              {t('brandTitle')} <span className="brand-tagline">{t('brandTagline')}</span>
             </div>
             <div className="brand-subtitle">
-              {activeBasin ? `📍 ${activeBasin.name}` : '📍 All-India Valleys'}
+              {activeBasin ? `📍 ${activeBasin.name}` : t('allIndiaValleys')}
             </div>
           </div>
         </a>
 
-        {/* 🗺️ Pan-India Basin Selector (Temporarily commented out per user request)
-        <div className="basin-selector-container">
-          <select 
-            id="basin-select"
-            className="basin-select-dropdown"
-            value={activeBasinId}
-            onChange={(e) => switchBasin(e.target.value)}
-            title="Switch River Basin / State"
-            aria-label="Switch River Basin"
-          >
-            {basins.map(b => (
-              <option key={b.basin_id} value={b.basin_id}>
-                {b.state.includes('Himachal') ? '🏔️' : b.state.includes('Uttarakhand') ? '⛰️' : b.state.includes('Sikkim') ? '🌊' : '🌧️'} {b.name} ({b.state})
-              </option>
-            ))}
-          </select>
-        </div>
-        */}
-
         <div className="status-pill live-pill">
           <span className="pulse-dot"></span>
-          <span className="status-text">LIVE</span>
+          <span className="status-text">{t('liveStatus')}</span>
         </div>
       </div>
 
       {/* Zone 2: Intelligence & Decision Support HUD */}
       <div className="navbar-hud-section">
         <div className="hud-pill-group">
-          {/* 🏔️ ISRO Landslide Atlas & NDMA LHZ 147 Districts Registry */}
-          {/* <button 
-            id="btn-open-geomorphic-zonation" 
-            className="hud-pill-btn isro-btn"
-            onClick={() => {
-              setGeomorphicOpen(true);
-              window.dispatchEvent(new CustomEvent('open-geomorphic-zonation-modal'));
-            }}
-            title="Open ISRO Landslide Atlas & NDMA LHZ 147 Districts Registry"
-            aria-label="Open ISRO Geomorphic Zonation"
-          >
-            <span>🏔️</span> <span className="btn-text">ISRO Zonation (147)</span>
-          </button> */}
-
           {/* ⚠️ State & National Weather Alerts Table */}
           <button
             id="btn-open-state-alerts"
@@ -95,7 +65,7 @@ export const Navbar: React.FC = () => {
             title="Open Location & State-wise Weather Alerts Table"
             aria-label="Open State Weather Alerts Table"
           >
-            <span>⚡</span> <span className="btn-text">State Alerts</span>
+            <span>⚡</span> <span className="btn-text">{t('stateAlerts')}</span>
           </button>
 
           {/* 🛡️ Dedicated Evacuation & Incident Operations Dashboard */}
@@ -112,7 +82,7 @@ export const Navbar: React.FC = () => {
               fontWeight: 700
             }}
           >
-            <span>🛡️</span> <span className="btn-text">Evacuation Ops</span>
+            <span>🛡️</span> <span className="btn-text">{t('evacuationOps')}</span>
           </button>
 
           <button
@@ -121,7 +91,7 @@ export const Navbar: React.FC = () => {
             onClick={() => setMethodologyOpen(true)}
             title="View Scientific Methodology"
           >
-            <span>ℹ️</span> <span className="btn-text">Methodology</span>
+            <span>ℹ️</span> <span className="btn-text">{t('methodology')}</span>
           </button>
 
           {/* ✨ Interactive Guided Product Tour */}
@@ -132,7 +102,7 @@ export const Navbar: React.FC = () => {
             title="Take a 60-Second Guided Tour"
             aria-label="Start Guided Product Tour"
           >
-            <span>✨</span> <span className="btn-text">Quick Tour</span>
+            <span>✨</span> <span className="btn-text">{t('quickTour')}</span>
           </button>
         </div>
       </div>
@@ -145,10 +115,11 @@ export const Navbar: React.FC = () => {
           <select
             id="lang-select"
             className="basin-select-dropdown"
-            defaultValue="en"
+            value={language}
+            onChange={(e) => setLanguage(e.target.value as 'en' | 'hi')}
             title="Translate Website"
             aria-label="Translate Website"
-            style={{ borderRadius: '8px' }}
+            style={{ borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
           >
             <option value="en">🇬🇧 English</option>
             <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
@@ -163,7 +134,7 @@ export const Navbar: React.FC = () => {
           title="Open CAP-SACHET & Cell Broadcast Center"
           aria-label="Open Emergency Broadcast"
         >
-          <span className="cta-icon">📢</span> <span className="cta-text">CAP Broadcast</span>
+          <span className="cta-icon">📢</span> <span className="cta-text">{t('capBroadcast')}</span>
         </button>
 
         {/* Theme Mode Toggle (Dark / Light) */}
@@ -175,7 +146,7 @@ export const Navbar: React.FC = () => {
           aria-label="Toggle Theme Mode"
         >
           <span className="theme-toggle-icon">{theme === 'dark' ? '☀️' : '🌙'}</span>
-          <span className="theme-toggle-label">{theme === 'dark' ? 'Light' : 'Dark'}</span>
+          <span className="theme-toggle-label">{theme === 'dark' ? t('lightTheme') : t('darkTheme')}</span>
         </button>
 
         <div className="role-switcher">
@@ -183,13 +154,13 @@ export const Navbar: React.FC = () => {
             className={`role-btn ${role === 'authority' ? 'active' : ''}`}
             onClick={() => setRole('authority')}
           >
-            Authority
+            {t('roleAuthority')}
           </button>
           <button
             className={`role-btn ${role === 'citizen' ? 'active' : ''}`}
             onClick={() => setRole('citizen')}
           >
-            Citizen
+            {t('roleCitizen')}
           </button>
         </div>
       </div>

@@ -11,7 +11,8 @@ export const WhatIfSandbox: React.FC = () => {
     selectedVillageData,
     toggleWaterSensor,
     setHydrographOpen,
-    refreshData
+    refreshData,
+    t
   } = useFlood();
 
   const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
@@ -199,13 +200,13 @@ export const WhatIfSandbox: React.FC = () => {
   };
 
   const presets = [
-    { id: 'BASELINE_NORMAL', name: '🟢 Baseline Reset' },
-    { id: 'CLOUDBURST_CRITICAL', name: '☁️ Cloudburst (80mm/h)' },
-    { id: 'HEAVY_MONSOON', name: '🌧️ Monsoon Saturation (95%)' },
-    { id: 'DAM_BREACH_GLOF', name: '🏔️ Dam Breach / GLOF' }
+    { id: 'BASELINE_NORMAL', name: t('presetBaseline') },
+    { id: 'CLOUDBURST_CRITICAL', name: t('presetCloudburstCrit') },
+    { id: 'HEAVY_MONSOON', name: t('presetMonsoonSat') },
+    { id: 'DAM_BREACH_GLOF', name: t('presetDamGlof') }
   ];
 
-  const currentPresetName = presets.find(p => p.id === simulation.activePreset)?.name || 'Custom Parameters';
+  const currentPresetName = presets.find(p => p.id === simulation.activePreset)?.name || t('customParameters');
 
   const isWaterSensorOffline = selectedVillageData?.sensor_health?.sensors?.find(
     s => (s.sensor_type || '').toLowerCase().includes("water")
@@ -224,7 +225,7 @@ export const WhatIfSandbox: React.FC = () => {
         </button>
 
         <div className="sandbox-title-group" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexDirection: 'row' }}>
-          <div className="sandbox-title" style={{ margin: 0, fontSize: '0.84rem' }}>⚡ Interactive "What-If" Simulation Sandbox</div>
+          <div className="sandbox-title" style={{ margin: 0, fontSize: '0.84rem' }}>{t('interactiveSimulation')}</div>
           {isCollapsed && (
             <div className="sandbox-compact-preview" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span className="compact-preset-badge">{currentPresetName}</span>
@@ -273,17 +274,17 @@ export const WhatIfSandbox: React.FC = () => {
             gap: '8px'
           }}>
             <div>
-              <span style={{ color: '#f1f5f9' }}>CWC HYDROLOGY: </span>
-              <span style={{ fontWeight: 700, color: '#38bdf8' }}>Runoff Coeff C: {runoffCoeff.toFixed(2)}</span>
+              <span style={{ color: '#f1f5f9' }}>{t('cwcHydrology')}</span>
+              <span style={{ fontWeight: 700, color: '#38bdf8' }}>{t('runoffCoeff')}{runoffCoeff.toFixed(2)}</span>
             </div>
             <div>
-              <span style={{ color: '#f1f5f9' }}>PEAK DISCHARGE: </span>
+              <span style={{ color: '#f1f5f9' }}>{t('peakDischarge')}</span>
               <span style={{ fontWeight: 800, color: isExtremeBreached ? '#ef4444' : '#f59e0b' }}>
                 {peakDischargeM3s} m³/s
               </span>
             </div>
             <div>
-              <span style={{ color: '#f1f5f9' }}>CREST WINDOW: </span>
+              <span style={{ color: '#f1f5f9' }}>{t('crestWindow')}</span>
               <span style={{ fontWeight: 700, color: '#34d399' }}>+{timeToPeakHours}h Peak</span>
             </div>
             <button
@@ -299,7 +300,7 @@ export const WhatIfSandbox: React.FC = () => {
                 cursor: 'pointer'
               }}
             >
-              📈 Full CWC Hydrograph
+              {t('fullCwcHydrograph')}
             </button>
           </div>
 
@@ -309,7 +310,7 @@ export const WhatIfSandbox: React.FC = () => {
               {/* Quick Reset to Live Telemetry Action */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
                 <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#f1f5f9', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                  Adjust Telemetry
+                  {t('adjustTelemetry')}
                 </span>
                 <button
                   type="button"
@@ -329,7 +330,7 @@ export const WhatIfSandbox: React.FC = () => {
                     gap: '4px'
                   }}
                 >
-                  <span>↺</span> Reset to Live Data
+                  <span>↺</span> {t('resetToLive')}
                 </button>
               </div>
 

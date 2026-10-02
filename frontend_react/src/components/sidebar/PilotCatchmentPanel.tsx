@@ -9,7 +9,9 @@ export const PilotCatchmentPanel: React.FC = () => {
     basins,
     activeBasinId,
     activeBasin,
-    switchBasin
+    switchBasin,
+    isLoadingVillages,
+    t
   } = useFlood();
 
   // Sort strictly in descending order of risk percentage (highest threat first)
@@ -27,11 +29,18 @@ export const PilotCatchmentPanel: React.FC = () => {
       {/* Panel Header */}
       <div className="panel-header">
         <div className="panel-title">
-          <span>{activeBasinId === 'ALL' ? '📍 All-India Pilot Basins' : `📍 ${activeBasin ? activeBasin.name : 'Pilot Catchment'}`}</span>
+          <span>{activeBasinId === 'ALL' ? t('allIndiaPilotBasins') : `📍 ${activeBasin ? activeBasin.name : 'Pilot Catchment'}`}</span>
         </div>
-        <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
-          {sortedVillages.length} Wards
-        </span>
+        {isLoadingVillages || sortedVillages.length === 0 ? (
+          <div className="sidebar-syncing-pill">
+            <span className="sync-spinner-ring"></span>
+            <span>{t('syncingBadge')}</span>
+          </div>
+        ) : (
+          <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
+            {sortedVillages.length} {t('wardsCount')}
+          </span>
+        )}
       </div>
 
       <div className="panel-body">
@@ -40,10 +49,10 @@ export const PilotCatchmentPanel: React.FC = () => {
           <div className="state-dropdown-header">
             <span className="state-dropdown-label">
               <span className="state-dropdown-icon">🗺️</span>
-              <span>Filter State / Basin:</span>
+              <span>{t('filterStateBasin')}</span>
             </span>
             <span className="state-sort-tag">
-              ⚡ Descending Risk
+              {t('descendingRisk')}
             </span>
           </div>
           <div className="state-select-wrapper">
@@ -54,11 +63,11 @@ export const PilotCatchmentPanel: React.FC = () => {
               onChange={(e) => switchBasin(e.target.value)}
               aria-label="Filter villages by State or Basin"
             >
-              <option value="ALL">🌐 All States (All 26 Villages Monitored)</option>
-              <option value="BASIN-HP-BEAS">🏔️ Himachal Pradesh (11 Wards - Beas & Sutlej)</option>
-              <option value="BASIN-UK-ALAK">⛰️ Uttarakhand (5 Wards - Alaknanda Valley)</option>
-              <option value="BASIN-SK-TEESTA">🌊 Sikkim (5 Wards - Teesta River Basin)</option>
-              <option value="BASIN-KL-WAYANAD">🌧️ Kerala (5 Wards - Wayanad Chaliyar)</option>
+              <option value="ALL">{t('allStatesOption')}</option>
+              <option value="BASIN-HP-BEAS">{t('basinHP')}</option>
+              <option value="BASIN-UK-ALAK">{t('basinUK')}</option>
+              <option value="BASIN-SK-TEESTA">{t('basinSK')}</option>
+              <option value="BASIN-KL-WAYANAD">{t('basinKL')}</option>
             </select>
             <span className="custom-dropdown-arrow">▼</span>
           </div>
@@ -88,16 +97,24 @@ export const PilotCatchmentPanel: React.FC = () => {
         {/* District or National Threat Index Meter */}
         <div className="threat-meter-card">
           <div className="threat-header" style={{ fontSize: '0.92rem', fontWeight: 600 }}>
-            <span>{activeBasinId === 'ALL' ? 'All-India Average Hazard Index' : `${activeBasin ? activeBasin.state : 'District'} Hazard Index`}</span>
-            <span style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--accent-cyan)' }}>{avgRisk}%</span>
+            <span>{activeBasinId === 'ALL' ? t('allIndiaAvgHazard') : `${activeBasin ? activeBasin.state : ''} ${t('districtHazardIndex')}`}</span>
+            {isLoadingVillages || sortedVillages.length === 0 ? (
+              <span style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--accent-cyan)' }}>{t('computingBadge')}</span>
+            ) : (
+              <span style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--accent-cyan)' }}>{avgRisk}%</span>
+            )}
           </div>
           <div className="threat-bar-container">
-            <div className="threat-bar-fill" style={{ width: `${avgRisk}%` }}></div>
+            {isLoadingVillages || sortedVillages.length === 0 ? (
+              <div className="threat-bar-shimmer"></div>
+            ) : (
+              <div className="threat-bar-fill" style={{ width: `${avgRisk}%` }}></div>
+            )}
           </div>
           <div style={{ fontSize: '0.84rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'flex', justifyContent: 'space-between' }}>
-            <span>🟢 Baseline</span>
-            <span>🟡 Moderate</span>
-            <span>🔴 Critical</span>
+            <span>{t('baselineRisk')}</span>
+            <span>{t('moderateRisk')}</span>
+            <span>{t('criticalRisk')}</span>
           </div>
         </div>
 
@@ -117,18 +134,18 @@ export const PilotCatchmentPanel: React.FC = () => {
               <span style={{ fontSize: '1.25rem' }}>🇮🇳</span>
               <div>
                 <div style={{ fontWeight: 700, fontSize: '0.96rem', color: 'var(--text-primary)' }}>
-                  All-India National View
+                  {t('nationalViewTitle')}
                 </div>
                 <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)', marginTop: '2px' }}>
                   {selectedVillageId === null 
-                    ? `● ${activeBasinId === 'ALL' ? 'National Overview (All 26 Villages)' : `${activeBasin?.name || 'Active Basin'} Overview`}` 
-                    : 'Click to zoom out to India'}
+                    ? t('nationalOverviewSubtitle')
+                    : t('clickToZoomOut')}
                 </div>
               </div>
             </div>
             {selectedVillageId === null && (
               <span className="active-village-pill" style={{ background: 'rgba(56, 189, 248, 0.2)', color: 'var(--accent-cyan)', fontSize: '0.78rem', fontWeight: 800, padding: '3px 8px' }}>
-                ● OVERVIEW
+                {t('badgeOverview')}
               </span>
             )}
           </div>
@@ -138,16 +155,48 @@ export const PilotCatchmentPanel: React.FC = () => {
         <div className="village-list-header-row">
           <div className="village-list-header">
             {activeBasinId === 'ALL' 
-              ? 'ALL 26 VILLAGES (DESCENDING RISK)' 
-              : `${(activeBasin?.name || 'BASIN').toUpperCase()} WARDS (DESCENDING RISK)`}
+              ? t('allVillagesHeader') 
+              : `${(activeBasin?.name || 'BASIN').toUpperCase()} ${t('wardsCount').toUpperCase()}`}
           </div>
           <span className="triage-sort-pill" title="Sorted in strict descending order by live threat percentage">
-            Ranked #1 to #{sortedVillages.length}
+            {isLoadingVillages || sortedVillages.length === 0 ? t('syncingWardsLabel') : `${t('rankedPrefix')} #1 - #${sortedVillages.length}`}
           </span>
         </div>
 
-        {/* Descending Triage Ranked Village Cards */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {/* Loading Radar Ring + Skeleton Shimmer Cards State */}
+        {isLoadingVillages || sortedVillages.length === 0 ? (
+          <div className="sidebar-loading-wrapper">
+            <div className="radar-scanner-box">
+              <div className="radar-scanner-circle outer"></div>
+              <div className="radar-scanner-circle inner"></div>
+              <div className="radar-sweep-blade"></div>
+              <div className="radar-center-blip">📡</div>
+            </div>
+            <div className="radar-loading-title">
+              {t('syncingTitle')}
+            </div>
+            <div className="radar-loading-desc">
+              {t('syncingDesc')}
+            </div>
+
+            {/* Shimmer Skeleton Cards */}
+            <div className="skeleton-cards-container">
+              {[1, 2, 3, 4].map(n => (
+                <div key={n} className="village-skeleton-card">
+                  <div className="skeleton-rank-badge shimmer-effect"></div>
+                  <div className="skeleton-info-body">
+                    <div className="skeleton-line-title shimmer-effect"></div>
+                    <div className="skeleton-line-meta shimmer-effect"></div>
+                    <div className="skeleton-line-foot shimmer-effect"></div>
+                  </div>
+                  <div className="skeleton-ring-micro shimmer-effect"></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          /* Descending Triage Ranked Village Cards */
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {sortedVillages.map((v, idx) => {
             const isSelected = v.id === selectedVillageId;
             const isCritical = v.risk_level === 'CRITICAL' || v.risk_level === 'EXTREME';
@@ -183,17 +232,17 @@ export const PilotCatchmentPanel: React.FC = () => {
                       )}
                       {isSelected && (
                         <span className="active-village-pill">
-                          ● ACTIVE
+                          {t('badgeActive')}
                         </span>
                       )}
                     </div>
-                    <div className="village-meta">Elev: {v.elevation_m}m | Slope: {v.slope_deg}°</div>
+                    <div className="village-meta">{t('elevPrefix')} {v.elevation_m}m | {t('slopePrefix')} {v.slope_deg}°</div>
                     <div className="village-shelter-preview">
                       <span style={{ color: isCritical ? '#dc2626' : 'var(--text-secondary)', fontWeight: 700 }}>
                         ⏳ {v.lead_time_display || '10-30 min'}
                       </span>
                       <span>•</span>
-                      <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>⛺ {typeof v.primary_shelter === 'object' && v.primary_shelter !== null ? (v.primary_shelter as any).name : (v.primary_shelter || 'Safe Ridge')}</span>
+                      <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>⛺ {typeof v.primary_shelter === 'object' && v.primary_shelter !== null ? (v.primary_shelter as any).name : (v.primary_shelter || t('safeRidge'))}</span>
                     </div>
                   </div>
                 </div>
@@ -224,6 +273,7 @@ export const PilotCatchmentPanel: React.FC = () => {
             );
           })}
         </div>
+      )}
       </div>
     </aside>
   );

@@ -9,7 +9,8 @@ export const DeepDiveAnalysis: React.FC = () => {
     toggleWaterSensor,
     isTelemetryCollapsed,
     setIsTelemetryCollapsed,
-    openTacticalDossier
+    openTacticalDossier,
+    t
   } = useFlood();
 
   const [isXaiOpen, setIsXaiOpen] = useState<boolean>(true);
@@ -31,10 +32,10 @@ export const DeepDiveAnalysis: React.FC = () => {
       <aside className="panel deep-dive-panel" id="tour-telemetry-panel">
         <div className="panel-header">
           <div className="panel-title">
-            <span>🛡️ Decision Support & XAI</span>
+            <span>{t('decisionSupportXai')}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span className="panel-header-badge">🇮🇳 National View</span>
+            <span className="panel-header-badge">{t('nationalView')}</span>
             <button
               type="button"
               className="panel-close-right-btn"
@@ -42,7 +43,7 @@ export const DeepDiveAnalysis: React.FC = () => {
               title="Collapse panel to right and extend map"
               aria-label="Collapse panel to right"
             >
-              <span>Collapse</span>
+              <span>{t('collapse')}</span>
               <span className="close-arrow">▶</span>
             </button>
           </div>
@@ -60,10 +61,10 @@ export const DeepDiveAnalysis: React.FC = () => {
               <span className="td-launch-btn-icon" style={{ fontSize: '1.3rem' }}>📂</span>
               <div className="td-launch-btn-text" style={{ flex: 1 }}>
                 <span className="td-launch-btn-title" style={{ fontSize: '0.96rem', fontWeight: 700 }}>
-                  Historical Disaster Archive &amp; Tactical Dossier
+                  {t('historicalDossierTitle')}
                 </span>
                 <span className="td-launch-btn-subtitle" style={{ fontSize: '0.84rem', marginTop: '2px', fontWeight: 500 }}>
-                  26 pilot villages • Past flood casualties &amp; turn-key evacuation
+                  {t('historicalDossierSub')}
                 </span>
               </div>
               <span style={{ fontSize: '1.1rem', opacity: 0.85, color: 'var(--accent-cyan)' }}>➔</span>
@@ -86,8 +87,8 @@ export const DeepDiveAnalysis: React.FC = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '1.25rem' }}>📡</span>
                 <div>
-                  <h4 style={{ margin: 0, fontSize: '1.02rem', fontWeight: 700, color: 'var(--text-primary)' }}>National Early Warning Status</h4>
-                  <div style={{ fontSize: '0.82rem', color: '#10b981', fontWeight: 700, marginTop: '2px' }}>● ALL SYSTEMS OPERATIONAL</div>
+                  <h4 style={{ margin: 0, fontSize: '1.02rem', fontWeight: 700, color: 'var(--text-primary)' }}>{t('nationalEarlyWarningStatus')}</h4>
+                  <div style={{ fontSize: '0.82rem', color: '#10b981', fontWeight: 700, marginTop: '2px' }}>{t('allSystemsOperational')}</div>
                 </div>
               </div>
               <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{isNationalStatusOpen ? '▴' : '▾'}</span>
@@ -95,7 +96,7 @@ export const DeepDiveAnalysis: React.FC = () => {
 
             {isNationalStatusOpen && (
               <div style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginTop: '8px', fontWeight: 500 }}>
-                VIGIL-FLOOD is continuously monitoring multi-source atmospheric, hydrological, and IoT telemetry across vulnerable mountain valleys.
+                {t('nationalStatusDesc')}
               </div>
             )}
           </div>
