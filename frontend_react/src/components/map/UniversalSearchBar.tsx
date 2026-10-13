@@ -262,159 +262,196 @@ export const UniversalSearchBar: React.FC = () => {
             &times;
           </button>
         ) : (
-          <span className="search-icon" style={{ opacity: 0.6, cursor: 'pointer' }}>🔍</span>
+          // <span className="search-icon" style={{ opacity: 0.6, cursor: 'pointer' }}>🔍</span>
+          // <span
+          //   className="material-symbols-outlined search-icon"
+          //   style={{
+          //     fontSize: '30px',
+          //     opacity: 1,
+          //     cursor: 'pointer',
+          //     userSelect: 'none',
+          //     display: 'flex',
+          //     alignItems: 'center',
+          //     padding: '5px 0px 10px 0px',
+          //     // color: 'var(--text-primary, #0f172a)'
+          //     color: '#000000'
+          //   }}
+          // >
+          //   search
+          // </span>
+          <svg
+            className="search-icon"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#000000"
+            strokeWidth="2.3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{ cursor: 'pointer', flexShrink: 0, opacity: 0.85, marginLeft: '8px', marginRight: '2px', display: 'block' }}
+          >
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+
+
         )}
       </div>
 
       {/* Categorized Autocomplete Dropdown */}
-      {isDropdownOpen && allCategorizedResults.length > 0 && (
-        <div className="search-dropdown-menu">
-          {/* Section 1: GPS Direct Paste */}
-          {parsedCoords && (
-            <div className="search-category-block">
-              <div className="category-header">🧭 GPS COORDINATES (DIRECT JUMP)</div>
-              <div
-                className={`suggestion-item highlighted ${selectedIndex === 0 ? 'keyboard-selected' : ''}`}
-                onClick={() => handleSelectLocation(parsedCoords.lat, parsedCoords.lng, `GPS (${parsedCoords.lat.toFixed(4)}, ${parsedCoords.lng.toFixed(4)})`, 'GPS')}
-              >
-                <span className="suggestion-badge-icon">📍</span>
-                <div className="suggestion-text">
-                  <div className="suggestion-title">Lat: {parsedCoords.lat.toFixed(4)}° N, Lng: {parsedCoords.lng.toFixed(4)}° E</div>
-                  <div className="suggestion-subtitle">Direct 30m DEM Elevation & AI Hydro Analysis</div>
-                </div>
-                <span className="category-tag-gps">FLY-TO</span>
-              </div>
-            </div>
-          )}
-
-          {/* Section 2: Monitored Basin Wards */}
-          {matchedBasinWards.length > 0 && (
-            <div className="search-category-block">
-              <div className="category-header">📍 MONITORED BASIN WARDS</div>
-              {matchedBasinWards.map((item) => (
+      {
+        isDropdownOpen && allCategorizedResults.length > 0 && (
+          <div className="search-dropdown-menu">
+            {/* Section 1: GPS Direct Paste */}
+            {parsedCoords && (
+              <div className="search-category-block">
+                <div className="category-header">🧭 GPS COORDINATES (DIRECT JUMP)</div>
                 <div
-                  key={item.place_id}
-                  className="suggestion-item"
-                  onClick={() => handleSelectLocation(Number(item.lat), Number(item.lon), item.display_name, 'WARD')}
-                >
-                  <span className="suggestion-badge-icon">🏘️</span>
-                  <div className="suggestion-text">
-                    <div className="suggestion-title">{item.display_name}</div>
-                    <div className="suggestion-subtitle">{item.subtext}</div>
-                  </div>
-                  <span
-                    className="category-risk-badge"
-                    style={{
-                      backgroundColor: item.riskScore && item.riskScore > 70 ? 'rgba(239, 68, 68, 0.2)' : 'rgba(56, 189, 248, 0.2)',
-                      color: item.riskScore && item.riskScore > 70 ? '#ef4444' : '#38bdf8',
-                      border: `1px solid ${item.riskScore && item.riskScore > 70 ? '#ef4444' : '#38bdf8'}`
-                    }}
-                  >
-                    {item.riskScore}% {item.riskLevel}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Section 3: ISRO 147 Vulnerable Mountain Districts */}
-          {matchedIsroDistricts.length > 0 && (
-            <div className="search-category-block">
-              <div className="category-header">🏔️ ISRO 147 VULNERABLE MOUNTAIN DISTRICTS</div>
-              {matchedIsroDistricts.map((item) => (
-                <div
-                  key={item.place_id}
-                  className="suggestion-item"
-                  onClick={() => handleSelectLocation(Number(item.lat), Number(item.lon), item.display_name, 'ISRO')}
-                >
-                  <span className="suggestion-badge-icon">🛰️</span>
-                  <div className="suggestion-text">
-                    <div className="suggestion-title">{item.display_name}</div>
-                    <div className="suggestion-subtitle">{item.subtext}</div>
-                  </div>
-                  <span className="category-tag-isro">SEC-NW-HIM</span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Section 4: Global Nominatim Geocoded Results */}
-          {globalSuggestions.length > 0 && (
-            <div className="search-category-block">
-              <div className="category-header">🌐 OPENSTREETMAP GEOCODING</div>
-              {globalSuggestions.map((item) => (
-                <div
-                  key={item.place_id}
-                  className="suggestion-item"
-                  onClick={() => handleSelectLocation(parseFloat(String(item.lat)), parseFloat(String(item.lon)), item.display_name, 'GLOBAL')}
+                  className={`suggestion-item highlighted ${selectedIndex === 0 ? 'keyboard-selected' : ''}`}
+                  onClick={() => handleSelectLocation(parsedCoords.lat, parsedCoords.lng, `GPS (${parsedCoords.lat.toFixed(4)}, ${parsedCoords.lng.toFixed(4)})`, 'GPS')}
                 >
                   <span className="suggestion-badge-icon">📍</span>
                   <div className="suggestion-text">
-                    <div className="suggestion-title">{item.display_name.split(',')[0]}</div>
-                    <div className="suggestion-subtitle">{item.subtext}</div>
+                    <div className="suggestion-title">Lat: {parsedCoords.lat.toFixed(4)}° N, Lng: {parsedCoords.lng.toFixed(4)}° E</div>
+                    <div className="suggestion-subtitle">Direct 30m DEM Elevation & AI Hydro Analysis</div>
                   </div>
+                  <span className="category-tag-gps">FLY-TO</span>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+              </div>
+            )}
 
-      {/* Spot Analysis Floating Card for Searched Coordinate */}
-      {queryAnalysis && (
-        <div className="spot-analysis-card">
-          <div className="spot-header">
-            <div className="spot-title">
-              <span>📡 Spot Analysis: </span>
-              <strong>{query}</strong>
-            </div>
-            <button className="spot-close-btn" onClick={() => setQueryAnalysis(null)}>&times;</button>
-          </div>
+            {/* Section 2: Monitored Basin Wards */}
+            {matchedBasinWards.length > 0 && (
+              <div className="search-category-block">
+                <div className="category-header">📍 MONITORED BASIN WARDS</div>
+                {matchedBasinWards.map((item) => (
+                  <div
+                    key={item.place_id}
+                    className="suggestion-item"
+                    onClick={() => handleSelectLocation(Number(item.lat), Number(item.lon), item.display_name, 'WARD')}
+                  >
+                    <span className="suggestion-badge-icon">🏘️</span>
+                    <div className="suggestion-text">
+                      <div className="suggestion-title">{item.display_name}</div>
+                      <div className="suggestion-subtitle">{item.subtext}</div>
+                    </div>
+                    <span
+                      className="category-risk-badge"
+                      style={{
+                        backgroundColor: item.riskScore && item.riskScore > 70 ? 'rgba(239, 68, 68, 0.2)' : 'rgba(56, 189, 248, 0.2)',
+                        color: item.riskScore && item.riskScore > 70 ? '#ef4444' : '#38bdf8',
+                        border: `1px solid ${item.riskScore && item.riskScore > 70 ? '#ef4444' : '#38bdf8'}`
+                      }}
+                    >
+                      {item.riskScore}% {item.riskLevel}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
 
-          <div className="spot-body">
-            <div className="spot-metric-grid">
-              <div className="spot-pill">
-                <span className="pill-label">30m DEM Elev</span>
-                <span className="pill-val">⛰️ {queryAnalysis.topography?.elevation_m || 880}m</span>
+            {/* Section 3: ISRO 147 Vulnerable Mountain Districts */}
+            {matchedIsroDistricts.length > 0 && (
+              <div className="search-category-block">
+                <div className="category-header">🏔️ ISRO 147 VULNERABLE MOUNTAIN DISTRICTS</div>
+                {matchedIsroDistricts.map((item) => (
+                  <div
+                    key={item.place_id}
+                    className="suggestion-item"
+                    onClick={() => handleSelectLocation(Number(item.lat), Number(item.lon), item.display_name, 'ISRO')}
+                  >
+                    <span className="suggestion-badge-icon">🛰️</span>
+                    <div className="suggestion-text">
+                      <div className="suggestion-title">{item.display_name}</div>
+                      <div className="suggestion-subtitle">{item.subtext}</div>
+                    </div>
+                    <span className="category-tag-isro">SEC-NW-HIM</span>
+                  </div>
+                ))}
               </div>
-              <div className="spot-pill">
-                <span className="pill-label">Terrain Slope</span>
-                <span className="pill-val">📐 {queryAnalysis.topography?.slope_deg || 28}°</span>
-              </div>
-              <div className="spot-pill">
-                <span className="pill-label">Live Rainfall</span>
-                <span className="pill-val">🌧️ {queryAnalysis.weather?.rain_1h || 0} mm/h</span>
-              </div>
-              <div className="spot-pill">
-                <span className="pill-label">Soil Moisture</span>
-                <span className="pill-val">🌱 {queryAnalysis.weather?.soil_moisture || 40}%</span>
-              </div>
-            </div>
+            )}
 
-            <div className="spot-hazard-row">
-              <div className="hazard-level-badge" style={{
-                background: (queryAnalysis.risk_analysis?.risk_percentage || 0) > 70 ? 'rgba(239, 68, 68, 0.2)' : 'rgba(56, 189, 248, 0.2)',
-                color: (queryAnalysis.risk_analysis?.risk_percentage || 0) > 70 ? '#ef4444' : '#38bdf8',
-                border: `1px solid ${(queryAnalysis.risk_analysis?.risk_percentage || 0) > 70 ? '#ef4444' : '#38bdf8'}`
-              }}>
-                {queryAnalysis.risk_analysis?.risk_badge || '⚡'} Flash Flood Risk: <strong>{queryAnalysis.risk_analysis?.risk_percentage || 0}% ({queryAnalysis.risk_analysis?.risk_level || 'NOMINAL'})</strong>
-              </div>
-              <div className="peak-discharge-pill">
-                ⚡ Peak Surge Qp: <strong>{queryAnalysis.hydrology?.peak_discharge_m3s || 120} m³/s</strong>
-              </div>
-            </div>
-
-            {queryAnalysis.nearest_safe_refuge && (
-              <div className="spot-refuge-box">
-                <span>⛺ Nearest Designated Refuge: </span>
-                <strong>{queryAnalysis.nearest_safe_refuge.name}</strong>
-                <span style={{ color: '#10b981', marginLeft: '6px' }}>● {queryAnalysis.nearest_safe_refuge.safety_status || 'SAFE'}</span>
+            {/* Section 4: Global Nominatim Geocoded Results */}
+            {globalSuggestions.length > 0 && (
+              <div className="search-category-block">
+                <div className="category-header">🌐 OPENSTREETMAP GEOCODING</div>
+                {globalSuggestions.map((item) => (
+                  <div
+                    key={item.place_id}
+                    className="suggestion-item"
+                    onClick={() => handleSelectLocation(parseFloat(String(item.lat)), parseFloat(String(item.lon)), item.display_name, 'GLOBAL')}
+                  >
+                    <span className="suggestion-badge-icon">📍</span>
+                    <div className="suggestion-text">
+                      <div className="suggestion-title">{item.display_name.split(',')[0]}</div>
+                      <div className="suggestion-subtitle">{item.subtext}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+
+      {/* Spot Analysis Floating Card for Searched Coordinate */}
+      {
+        queryAnalysis && (
+          <div className="spot-analysis-card">
+            <div className="spot-header">
+              <div className="spot-title">
+                <span>📡 Spot Analysis: </span>
+                <strong>{query}</strong>
+              </div>
+              <button className="spot-close-btn" onClick={() => setQueryAnalysis(null)}>&times;</button>
+            </div>
+
+            <div className="spot-body">
+              <div className="spot-metric-grid">
+                <div className="spot-pill">
+                  <span className="pill-label">30m DEM Elev</span>
+                  <span className="pill-val">⛰️ {queryAnalysis.topography?.elevation_m || 880}m</span>
+                </div>
+                <div className="spot-pill">
+                  <span className="pill-label">Terrain Slope</span>
+                  <span className="pill-val">📐 {queryAnalysis.topography?.slope_deg || 28}°</span>
+                </div>
+                <div className="spot-pill">
+                  <span className="pill-label">Live Rainfall</span>
+                  <span className="pill-val">🌧️ {queryAnalysis.weather?.rain_1h || 0} mm/h</span>
+                </div>
+                <div className="spot-pill">
+                  <span className="pill-label">Soil Moisture</span>
+                  <span className="pill-val">🌱 {queryAnalysis.weather?.soil_moisture || 40}%</span>
+                </div>
+              </div>
+
+              <div className="spot-hazard-row">
+                <div className="hazard-level-badge" style={{
+                  background: (queryAnalysis.risk_analysis?.risk_percentage || 0) > 70 ? 'rgba(239, 68, 68, 0.2)' : 'rgba(56, 189, 248, 0.2)',
+                  color: (queryAnalysis.risk_analysis?.risk_percentage || 0) > 70 ? '#ef4444' : '#38bdf8',
+                  border: `1px solid ${(queryAnalysis.risk_analysis?.risk_percentage || 0) > 70 ? '#ef4444' : '#38bdf8'}`
+                }}>
+                  {queryAnalysis.risk_analysis?.risk_badge || '⚡'} Flash Flood Risk: <strong>{queryAnalysis.risk_analysis?.risk_percentage || 0}% ({queryAnalysis.risk_analysis?.risk_level || 'NOMINAL'})</strong>
+                </div>
+                <div className="peak-discharge-pill">
+                  ⚡ Peak Surge Qp: <strong>{queryAnalysis.hydrology?.peak_discharge_m3s || 120} m³/s</strong>
+                </div>
+              </div>
+
+              {queryAnalysis.nearest_safe_refuge && (
+                <div className="spot-refuge-box">
+                  <span>⛺ Nearest Designated Refuge: </span>
+                  <strong>{queryAnalysis.nearest_safe_refuge.name}</strong>
+                  <span style={{ color: '#10b981', marginLeft: '6px' }}>● {queryAnalysis.nearest_safe_refuge.safety_status || 'SAFE'}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )
+      }
+    </div >
   );
 };
 

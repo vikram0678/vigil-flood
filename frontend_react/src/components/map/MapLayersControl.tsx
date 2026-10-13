@@ -30,9 +30,11 @@ export const MapLayersControl: React.FC = () => {
 
   const handleBaseMapSelect = (type: 'dark' | 'satellite' | 'terrain') => {
     if (type === 'terrain') {
-      setViewMode('3d');
-      setBasemap3D('topo_3d');
       setBasemap2D('google_terrain');
+      setBasemap3D('topo_3d');
+      if (viewMode !== '3d') {
+        setViewMode('3d');
+      }
     } else if (type === 'satellite') {
       setBasemap2D('google_satellite');
       setBasemap3D('google_hybrid');
@@ -43,15 +45,14 @@ export const MapLayersControl: React.FC = () => {
   };
 
   const isCurrentBasemap = (type: 'dark' | 'satellite' | 'terrain') => {
-    if (type === 'terrain') {
-      return viewMode === '3d' && basemap3D === 'topo_3d';
-    }
-    if (viewMode === '2d') {
-      if (type === 'dark') return basemap2D === 'google_dark' || basemap2D === 'google_floodhub';
-      if (type === 'satellite') return basemap2D === 'google_satellite';
-    } else {
-      if (type === 'dark') return basemap3D === 'dark_3d';
+    if (viewMode === '3d') {
+      if (type === 'terrain') return basemap3D === 'topo_3d';
       if (type === 'satellite') return basemap3D === 'google_hybrid' || basemap3D === 'esri_satellite';
+      if (type === 'dark') return basemap3D === 'dark_3d';
+    } else {
+      if (type === 'terrain') return basemap2D === 'google_terrain' || basemap2D === 'topo';
+      if (type === 'satellite') return basemap2D === 'google_satellite';
+      if (type === 'dark') return basemap2D === 'google_dark';
     }
     return false;
   };
@@ -145,8 +146,12 @@ export const MapLayersControl: React.FC = () => {
                 {/* Safe Shelters & Evac Routes */}
                 <button 
                   className={`detail-tile-card ${layers.shelters ? 'active' : ''}`}
-                  onClick={() => toggleLayer('shelters')}
-                  title="Toggle High-Ridge Safe Evacuation Shelters"
+                  onClick={() => {
+                    const nextVal = !layers.shelters;
+                    toggleLayer('shelters', nextVal);
+                    toggleLayer('routes', nextVal);
+                  }}
+                  title="Toggle High-Ridge Safe Shelters & Road Evacuation Corridors"
                 >
                   <div className="tile-icon-bubble shelter-bubble">🛡️</div>
                   <span className="tile-name">Safe Refuge</span>

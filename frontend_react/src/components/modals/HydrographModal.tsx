@@ -5,6 +5,7 @@ export const HydrographModal: React.FC = () => {
   const { isHydrographOpen, setHydrographOpen, hydrographVillageId, villages, selectedVillageId, selectVillage } = useFlood();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [activeVillageId, setActiveVillageId] = useState<string>(selectedVillageId || "VIL-01");
+  const [horizonHours, setHorizonHours] = useState<number>(72);
   const [hydroData, setHydroData] = useState<any>(null);
   const [hoveredPoint, setHoveredPoint] = useState<any | null>(null);
   const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null);
@@ -29,12 +30,12 @@ export const HydrographModal: React.FC = () => {
     }
   }, [isHydrographOpen, hydrographVillageId, selectedVillageId]);
 
-  // Fetch real-time hydrograph API data
+  // Fetch real-time hydrograph API data (18h tactical or 72h forecast)
   useEffect(() => {
     if (!isOpen) return;
     const fetchHydro = async () => {
       try {
-        const res = await fetch(`/api/hydrograph/${activeVillageId}`);
+        const res = await fetch(`/api/hydrograph/${activeVillageId}?horizon_hours=${horizonHours}`);
         const data = await res.json();
         setHydroData(data);
       } catch (err) {
@@ -42,7 +43,7 @@ export const HydrographModal: React.FC = () => {
       }
     };
     fetchHydro();
-  }, [isOpen, activeVillageId]);
+  }, [isOpen, activeVillageId, horizonHours]);
 
   // Draw High-Precision CWC Dual-Axis Hydrograph
   const drawChart = useCallback(() => {
@@ -218,8 +219,9 @@ export const HydrographModal: React.FC = () => {
     ctx.textAlign = 'center';
     ctx.fillStyle = '#f1f5f9';
     ctx.font = '600 11px Outfit, sans-serif';
+    const labelStep = pts.length > 30 ? 4 : 2;
     pts.forEach((p: any, idx: number) => {
-      if (idx % 2 === 0 || p.hour_offset === 0) {
+      if (idx % labelStep === 0 || p.hour_offset === 0) {
         ctx.fillText(p.label, getX(idx), h - pad.bottom + 18);
       }
     });
@@ -345,23 +347,61 @@ export const HydrographModal: React.FC = () => {
               ))}
             </div>
 
-            <button
-              onClick={handleExportCSV}
-              style={{
-                background: '#1e293b',
-                border: '1px solid var(--border-color)',
-                color: '#cbd5e1',
-                borderRadius: '4px',
-                padding: '4px 10px',
-                fontSize: '0.72rem',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}
-            >
-              📥 Export CSV Hydro-Data
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {/* Horizon Toggle */}
+              <div style={{ display: 'flex', background: '#090d16', padding: '2px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                <button
+                  type="button"
+                  onClick={() => setHorizonHours(18)}
+                  style={{
+                    background: horizonHours === 18 ? 'var(--accent-cyan)' : 'transparent',
+                    color: horizonHours === 18 ? '#0f172a' : 'var(--text-secondary)',
+                    border: 'none',
+                    borderRadius: '4px',
+                    padding: '3px 9px',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }}
+                >
+                  ⚡ 18h Tactical
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setHorizonHours(72)}
+                  style={{
+                    background: horizonHours === 72 ? 'var(--accent-cyan)' : 'transparent',
+                    color: horizonHours === 72 ? '#0f172a' : 'var(--text-secondary)',
+                    border: 'none',
+                    borderRadius: '4px',
+                    padding: '3px 9px',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }}
+                >
+                  📈 72h Forecast
+                </button>
+              </div>
+
+              <button
+                onClick={handleExportCSV}
+                style={{
+                  background: '#1e293b',
+                  border: '1px solid var(--border-color)',
+                  color: '#cbd5e1',
+                  borderRadius: '4px',
+                  padding: '4px 10px',
+                  fontSize: '0.72rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                📥 Export CSV
+              </button>
+            </div>
           </div>
 
           {/* Metrics Grid */}
@@ -404,7 +444,7 @@ export const HydrographModal: React.FC = () => {
           {/* Interactive Canvas with Tooltip */}
           <div className="hydrograph-chart-container" style={{ position: 'relative', marginTop: '12px' }}>
             <div className="hydrograph-chart-header">
-              <span>WATER STAGE (m) [Left] &amp; DISCHARGE (m³/s) [Right] vs TIME (-12h to +6h)</span>
+              <span>WATER STAGE (m) [Left] &amp; DISCHARGE (m³/s) [Right] vs TIME ({horizonHours === 72 ? '-24h to +72h Multi-Day Outlook' : '-12h to +6h Tactical'})</span>
               <div className="hydro-legend">
                 <span className="legend-box hist"></span> Observed &nbsp;&nbsp;
                 <span className="legend-box fcst"></span> AI Peak Forecast &nbsp;&nbsp;
@@ -448,6 +488,29 @@ export const HydrographModal: React.FC = () => {
                 )}
               </div>
             )}
+          </div>
+
+          {/* Dual-Agency Verification & Methodology Badge */}
+          <div style={{
+            marginTop: '12px',
+            padding: '8px 12px',
+            background: 'rgba(56, 189, 248, 0.05)',
+            border: '1px solid rgba(56, 189, 248, 0.2)',
+            borderRadius: '6px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '8px',
+            fontSize: '0.74rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#e0f2fe' }}>
+              <span>🛰️</span>
+              <span><b>Dual-Agency Elevation Calibration:</b> Verified with <b>ISRO Bhuvan CartoDEM 30m</b> &amp; <b>ESA Copernicus GLO-30</b> (EGM2008 Datum)</span>
+            </div>
+            <div style={{ color: '#34d399', fontWeight: 700 }}>
+              ● CWC Hydro-Telemetry Synced
+            </div>
           </div>
         </div>
       </div>

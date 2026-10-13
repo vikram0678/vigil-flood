@@ -157,6 +157,45 @@ body.light-theme .navbar {
   box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
 }
 
+/* Fix for Navbar Center Buttons in Light Mode */
+body.light-theme .hud-pill-group {
+  background: rgba(241, 245, 249, 0.9);
+  /* soft slate-100 */
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  /* slate-300 */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+body.light-theme .hud-pill-btn {
+  color: #475569;
+  /* slate-600 */
+}
+
+body.light-theme .hud-pill-btn:hover {
+  background: #ffffff;
+  color: #0f172a;
+  /* slate-900 */
+  border-color: rgba(203, 213, 225, 0.9);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Optional: Fix for Language Dropdown in Light Mode */
+body.light-theme .basin-select-dropdown {
+  background: rgba(241, 245, 249, 0.9);
+  color: #0f172a;
+  border-color: rgba(203, 213, 225, 0.8);
+}
+
+/* Optional: Fix for CAP Broadcast Button in Light Mode */
+body.light-theme .nav-emergency-cta-btn {
+  background: rgba(254, 226, 226, 0.6);
+  /* soft red background */
+  color: #b91c1c;
+  /* solid red text */
+  border-color: rgba(252, 165, 165, 0.5);
+}
+
+
 body.light-theme .brand-title {
   background: linear-gradient(to right, #0f172a, #0284c7);
   -webkit-background-clip: text;
@@ -517,6 +556,7 @@ body.light-theme .search-bar-inner {
   border: 1.5px solid rgba(203, 213, 225, 0.9) !important;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
 }
+
 
 body.light-theme .universal-search-input {
   color: #0f172a !important;
@@ -2809,19 +2849,58 @@ input[type="range"] {
   }
 }
 
-/* Moving River Flow Pulses on Blue Stream Line */
+/* Moving River Flow Pulses on Blue Stream Line (Primary flow layer) */
 .animated-stream-flow-pulse {
-  stroke-dasharray: 8, 16 !important;
-  animation: streamFlowDownhill 1s linear infinite !important;
+  stroke-dasharray: 10, 18 !important;
+  animation: streamFlowDownhill 0.8s linear infinite !important;
+  stroke-linecap: round !important;
+}
+
+/* Secondary fast surface turbulence overlay */
+.animated-stream-turbulence {
+  stroke-dasharray: 4, 22 !important;
+  animation: streamFlowFast 0.5s linear infinite !important;
+  stroke-linecap: round !important;
 }
 
 @keyframes streamFlowDownhill {
   from {
-    stroke-dashoffset: 48;
+    stroke-dashoffset: 56;
   }
 
   to {
     stroke-dashoffset: 0;
+  }
+}
+
+@keyframes streamFlowFast {
+  from {
+    stroke-dashoffset: 52;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Flow direction chevron arrows floating along stream */
+.flow-stream-chevron {
+  transition: transform 0.3s ease;
+  animation: chevronBob 1.8s ease-in-out infinite;
+  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.7));
+}
+
+@keyframes chevronBob {
+
+  0%,
+  100% {
+    opacity: 0.85;
+    transform: translateY(0);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translateY(-2px);
   }
 }
 
@@ -4743,7 +4822,7 @@ body,
   display: flex;
   align-items: center;
   background: #ffffff;
-  /* rgba(15, 23, 42, 0.88); */
+  /* background: rgba(15, 23, 42, 0.88); */
   backdrop-filter: blur(12px);
   border: 1px solid rgba(203, 213, 225, 0.9);
   /* Subtle gray border */
@@ -4767,7 +4846,8 @@ body,
 .universal-search-input {
   flex: 1;
   background: transparent;
-  border: 1px solid black;
+  /* border: 1px solid black; */
+  border: none;
   color: #0f172a;
   /* Dark text on white background (changed from #f8fafc) */
   font-family: 'Outfit', sans-serif;

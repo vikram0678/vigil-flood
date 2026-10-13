@@ -15,6 +15,7 @@ import { CitizenView } from './components/citizen/CitizenView';
 import { AapdaMitraBot } from './components/aapda_mitra/AapdaMitraBot';
 import { ProductTourModal } from './components/tour/ProductTourModal';
 import { TacticalDossierDashboard } from './components/analysis/TacticalDossierDashboard';
+import { IcsFlowchartModal } from './components/modals/IcsFlowchartModal';
 
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
@@ -157,6 +158,7 @@ const DashboardContent: React.FC = () => {
       <EmergencyBroadcastModal />
       <StateAlertsTableModal />
       <GeomorphicZonationModal />
+      <IcsFlowchartModal />
 
       {/* Aapda Mitra AI Disaster Decision Assistant */}
       <AapdaMitraBot />

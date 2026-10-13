@@ -36,13 +36,13 @@ export const BASEMAP_2D_TILES = {
   google_dark: {
     name: "Dark Tactical",
     url: "https://{s}.google.com/vt/lyrs=m&hl=en&gl=IN&x={x}&y={y}&z={z}",
-    options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Cartography Services' },
+    options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Google Maps & Cartography' },
     isDarkFilter: true
   },
   topo: {
-    name: "Open Topo",
-    url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-    options: { maxZoom: 17, subdomains: ['a', 'b', 'c'], attribution: '&copy; OpenStreetMap contributors, SRTM' },
+    name: "Terrain Topo",
+    url: "https://{s}.google.com/vt/lyrs=p&hl=en&gl=IN&x={x}&y={y}&z={z}",
+    options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Google Physical & Cartography' },
     isDarkFilter: false
   }
 };
@@ -70,24 +70,28 @@ export const BASEMAP_3D_SOURCES = {
     attribution: "&copy; Esri World Imagery"
   },
   topo_3d: {
-    name: "3D Contours",
+    name: "3D Topographic Terrain",
     tiles: [
-      "https://a.tile.opentopomap.org/{z}/{x}/{y}.png",
-      "https://b.tile.opentopomap.org/{z}/{x}/{y}.png",
-      "https://c.tile.opentopomap.org/{z}/{x}/{y}.png"
+      "https://mt0.google.com/vt/lyrs=p&hl=en&gl=IN&x={x}&y={y}&z={z}",
+      "https://mt1.google.com/vt/lyrs=p&hl=en&gl=IN&x={x}&y={y}&z={z}",
+      "https://mt2.google.com/vt/lyrs=p&hl=en&gl=IN&x={x}&y={y}&z={z}",
+      "https://mt3.google.com/vt/lyrs=p&hl=en&gl=IN&x={x}&y={y}&z={z}"
     ],
     tileSize: 256,
-    maxzoom: 17,
-    attribution: "&copy; OpenTopoMap"
+    maxzoom: 20,
+    attribution: "&copy; Google Physical & Cartography"
   },
   dark_3d: {
-    name: "3D Dark",
+    name: "3D Dark Tactical",
     tiles: [
-      "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
+      "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+      "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+      "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+      "https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
     ],
     tileSize: 256,
     maxzoom: 19,
-    attribution: "&copy; Esri Dark Gray Base"
+    attribution: "&copy; CartoDB &copy; OpenStreetMap"
   }
 };
 

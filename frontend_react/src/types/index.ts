@@ -101,6 +101,38 @@ export interface ExplainabilityFactor {
   is_primary_driver: boolean;
 }
 
+export interface UncertaintyQuantification {
+  uncertainty_band_pct?: number;
+  confidence_interval_95?: [number, number];
+  display_interval?: string;
+  display_band?: string;
+  epistemic_uncertainty?: number;
+  aleatoric_uncertainty?: number;
+  conformal_interval?: [number, number];
+  conformal_guarantee?: string;
+  mc_dropout_passes?: number;
+}
+
+export interface PhysicsGuardrail {
+  status?: string;
+  law?: string;
+  max_theoretical_runoff_mm?: number;
+  runoff_coefficient?: number;
+  constrained_flood_prob?: number;
+  mass_conservation_satisfied?: boolean;
+  override_applied?: boolean;
+  override_type?: string;
+  explanation?: string;
+}
+
+export interface BayesianModelAveraging {
+  lstm_weight?: number;
+  gbdt_weight?: number;
+  regime?: string;
+  volatility_score?: number;
+  method?: string;
+}
+
 export interface RiskAnalysis {
   risk_level: RiskLevel;
   risk_percentage: number;
@@ -108,14 +140,33 @@ export interface RiskAnalysis {
   model_type: string;
   confidence_score: number;
   explainability: ExplainabilityFactor[];
+  uncertainty_quantification?: UncertaintyQuantification;
+  physics_guardrail?: PhysicsGuardrail;
+  bayesian_model_averaging?: BayesianModelAveraging;
+}
+
+export interface ProbabilisticLeadTimeDistribution {
+  distribution_model?: string;
+  prob_under_15m?: number;
+  prob_15_to_30m?: number;
+  prob_30_to_60m?: number;
+  prob_over_60m?: number;
+  percentiles?: {
+    p10_conservative_m?: number;
+    p50_median_m?: number;
+    p90_upper_m?: number;
+  };
+  histogram?: Array<{ range: string; pct: number; urgency: string }>;
 }
 
 export interface LeadTime {
-  lead_time_min_minutes: number;
-  lead_time_max_minutes: number;
+  lead_time_min_minutes?: number;
+  lead_time_max_minutes?: number;
+  lead_time_min?: number;
   window_display: string;
   evacuation_status: string;
-  recommended_urgency: string;
+  recommended_urgency?: string;
+  probabilistic_distribution?: ProbabilisticLeadTimeDistribution;
 }
 
 export interface SensorStatus {
@@ -150,6 +201,23 @@ export interface RouteInfo {
   path?: [number, number][];
 }
 
+export interface ICSCommandStructure {
+  command_tier?: string;
+  lead_agency?: string;
+  coordination_nodes?: string[];
+  incident_commander?: string;
+  golden_hour_timeline?: Array<{ time: string; action: string }>;
+  tactical_status?: string;
+}
+
+export interface DualAgencyVerification {
+  dem_primary?: string;
+  dem_verification?: string;
+  landslide_susceptibility_atlas?: string;
+  vertical_datum?: string;
+  verification_badge?: string;
+}
+
 export interface ActionPlan {
   headline?: string;
   status?: string;
@@ -163,6 +231,9 @@ export interface ActionPlan {
   blocked_route?: string | RouteInfo;
   public_broadcast?: string;
   simulated_sms_broadcast?: string;
+  ics_command_structure?: ICSCommandStructure;
+  dual_agency_verification?: DualAgencyVerification;
+  disaster_logistics?: any;
 }
 
 export interface VillageDetailResponse {
@@ -172,6 +243,7 @@ export interface VillageDetailResponse {
   lead_time: LeadTime;
   sensor_health: SensorHealth;
   action_plan: ActionPlan;
+  demographics?: any;
 }
 
 export interface WhatIfPreset {

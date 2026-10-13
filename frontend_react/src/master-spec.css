@@ -468,8 +468,8 @@ body {
 /* --- 12. LAYOUT HOTFIXES --- */
 /* Fix SVG ring squishing in left panel */
 .village-risk-ring-container {
-  width: 40px !important;
-  height: 40px !important;
+  width: 46px !important;
+  height: 46px !important;
   flex-shrink: 0 !important;
   display: flex;
   align-items: center;
@@ -932,7 +932,9 @@ body.light-theme .basin-quick-tab-btn::after {
 }
 
 @keyframes spin-clockwise {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .threat-bar-shimmer {
@@ -945,8 +947,13 @@ body.light-theme .basin-quick-tab-btn::after {
 }
 
 @keyframes shimmer-swipe {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 .sidebar-loading-wrapper {
@@ -989,8 +996,13 @@ body.light-theme .basin-quick-tab-btn::after {
 }
 
 @keyframes radar-sweep-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .radar-center-blip {
@@ -1079,7 +1091,84 @@ body.light-theme .basin-quick-tab-btn::after {
 }
 
 .shimmer-effect {
-  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.03) 75%);
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 25%, rgba(255, 255, 255, 0.12) 50%, rgba(255, 255, 255, 0.03) 75%);
   background-size: 200% 100%;
   animation: shimmer-swipe 1.6s infinite linear;
+}
+
+
+
+/* ============================================================
+   WHAT-IF SIMULATION SANDBOX - LIGHT THEME REFINEMENT
+   ============================================================ */
+
+body.light-theme .sandbox-card {
+  background: #ffffff !important;
+  border-top: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+/* 1. Fix "ADJUST TELEMETRY" & Slider Labels (Make them crisp dark slate) */
+body.light-theme .sandbox-sliders-grid span,
+body.light-theme .slider-label-row span,
+body.light-theme .sandbox-interactive-grid span {
+  color: #0f172a !important;
+}
+
+/* Keep the slider values in high-visibility brand colors */
+body.light-theme .slider-val {
+  color: #0284c7 !important;
+  font-weight: 700 !important;
+}
+
+/* 2. Top CWC Hydrology Telemetry Banner (Soft light-grey strip instead of dark slab) */
+body.light-theme .sandbox-sliders-grid-wrapper>div:first-child {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+body.light-theme .sandbox-sliders-grid-wrapper>div:first-child span {
+  color: #334155 !important;
+}
+
+/* 3. Slider Track contrast */
+body.light-theme .sandbox-card input[type="range"] {
+  background: #e2e8f0 !important;
+}
+
+/* 4. "Simulate Sensor Outage" Button in Light Mode */
+body.light-theme .sandbox-card .preset-btn {
+  background: #f1f5f9 !important;
+  color: #334155 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+body.light-theme .sandbox-card .preset-btn:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+
+/* ============================================================
+   LANGUAGE & BASIN DROPDOWN - LIGHT THEME FIX
+   ============================================================ */
+
+/* 1. Make the container pill clean white */
+body.light-theme .basin-selector-container,
+body.light-theme .language-selector-container {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* 2. Make the select box text dark slate */
+body.light-theme .basin-select-dropdown {
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+/* 3. Make the popup menu options clean white with dark text */
+body.light-theme .basin-select-dropdown option {
+  background: #ffffff !important;
+  color: #0f172a !important;
 }

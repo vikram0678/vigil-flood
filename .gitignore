@@ -77,3 +77,7 @@ aapda_mitra_ai_implementation_guide.md
 *.draft.md
 *.scratch.md
 kaggle
+
+# Presentations and PDF decks (keep local, do not commit)
+*.pptx
+*.pdf

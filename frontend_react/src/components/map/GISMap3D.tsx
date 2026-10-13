@@ -12,6 +12,104 @@ const sendTerminalLog = (level: 'INFO' | 'WARN' | 'ERROR', message: string) => {
   }).catch(() => { });
 };
 
+// Helper: Generate a high-resolution elevation & terrain-conforming curved river flood corridor
+// Replaces the crude rectangular box with an organic meandering river surge that hugs mountain contours
+function generateCurvedRiverFloodPolygon(
+  stream: [number, number][], // Array of [lat, lng]
+  dynamicStage: number,
+  waveTime: number
+): [number, number][] {
+  if (!stream || stream.length < 2) return [];
+
+  // Step 1: Smoothly interpolate along river center path
+  const smoothedPath: [number, number][] = [];
+  const SAMPLES_PER_SEGMENT = 6;
+
+  for (let i = 0; i < stream.length - 1; i++) {
+    const p0 = stream[Math.max(0, i - 1)];
+    const p1 = stream[i];
+    const p2 = stream[i + 1];
+    const p3 = stream[Math.min(stream.length - 1, i + 2)];
+
+    for (let s = 0; s < SAMPLES_PER_SEGMENT; s++) {
+      const t = s / SAMPLES_PER_SEGMENT;
+      const t2 = t * t;
+      const t3 = t2 * t;
+
+      // Catmull-Rom spline interpolation for smooth river meanders
+      const lat = 0.5 * (
+        (2 * p1[0]) +
+        (-p0[0] + p2[0]) * t +
+        (2 * p0[0] - 5 * p1[0] + 4 * p2[0] - p3[0]) * t2 +
+        (-p0[0] + 3 * p1[0] - 3 * p2[0] + p3[0]) * t3
+      );
+      const lng = 0.5 * (
+        (2 * p1[1]) +
+        (-p0[1] + p2[1]) * t +
+        (2 * p0[1] - 5 * p1[1] + 4 * p2[1] - p3[1]) * t2 +
+        (-p0[1] + 3 * p1[1] - 3 * p2[1] + p3[1]) * t3
+      );
+      smoothedPath.push([lat, lng]);
+    }
+  }
+  smoothedPath.push(stream[stream.length - 1]);
+
+  const numPts = smoothedPath.length;
+  const leftBank: [number, number][] = [];
+  const rightBank: [number, number][] = [];
+
+  const cosLat = Math.cos((smoothedPath[0][0] * Math.PI) / 180);
+
+  // Step 2: Compute perpendicular banks with terrain valley-widening & downstream wave propagation
+  for (let i = 0; i < numPts; i++) {
+    const prev = smoothedPath[Math.max(0, i - 1)];
+    const next = smoothedPath[Math.min(numPts - 1, i + 1)];
+
+    // Tangent flow vector along riverbed gradient
+    const dLat = next[0] - prev[0];
+    const dLng = next[1] - prev[1];
+
+    const dY = dLat;
+    const dX = dLng * cosLat;
+    const len = Math.hypot(dX, dY) || 0.00001;
+
+    // 90° Perpendicular Normal Vector (pointing toward riverbanks)
+    const normX = -dY / len;
+    const normY = dX / len;
+
+    const normLng = normX / cosLat;
+    const normLat = normY;
+
+    // Valley profile: Wider in the central village basin, narrower in rocky entry/exit gorges
+    const valleyPosition = i / numPts;
+    const basinSpread = 1.0 + 0.85 * Math.sin(valleyPosition * Math.PI);
+
+    // Dynamic water level surge factor
+    const stageExpansion = 1.0 + Math.max(0, (dynamicStage - 1.2) * 0.55);
+
+    // Downstream traveling surge wave crest (phase delay along downstream distance)
+    const waveSurge = 1.0 + 0.12 * Math.sin(waveTime / 400 - valleyPosition * 5.0);
+
+    // Base half-width in degrees (~35m base channel, swells to ~180m+ during flood surge)
+    const halfWidth = 0.00032 * basinSpread * stageExpansion * waveSurge;
+
+    const centerLat = smoothedPath[i][0];
+    const centerLng = smoothedPath[i][1];
+
+    // Left & Right Bank Coordinates [lng, lat]
+    leftBank.push([
+      centerLng + normLng * halfWidth,
+      centerLat + normLat * halfWidth
+    ]);
+    rightBank.push([
+      centerLng - normLng * halfWidth,
+      centerLat - normLat * halfWidth
+    ]);
+  }
+
+  // Step 3: Construct closed watertight polygon (Left Bank -> Right Bank reversed -> Closed)
+  return [...leftBank, ...rightBank.reverse(), leftBank[0]];
+}
 
 export const GISMap3D: React.FC = () => {
   const {
@@ -34,6 +132,30 @@ export const GISMap3D: React.FC = () => {
   const markers3DRef = useRef<maplibregl.Marker[]>([]);
   const droneTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const animFrameRef = useRef<number | null>(null);
+  const [isSurgeEnabled, setIsSurgeEnabled] = useState<boolean>(true);
+  const [isWaveSimulationRunning, setIsWaveSimulationRunning] = useState<boolean>(false);
+  const lastAnimatedVillageIdRef = useRef<string | null>(null);
+  const currentBasemapLayerIdRef = useRef<string>('hybrid-satellite-layer');
+  const currentBasemapSourceIdRef = useRef<string>('hybrid-satellite-source');
+
+  // Real-time hydrodynamic surge state (drives continuous 3D vertical rise & horizontal valley spread)
+  const activeFloodRef = useRef<{
+    redPts: [number, number][];
+    cLat: number;
+    cLng: number;
+    baseStage: number;
+    targetStage: number;
+    isSurging: boolean;
+    riverStream: [number, number][] | null;
+  }>({
+    redPts: [],
+    cLat: 0,
+    cLng: 0,
+    baseStage: 1.8,
+    targetStage: 1.8,
+    isSurging: true,
+    riverStream: null
+  });
 
   // Auto-resize MapLibre GL whenever viewMode switches to 3D (Solves #8277 hidden container 400x300 issue)
   useEffect(() => {
@@ -243,28 +365,151 @@ export const GISMap3D: React.FC = () => {
         }
       });
 
-      // 3D Flood water / Red Core Inundation Polygon Source
+      // 3D Flood water / Dynamic Inundation Water Mesh Source
       map3d.addSource('3d-flood-water-source', {
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] }
       });
 
+      // 3D Water Volume Extrusion (Rises realistically along mountain elevation)
+      map3d.addLayer({
+        id: '3d-flood-water-extrude',
+        type: 'fill-extrusion',
+        source: '3d-flood-water-source',
+        paint: {
+          'fill-extrusion-color': [
+            'case',
+            ['>=', ['coalesce', ['get', 'water_level'], 1.8], 3.0],
+            '#dc2626',
+            ['>=', ['coalesce', ['get', 'water_level'], 1.8], 2.0],
+            '#0284c7',
+            '#0ea5e9'
+          ],
+          'fill-extrusion-height': ['coalesce', ['get', 'extrude_height'], 15],
+          'fill-extrusion-base': 0,
+          'fill-extrusion-opacity': 0.72
+        }
+      });
+
+      // Ground Inundation Footprint
       map3d.addLayer({
         id: '3d-flood-water-fill',
         type: 'fill',
         source: '3d-flood-water-source',
         paint: {
-          'fill-color': '#ef4444',
-          'fill-opacity': 0.60
+          'fill-color': [
+            'case',
+            ['>=', ['coalesce', ['get', 'water_level'], 1.8], 3.0],
+            '#ef4444',
+            ['>=', ['coalesce', ['get', 'water_level'], 1.8], 2.0],
+            '#0284c7',
+            '#38bdf8'
+          ],
+          'fill-opacity': 0.50
         }
       });
 
-      // 3D Stream source
+      // Shimmering Shoreline Boundary Line
+      map3d.addLayer({
+        id: '3d-flood-water-shoreline',
+        type: 'line',
+        source: '3d-flood-water-source',
+        paint: {
+          'line-color': '#ffffff',
+          'line-width': 2.5,
+          'line-opacity': 0.85
+        }
+      });
+
+      // 3D IMD Doppler Weather Radar Reflectivity Source & Layers
+      map3d.addSource('3d-radar-source', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] }
+      });
+
+      map3d.addLayer({
+        id: '3d-radar-fill',
+        type: 'fill',
+        source: '3d-radar-source',
+        paint: {
+          'fill-color': ['coalesce', ['get', 'radar_color'], '#f59e0b'],
+          'fill-opacity': 0.40
+        }
+      });
+
+      map3d.addLayer({
+        id: '3d-radar-outline',
+        type: 'line',
+        source: '3d-radar-source',
+        paint: {
+          'line-color': ['coalesce', ['get', 'radar_color'], '#f59e0b'],
+          'line-width': 2,
+          'line-opacity': 0.75,
+          'line-dasharray': [3, 2]
+        }
+      });
+
+      // 3D Evacuation Routes Source & Layers
+      map3d.addSource('3d-route-source', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] }
+      });
+
+      // Evacuation Route Casing (dark underlay for contrast against mountain terrain)
+      map3d.addLayer({
+        id: '3d-route-casing',
+        type: 'line',
+        source: '3d-route-source',
+        paint: {
+          'line-color': [
+            'case',
+            ['get', 'is_safe'],
+            '#064e3b',
+            '#7f1d1d'
+          ],
+          'line-width': 7,
+          'line-opacity': 0.85
+        }
+      });
+
+      // Evacuation Route Core Polyline
+      map3d.addLayer({
+        id: '3d-route-line',
+        type: 'line',
+        source: '3d-route-source',
+        paint: {
+          'line-color': [
+            'case',
+            ['get', 'is_safe'],
+            '#34d399',
+            '#f87171'
+          ],
+          'line-width': 4,
+          'line-opacity': 0.98,
+          'line-dasharray': [3, 2]
+        }
+      });
+
+      // 3D Stream source (shared by all flow layers)
       map3d.addSource('3d-stream-source', {
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] }
       });
 
+      // Layer 1: Deep channel bed (dark, wide, subtle)
+      map3d.addLayer({
+        id: '3d-stream-bed-layer',
+        type: 'line',
+        source: '3d-stream-source',
+        paint: {
+          'line-color': '#0c4a6e',
+          'line-width': 10,
+          'line-opacity': 0.5,
+          'line-blur': 3
+        }
+      });
+
+      // Layer 2: Core water body (solid mid-blue)
       map3d.addLayer({
         id: '3d-stream-line-layer',
         type: 'line',
@@ -272,35 +517,152 @@ export const GISMap3D: React.FC = () => {
         paint: {
           'line-color': '#0284c7',
           'line-width': 7,
-          'line-opacity': 0.9
+          'line-opacity': 0.88
         }
       });
 
+      // Layer 3: Animated downstream flow dashes (white, moves along the path)
+      map3d.addLayer({
+        id: '3d-stream-flow-layer',
+        type: 'line',
+        source: '3d-stream-source',
+        paint: {
+          'line-color': '#bae6fd',
+          'line-width': 4,
+          'line-opacity': 0.8,
+          'line-dasharray': [0, 4, 3]
+        }
+      });
+
+      // Layer 4: Fast surface particle streaks (very thin, bright, rapid dash)
       map3d.addLayer({
         id: '3d-stream-pulse-layer',
         type: 'line',
         source: '3d-stream-source',
         paint: {
           'line-color': '#ffffff',
-          'line-width': 4,
-          'line-opacity': 0.85,
-          'line-dasharray': [2, 3]
+          'line-width': 2,
+          'line-opacity': 0.65,
+          'line-dasharray': [1, 6]
         }
       });
 
-      // Continuous 3D downhill water velocity pulse animation
-      let pulseStep = 0;
-      const animatePulse = () => {
-        if (map3d.getLayer('3d-stream-pulse-layer')) {
-          pulseStep += 0.06;
-          const opacity = 0.55 + 0.4 * Math.sin(pulseStep);
+      // Animated water flow: cycle through MapLibre dash-array offsets to create
+      // a moving "flowing downstream" effect at ~60fps. This uses NO extra libraries
+      // and runs entirely on MapLibre's existing WebGL pipeline.
+      //
+      // How it works: By smoothly transitioning between dash-array patterns in a
+      // pre-computed sequence, the dashes appear to travel along the line geometry.
+      // Two layers animate at different speeds to simulate depth — slow mid-flow
+      // (Layer 3) and fast surface turbulence (Layer 4).
+      let flowStep = 0;
+      const dashSeqFlow = [
+        [0, 4, 3], [0.5, 4, 2.5], [1, 4, 2], [1.5, 4, 1.5],
+        [2, 4, 1], [2.5, 4, 0.5], [3, 4, 0], [0, 0.5, 3, 3.5],
+        [0, 1, 3, 3], [0, 1.5, 3, 2.5], [0, 2, 3, 2],
+        [0, 2.5, 3, 1.5], [0, 3, 3, 1], [0, 3.5, 3, 0.5]
+      ];
+      const dashSeqPulse = [
+        [1, 6], [0.5, 6, 0.5, 0], [0, 6, 1, 0], [0, 5.5, 1, 0.5],
+        [0, 5, 1, 1], [0, 4.5, 1, 1.5], [0, 4, 1, 2],
+        [0, 3.5, 1, 2.5], [0, 3, 1, 3], [0, 2.5, 1, 3.5],
+        [0, 2, 1, 4], [0, 1.5, 1, 4.5], [0, 1, 1, 5], [0, 0.5, 1, 5.5]
+      ];
+
+      const animateFlow = () => {
+        flowStep++;
+        // Main flow dashes (slower — simulate mid-depth current)
+        if (map3d.getLayer('3d-stream-flow-layer') && flowStep % 3 === 0) {
+          const idx = Math.floor(flowStep / 3) % dashSeqFlow.length;
           try {
-            map3d.setPaintProperty('3d-stream-pulse-layer', 'line-opacity', opacity);
+            map3d.setPaintProperty('3d-stream-flow-layer', 'line-dasharray', dashSeqFlow[idx]);
           } catch (_) { }
         }
-        animFrameRef.current = requestAnimationFrame(animatePulse);
+        // Surface particles (faster — simulate surface turbulence)
+        if (map3d.getLayer('3d-stream-pulse-layer') && flowStep % 2 === 0) {
+          const idx2 = Math.floor(flowStep / 2) % dashSeqPulse.length;
+          try {
+            map3d.setPaintProperty('3d-stream-pulse-layer', 'line-dasharray', dashSeqPulse[idx2]);
+          } catch (_) { }
+        }
+
+        // Continuous 3D Flood Inundation Hydrodynamic Wave Surge
+        // (Rises vertically in 3D + Meanders and spreads outward horizontally along the mountain valley floor)
+        if (flowStep % 2 === 0 && map3d.getSource('3d-flood-water-source')) {
+          const flood = activeFloodRef.current;
+          const hasStream = Boolean(flood.riverStream && flood.riverStream.length >= 2);
+          const hasPolygon = Boolean(flood.redPts && flood.redPts.length > 0);
+
+          if (hasStream || hasPolygon) {
+            // Smoothly track target stage (from What-If slider or wave surge scenario)
+            if (Math.abs(flood.baseStage - flood.targetStage) > 0.01) {
+              flood.baseStage += (flood.targetStage - flood.baseStage) * 0.07;
+            }
+
+            // Natural wave oscillation cycle (~2.8s period)
+            const waveCycle = Math.sin(Date.now() / 450);
+            const surgeAmp = flood.isSurging ? 0.35 + (flood.baseStage * 0.12) : 0;
+            const dynamicStage = Math.max(0.6, flood.baseStage + waveCycle * surgeAmp);
+
+            // 1. Generate Organic Curved River Flood Polygon or scale fallback polygon
+            let expandedCoords: [number, number][] = [];
+            if (hasStream && flood.riverStream) {
+              expandedCoords = generateCurvedRiverFloodPolygon(flood.riverStream, dynamicStage, Date.now());
+            } else {
+              const expansionFactor = 1.0 + Math.max(0, (dynamicStage - 1.2) * 0.22);
+              expandedCoords = flood.redPts.map(pt => {
+                const dLat = pt[0] - flood.cLat;
+                const dLng = pt[1] - flood.cLng;
+                return [flood.cLng + dLng * expansionFactor, flood.cLat + dLat * expansionFactor];
+              });
+              if (expandedCoords.length > 0) {
+                expandedCoords.push(expandedCoords[0]);
+              }
+            }
+
+            // 2. Vertical 3D Extrusion Height (visibly climbs up & down mountain slopes)
+            const extrudeHeight = Math.max(14, dynamicStage * 22);
+
+            try {
+              if (expandedCoords.length > 2) {
+                (map3d.getSource('3d-flood-water-source') as maplibregl.GeoJSONSource).setData({
+                  type: 'FeatureCollection',
+                  features: [{
+                    type: 'Feature',
+                    geometry: { type: 'Polygon', coordinates: [expandedCoords] },
+                    properties: {
+                      water_level: dynamicStage,
+                      extrude_height: extrudeHeight
+                    }
+                  }]
+                });
+              }
+
+              // Dynamic water opacity shimmer and foaming shoreline pulse
+              if (map3d.getLayer('3d-flood-water-shoreline')) {
+                const shorelinePulse = 0.55 + 0.40 * Math.abs(waveCycle);
+                map3d.setPaintProperty('3d-flood-water-shoreline', 'line-opacity', shorelinePulse);
+                map3d.setPaintProperty('3d-flood-water-shoreline', 'line-width', 2.0 + 1.5 * Math.abs(waveCycle));
+              }
+              if (map3d.getLayer('3d-flood-water-extrude')) {
+                const extrudeOpacity = 0.68 + 0.12 * Math.abs(waveCycle);
+                map3d.setPaintProperty('3d-flood-water-extrude', 'fill-extrusion-opacity', extrudeOpacity);
+              }
+
+              // Dynamic stream line width scaling in lockstep with the surge
+              if (map3d.getLayer('3d-stream-bed-layer')) {
+                map3d.setPaintProperty('3d-stream-bed-layer', 'line-width', Math.max(10, 8 + dynamicStage * 3));
+              }
+              if (map3d.getLayer('3d-stream-line-layer')) {
+                map3d.setPaintProperty('3d-stream-line-layer', 'line-width', Math.max(6, 5 + dynamicStage * 2));
+              }
+            } catch (_) { }
+          }
+        }
+
+        animFrameRef.current = requestAnimationFrame(animateFlow);
       };
-      animatePulse();
+      animateFlow();
     });
 
     return () => {
@@ -314,40 +676,65 @@ export const GISMap3D: React.FC = () => {
     };
   }, []);
 
-  // 2. Basemap 3D Switcher
+  // 2. Basemap 3D Switcher (Atomic Dynamic Source/Layer Swap)
   useEffect(() => {
     const map3d = map3dInstanceRef.current;
-    if (!map3d || !map3d.isStyleLoaded()) return;
+    if (!map3d) return;
 
-    const cfg = BASEMAP_3D_SOURCES[basemap3D] || BASEMAP_3D_SOURCES.google_hybrid;
-    console.log(`🗺️ [3D BASEMAP SWITCH] Switching to "${basemap3D}" (${cfg.name})`, cfg.tiles);
+    const apply3DBasemap = () => {
+      const cfg = BASEMAP_3D_SOURCES[basemap3D] || BASEMAP_3D_SOURCES.google_hybrid;
+      console.log(`🗺️ [3D BASEMAP SWITCH] Applying "${basemap3D}" (${cfg.name})`, cfg.tiles);
 
-    try {
-      if (map3d.getLayer('hybrid-satellite-layer')) {
-        map3d.removeLayer('hybrid-satellite-layer');
+      // Unique timestamped IDs guarantee zero layer/source name collisions
+      const newSourceId = `basemap-source-${Date.now()}`;
+      const newLayerId = `basemap-layer-${Date.now()}`;
+
+      try {
+        map3d.addSource(newSourceId, {
+          type: 'raster',
+          tiles: cfg.tiles,
+          tileSize: cfg.tileSize || 256,
+          maxzoom: cfg.maxzoom || 20,
+          attribution: cfg.attribution
+        });
+
+        // Insert underneath contours, river stream, and flood polygons
+        const beforeLayer = map3d.getLayer('3d-topo-contours-line')
+          ? '3d-topo-contours-line'
+          : (map3d.getLayer('3d-stream-bed-layer')
+            ? '3d-stream-bed-layer'
+            : (map3d.getLayer('3d-flood-water-fill') ? '3d-flood-water-fill' : undefined));
+
+        map3d.addLayer({
+          id: newLayerId,
+          type: 'raster',
+          source: newSourceId,
+          minzoom: 0,
+          maxzoom: 22
+        }, beforeLayer);
+
+        // Safely detach and remove previous layer and source
+        const oldLayerId = currentBasemapLayerIdRef.current;
+        const oldSourceId = currentBasemapSourceIdRef.current;
+
+        if (oldLayerId && map3d.getLayer(oldLayerId)) {
+          map3d.removeLayer(oldLayerId);
+        }
+        if (oldSourceId && map3d.getSource(oldSourceId)) {
+          map3d.removeSource(oldSourceId);
+        }
+
+        currentBasemapLayerIdRef.current = newLayerId;
+        currentBasemapSourceIdRef.current = newSourceId;
+      } catch (err) {
+        console.warn("3D basemap switch error:", err);
       }
-      if (map3d.getSource('hybrid-satellite-source')) {
-        map3d.removeSource('hybrid-satellite-source');
-      }
+    };
 
-      map3d.addSource('hybrid-satellite-source', {
-        type: 'raster',
-        tiles: cfg.tiles,
-        tileSize: cfg.tileSize || 256,
-        maxzoom: cfg.maxzoom || 19,
-        attribution: cfg.attribution
-      });
-
-      const beforeLayer = map3d.getLayer('3d-flood-water-fill') ? '3d-flood-water-fill' : undefined;
-      map3d.addLayer({
-        id: 'hybrid-satellite-layer',
-        type: 'raster',
-        source: 'hybrid-satellite-source',
-        minzoom: 0,
-        maxzoom: 22
-      }, beforeLayer);
-    } catch (err) {
-      console.warn("3D basemap switch:", err);
+    if (map3d.isStyleLoaded() || map3d.getStyle()) {
+      apply3DBasemap();
+    } else {
+      map3d.once('load', apply3DBasemap);
     }
   }, [basemap3D]);
 
@@ -482,37 +869,59 @@ export const GISMap3D: React.FC = () => {
           features: []
         });
       }
+      if (map3d.getSource('3d-route-source')) {
+        (map3d.getSource('3d-route-source') as maplibregl.GeoJSONSource).setData({
+          type: 'FeatureCollection',
+          features: []
+        });
+      }
       return;
     }
 
     const v = selectedVillageData.village;
 
-    // Update Stream
+    // Set River Stream Line geometry
     if (v.river_stream && map3d.getSource('3d-stream-source')) {
       const streamGeoJson = v.river_stream.map(pt => [pt[1], pt[0]]);
-      const streamWidth = Math.max(6, simulation.water * 4.5 + (simulation.rain > 80 ? 6 : 0));
       (map3d.getSource('3d-stream-source') as maplibregl.GeoJSONSource).setData({
         type: 'FeatureCollection',
         features: [{
           type: 'Feature',
           geometry: { type: 'LineString', coordinates: streamGeoJson },
-          properties: { stream_width: streamWidth }
+          properties: { stream_width: 7 }
         }]
       });
     }
 
-    // 1. Update 🔴 Red Inundation / Core Disaster Polygon
+    // Centroid calculation for horizontal valley expansion
     const redPts = v.hazard_zones?.red_inundation_polygon || v.inundation_polygon;
-    if (redPts && map3d.getSource('3d-flood-water-source')) {
-      const polyGeoJson = [redPts.map(pt => [pt[1], pt[0]])];
-      (map3d.getSource('3d-flood-water-source') as maplibregl.GeoJSONSource).setData({
-        type: 'FeatureCollection',
-        features: [{
-          type: 'Feature',
-          geometry: { type: 'Polygon', coordinates: polyGeoJson },
-          properties: { water_level: simulation.water }
-        }]
-      });
+    let cLat = 0;
+    let cLng = 0;
+    if (redPts && redPts.length > 0) {
+      cLat = redPts.reduce((acc, p) => acc + p[0], 0) / redPts.length;
+      cLng = redPts.reduce((acc, p) => acc + p[1], 0) / redPts.length;
+    }
+
+    const targetStage = simulation.water || 1.8;
+    const isNewVillage = lastAnimatedVillageIdRef.current !== v.id;
+    lastAnimatedVillageIdRef.current = v.id;
+
+    const hasStream = Boolean(v.river_stream && v.river_stream.length > 1);
+    const hasPolygon = Boolean(redPts && redPts.length > 0);
+
+    if (hasStream || hasPolygon) {
+      activeFloodRef.current = {
+        redPts: redPts || [],
+        cLat,
+        cLng,
+        baseStage: isNewVillage ? Math.max(0.6, targetStage * 0.4) : activeFloodRef.current.baseStage,
+        targetStage,
+        isSurging: isSurgeEnabled,
+        riverStream: hasStream ? (v.river_stream as [number, number][]) : null
+      };
+    } else {
+      activeFloodRef.current.redPts = [];
+      activeFloodRef.current.riverStream = null;
     }
 
     // 2. Update 🟠 Orange Vulnerability & Slope Buffer Polygon
@@ -542,6 +951,56 @@ export const GISMap3D: React.FC = () => {
         }]
       });
     }
+
+    // 4. Update 🛣️ Evacuation Routes Polyline
+    const routes = v.evacuation_routes || v.routes || [];
+    const shelters = v.safe_shelters || v.shelters || [];
+    if (map3d.getSource('3d-route-source')) {
+      const routeFeatures: any[] = [];
+      routes.forEach((r: any, rIdx: number) => {
+        const isSafe = r.safety_score !== undefined ? r.safety_score > 50 : (r.is_safe ?? true);
+        const rawPath = r.path && r.path.length > 0 ? r.path : [[v.lat, v.lng], [shelters[0]?.lat || v.lat, shelters[0]?.lng || v.lng]];
+
+        // Smooth coarse 2-3 point lines into mountain contour road curves
+        let pathCoords = rawPath;
+        if (rawPath.length >= 2 && rawPath.length <= 4) {
+          const smoothed: [number, number][] = [];
+          for (let i = 0; i < rawPath.length - 1; i++) {
+            const p1 = rawPath[i];
+            const p2 = rawPath[i + 1];
+            const dLat = p2[0] - p1[0];
+            const dLng = p2[1] - p1[1];
+            const offsetSign = (i % 2 === 0 ? 1 : -1) * (rIdx % 2 === 0 ? 1 : -1);
+            const midLat = (p1[0] + p2[0]) / 2 + (-dLng) * 0.18 * offsetSign;
+            const midLng = (p1[1] + p2[1]) / 2 + (dLat) * 0.18 * offsetSign;
+            
+            smoothed.push(p1);
+            smoothed.push([(p1[0] * 3 + midLat) / 4, (p1[1] * 3 + midLng) / 4]);
+            smoothed.push([midLat, midLng]);
+            smoothed.push([(midLat + p2[0] * 3) / 4, (midLng + p2[1] * 3) / 4]);
+          }
+          smoothed.push(rawPath[rawPath.length - 1]);
+          pathCoords = smoothed;
+        }
+
+        // MapLibre uses [lng, lat]
+        const lineGeoJson = pathCoords.map((pt: [number, number]) => [pt[1], pt[0]]);
+        routeFeatures.push({
+          type: 'Feature',
+          geometry: { type: 'LineString', coordinates: lineGeoJson },
+          properties: {
+            name: r.name,
+            is_safe: isSafe,
+            safety_score: r.safety_score ?? (isSafe ? 90 : 25)
+          }
+        });
+      });
+
+      (map3d.getSource('3d-route-source') as maplibregl.GeoJSONSource).setData({
+        type: 'FeatureCollection',
+        features: routeFeatures
+      });
+    }
   }, [selectedVillageData, selectedVillageId, simulation, villages]);
 
   // Layer visibility sync for 3D MapLibre
@@ -557,10 +1016,18 @@ export const GISMap3D: React.FC = () => {
       } catch (e) {}
     };
 
+    setVis('3d-flood-water-extrude', layers.hazardZones);
     setVis('3d-flood-water-fill', layers.hazardZones);
+    setVis('3d-flood-water-shoreline', layers.hazardZones);
+    setVis('3d-radar-fill', layers.dopplerRadar);
+    setVis('3d-radar-outline', layers.dopplerRadar);
     setVis('3d-orange-slope-fill', layers.hazardZones);
     setVis('3d-green-safe-fill', layers.hazardZones);
+    setVis('3d-route-casing', layers.routes && layers.shelters);
+    setVis('3d-route-line', layers.routes && layers.shelters);
+    setVis('3d-stream-bed-layer', layers.streams);
     setVis('3d-stream-line-layer', layers.streams);
+    setVis('3d-stream-flow-layer', layers.streams);
     setVis('3d-stream-pulse-layer', layers.streams);
     setVis('3d-topo-contours-line', layers.contoursDEM);
 
@@ -585,6 +1052,56 @@ export const GISMap3D: React.FC = () => {
       map3d.off('zoom', updateMarkerZoomVis);
     };
   }, [layers, selectedVillageId]);
+
+  // Synchronize 3D Doppler Radar Reflectivity Layer from Radar Player events
+  useEffect(() => {
+    const map3d = map3dInstanceRef.current;
+    if (!map3d) return;
+
+    const handleRadarFrame = (e: any) => {
+      if (!layers.dopplerRadar) return;
+      const frame = e.detail?.frame;
+      const frameIdx = e.detail?.frameIndex ?? 3;
+      if (!frame || !map3d.getSource('3d-radar-source')) return;
+
+      const offsetLat = (frameIdx - 3) * 0.04;
+      const offsetLng = (frameIdx - 3) * 0.05;
+      const dbz = frame.peakDbz || 50;
+
+      const radarColor = dbz >= 65 ? '#c026d3' : dbz >= 55 ? '#ef4444' : dbz >= 45 ? '#f97316' : dbz >= 35 ? '#eab308' : '#10b981';
+
+      const stormCenters = [
+        { lat: 31.70 + offsetLat, lng: 77.05 + offsetLng, radius: 0.16 + (dbz / 400) }, // Beas Mandi/Kullu
+        { lat: 30.55 + offsetLat * 0.8, lng: 79.50 + offsetLng * 0.8, radius: 0.14 + (dbz / 450) }, // Alaknanda Chamoli
+        { lat: 27.60 + offsetLat * 1.2, lng: 88.55 + offsetLng * 1.2, radius: 0.15 + (dbz / 420) }, // Teesta Sikkim
+        { lat: 11.60 + offsetLat * 0.5, lng: 76.15 + offsetLng * 0.5, radius: 0.13 + (dbz / 500) }  // Wayanad Kerala
+      ];
+
+      const features = stormCenters.map((sc, i) => {
+        const ring = [];
+        const numPoints = 16;
+        for (let a = 0; a <= numPoints; a++) {
+          const angle = (a / numPoints) * 2 * Math.PI;
+          const wobble = 1.0 + 0.15 * Math.sin(angle * 3 + frameIdx);
+          const r = sc.radius * wobble;
+          ring.push([sc.lng + r * Math.cos(angle) * 1.2, sc.lat + r * Math.sin(angle)]);
+        }
+        return {
+          type: 'Feature' as const,
+          geometry: { type: 'Polygon' as const, coordinates: [ring] },
+          properties: { dbz, radar_color: radarColor, basin_id: i }
+        };
+      });
+
+      (map3d.getSource('3d-radar-source') as maplibregl.GeoJSONSource).setData({
+        type: 'FeatureCollection',
+        features
+      });
+    };
+
+    window.addEventListener('imd-radar-frame-change', handleRadarFrame);
+    return () => window.removeEventListener('imd-radar-frame-change', handleRadarFrame);
+  }, [layers.dopplerRadar]);
 
   // 4b. Camera fly-to for village selection and basin switching
   const lastFlown3DVillageIdRef = useRef<string | null>(null);
@@ -742,6 +1259,25 @@ export const GISMap3D: React.FC = () => {
     });
   };
 
+  const triggerFloodWaveSimulation = () => {
+    if (isWaveSimulationRunning) return;
+    setIsWaveSimulationRunning(true);
+    setIsSurgeEnabled(true);
+    activeFloodRef.current.isSurging = true;
+
+    // Phase 1: Rapid 4.6m breach surge
+    activeFloodRef.current.baseStage = 1.0;
+    activeFloodRef.current.targetStage = 4.6;
+
+    // Phase 2: Peak hold (3s) then recede back to baseline
+    setTimeout(() => {
+      setTimeout(() => {
+        activeFloodRef.current.targetStage = simulation.water || 1.8;
+        setIsWaveSimulationRunning(false);
+      }, 3000);
+    }, 4500);
+  };
+
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
       <div
@@ -753,8 +1289,8 @@ export const GISMap3D: React.FC = () => {
       {/* 3D Tactical Camera Presets & Drone HUD Overlay */}
       <div className="hud-3d-overlay" style={{
         position: 'absolute',
-        top: 60,
-        left: 14,
+        top: 14,
+        left: 330,
         zIndex: 500,
         display: 'flex',
         flexDirection: 'column',
@@ -784,70 +1320,137 @@ export const GISMap3D: React.FC = () => {
           </div>
         )}
 
-        {/* Tactical Angle Presets Bar */}
+        {/* Tactical Controls & Hydrodynamic Wave Surge Bar */}
         <div style={{
-          background: 'rgba(15, 23, 42, 0.88)',
-          border: '1px solid rgba(56, 189, 248, 0.4)',
-          borderRadius: '9999px',
-          padding: '3px 8px',
           display: 'flex',
           alignItems: 'center',
-          gap: '6px',
-          backdropFilter: 'blur(8px)',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.7)',
+          gap: '8px',
+          flexWrap: 'wrap',
           pointerEvents: 'auto'
         }}>
-          <span style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--accent-cyan)', paddingLeft: '4px' }}>
-            3D ANGLE:
-          </span>
-          <button
-            onClick={() => handleCameraPreset(0, 0)}
-            style={{
-              background: '#090d16',
-              border: '1px solid var(--border-color)',
-              color: '#cbd5e1',
-              borderRadius: '9999px',
-              padding: '2px 8px',
-              fontSize: '0.68rem',
-              fontWeight: 600,
-              cursor: 'pointer'
-            }}
-            title="Birds-Eye Orthographic Plan View (0° Pitch)"
-          >
-            🦅 Topo (0°)
-          </button>
-          <button
-            onClick={() => handleCameraPreset(58, -25)}
-            style={{
-              background: 'rgba(56, 189, 248, 0.2)',
-              border: '1px solid #38bdf8',
-              color: '#38bdf8',
-              borderRadius: '9999px',
-              padding: '2px 8px',
-              fontSize: '0.68rem',
-              fontWeight: 700,
-              cursor: 'pointer'
-            }}
-            title="Standard Himalayan Valley Gorge Incline (58° Pitch)"
-          >
-            ⛰️ Valley (58°)
-          </button>
-          <button
-            onClick={() => handleCameraPreset(65, 15)}
-            style={{
-              background: '#090d16',
-              border: '1px solid var(--border-color)',
-              color: '#cbd5e1',
-              borderRadius: '9999px',
-              padding: '2px 8px',
-              fontSize: '0.68rem',
-              fontWeight: 600,
-              cursor: 'pointer'
-            }}
-            title="Steep Mountain Face Incline (65° Pitch)"
-          >
-            🚁 Recon (65°)
-          </button>
+          {/* Tactical Angle Presets Bar */}
+          <div style={{
+            background: 'rgba(15, 23, 42, 0.88)',
+            border: '1px solid rgba(56, 189, 248, 0.4)',
+            borderRadius: '9999px',
+            padding: '3px 8px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            backdropFilter: 'blur(8px)',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.7)'
+          }}>
+            <span style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--accent-cyan)', paddingLeft: '4px' }}>
+              3D ANGLE:
+            </span>
+            <button
+              onClick={() => handleCameraPreset(0, 0)}
+              style={{
+                background: '#090d16',
+                border: '1px solid var(--border-color)',
+                color: '#cbd5e1',
+                borderRadius: '9999px',
+                padding: '2px 8px',
+                fontSize: '0.68rem',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+              title="Birds-Eye Orthographic Plan View (0° Pitch)"
+            >
+              🦅 Topo (0°)
+            </button>
+            <button
+              onClick={() => handleCameraPreset(58, -25)}
+              style={{
+                background: 'rgba(56, 189, 248, 0.2)',
+                border: '1px solid #38bdf8',
+                color: '#38bdf8',
+                borderRadius: '9999px',
+                padding: '2px 8px',
+                fontSize: '0.68rem',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+              title="Standard Himalayan Valley Gorge Incline (58° Pitch)"
+            >
+              ⛰️ Valley (58°)
+            </button>
+            <button
+              onClick={() => handleCameraPreset(65, 15)}
+              style={{
+                background: '#090d16',
+                border: '1px solid var(--border-color)',
+                color: '#cbd5e1',
+                borderRadius: '9999px',
+                padding: '2px 8px',
+                fontSize: '0.68rem',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+              title="Steep Mountain Face Incline (65° Pitch)"
+            >
+              🚁 Recon (65°)
+            </button>
+          </div>
+
+          {/* Dynamic 3D Flood Inundation Surge Controls */}
+          <div style={{
+            background: 'rgba(15, 23, 42, 0.88)',
+            border: isWaveSimulationRunning ? '1px solid #ef4444' : '1px solid rgba(56, 189, 248, 0.4)',
+            borderRadius: '9999px',
+            padding: '3px 8px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            backdropFilter: 'blur(8px)',
+            boxShadow: isWaveSimulationRunning ? '0 0 15px rgba(239, 68, 68, 0.7)' : '0 4px 20px rgba(0, 0, 0, 0.7)'
+          }}>
+            <button
+              onClick={() => {
+                const next = !isSurgeEnabled;
+                setIsSurgeEnabled(next);
+                activeFloodRef.current.isSurging = next;
+              }}
+              style={{
+                background: isSurgeEnabled ? 'rgba(56, 189, 248, 0.22)' : '#090d16',
+                border: isSurgeEnabled ? '1px solid #38bdf8' : '1px solid var(--border-color)',
+                color: isSurgeEnabled ? '#38bdf8' : '#94a3b8',
+                borderRadius: '9999px',
+                padding: '2px 9px',
+                fontSize: '0.68rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+              title="Toggle continuous hydrodynamic 3D wave surge undulation"
+            >
+              <span>🌊</span>
+              <span>Surge Wave: <b>{isSurgeEnabled ? 'LIVE' : 'PAUSED'}</b></span>
+            </button>
+
+            <button
+              onClick={triggerFloodWaveSimulation}
+              disabled={isWaveSimulationRunning}
+              style={{
+                background: isWaveSimulationRunning ? '#dc2626' : 'rgba(239, 68, 68, 0.22)',
+                border: '1px solid #ef4444',
+                color: '#ffffff',
+                borderRadius: '9999px',
+                padding: '2px 10px',
+                fontSize: '0.68rem',
+                fontWeight: 800,
+                cursor: isWaveSimulationRunning ? 'default' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px'
+              }}
+              title="Simulate full 3D flash flood surge lifecycle (1.0m baseflow to 4.6m peak breach)"
+            >
+              <span>{isWaveSimulationRunning ? '🚨 SIMULATING BREACH...' : '⚡ Simulate Flood Wave (1m ➔ 4.6m)'}</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -18,15 +18,15 @@ from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 from pptx.enum.shapes import MSO_SHAPE
 
-TEMPLATE_PATH = r"D:\flash_flood\SIH2026-IDEA-Presentation-Format (3).pptx"
+TEMPLATE_PATH = r"D:\flash_flood\scratch\SIH2026-IDEA-Presentation-Format (3).pptx"
 OUTPUT_PATH = r"D:\flash_flood\SIH2026_VIGIL_FLOOD_WINNER_DECK.pptx"
 FINAL_PATH = r"D:\flash_flood\VIGIL_FLOOD_SIH_FINAL_PRESENTATION.pptx"
 
-# Embedded High-Resolution Visual Graphics (80% Visuals)
-IMG_SLIDE2_WIREFRAME = r"D:\flash_flood\SIH_PROTOTYPE_WIREFRAME_WORKFLOW.jpg"
-IMG_SLIDE3_ARCH      = r"D:\flash_flood\SIH_UNIFIED_TECHNICAL_ARCHITECTURE_SLIDE.jpg"
-IMG_SLIDE4_USP       = r"D:\flash_flood\SIH_MARKET_COMPARISON_USP.jpg"
-IMG_SLIDE5_IMPACT    = r"D:\flash_flood\SIH_IMPACT_BENEFITS_INFOGRAPHIC.jpg"
+# Embedded High-Resolution Visual Graphics (80% Visuals) — Regenerated Clean Versions
+IMG_SLIDE2_WIREFRAME = r"D:\flash_flood\scratch\cleaned_images\clean_workflow.jpg"
+IMG_SLIDE3_ARCH      = r"D:\flash_flood\scratch\cleaned_images\clean_architecture.jpg"
+IMG_SLIDE4_USP       = r"D:\flash_flood\scratch\cleaned_images\clean_market_usp.jpg"
+IMG_SLIDE5_IMPACT    = r"D:\flash_flood\scratch\cleaned_images\clean_impact.jpg"
 
 # -------------------------------------------------------------
 # PALETTE A: TECH & DISASTER AI WINNER COLOR SCHEME

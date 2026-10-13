@@ -9,6 +9,8 @@ import { HazardFilterBar } from './HazardFilterBar';
 import { MapLayersControl } from './MapLayersControl';
 import { MapWeatherHazardSymbols } from '../weather/MapWeatherHazardSymbols';
 import { NationalAlertsDrawer } from '../weather/NationalAlertsDrawer';
+import { RiverCrossSectionHUD } from './RiverCrossSectionHUD';
+import { DopplerRadarPlayer } from './DopplerRadarPlayer';
 
 export const MapContainer: React.FC = () => {
   const { viewMode } = useFlood();
@@ -43,6 +45,12 @@ export const MapContainer: React.FC = () => {
 
       {/* 🧭 Integrated Map Navigation Controls (Top-Left: Compass, Zoom In, Zoom Out, Globe, 2D/3D Mode) */}
       <MapNavControls />
+
+      {/* 📐 Live 2D River Valley Bathymetry & Bridge Clearance Cross-Section HUD */}
+      <RiverCrossSectionHUD />
+
+      {/* 🌧️ IMD Doppler Radar Time-Lapse Scrubber & Loop Player */}
+      <DopplerRadarPlayer />
     </div>
   );
 };

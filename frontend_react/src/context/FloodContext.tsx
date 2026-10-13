@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
-import { 
-  Village, 
-  VillageDetailResponse, 
-  RoleMode, 
+import {
+  Village,
+  VillageDetailResponse,
+  RoleMode,
   ThemeMode,
-  ViewMode, 
-  Basemap2D, 
+  ViewMode,
+  Basemap2D,
   Basemap3D,
   BasinSummary
 } from '../types';
@@ -30,7 +30,7 @@ interface FloodContextType {
   hydrographVillageId: string | null;
   isDroneFlying: boolean;
   theme: ThemeMode;
-  
+
   // Hazard Category Filter (Google Maps Style)
   hazardFilter: 'ALL' | 'LANDSLIDE' | 'FLASH_FLOOD' | 'MULTI_HAZARD';
   setHazardFilter: (filter: 'ALL' | 'LANDSLIDE' | 'FLASH_FLOOD' | 'MULTI_HAZARD') => void;
@@ -397,7 +397,7 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     const isSameVillage = villageId === selectedVillageId;
     setSelectedVillageId(villageId);
-    
+
     // Selecting a village auto-collapses the left panel and opens the right panel
     setIsTelemetryCollapsed(false);
 
