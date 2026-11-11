@@ -366,8 +366,8 @@ export const RiverCrossSectionHUD: React.FC = () => {
                 {isBridgeSubmerged
                   ? (language === 'hi' ? 'पुल जलमग्न — सड़क मार्ग पूर्ण रूप से बंद। वैकल्पिक मार्ग अपनाएं।' : 'Bridge submerged — road cutoff. Divert all traffic to alternate route.')
                   : isDangerBreached
-                  ? (language === 'hi' ? 'जलस्तर HFL से ऊपर। निचले इलाकों से तुरंत निकासी करें।' : 'Stage above HFL. Evacuate low-lying riverbank settlements immediately.')
-                  : (language === 'hi' ? 'जलस्तर सुरक्षित सीमा में। What-If स्लाइडर से सिंक।' : 'Stage within safe thresholds. Synced with What-If Sandbox.')}
+                    ? (language === 'hi' ? 'जलस्तर HFL से ऊपर। निचले इलाकों से तुरंत निकासी करें।' : 'Stage above HFL. Evacuate low-lying riverbank settlements immediately.')
+                    : (language === 'hi' ? 'जलस्तर सुरक्षित सीमा में। What-If स्लाइडर से सिंक।' : 'Stage within safe thresholds. Synced with What-If Sandbox.')}
               </span>
             </div>
 
