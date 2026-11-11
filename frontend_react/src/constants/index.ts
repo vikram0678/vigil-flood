@@ -35,9 +35,9 @@ export const BASEMAP_2D_TILES = {
   },
   google_dark: {
     name: "Dark Tactical",
-    url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-    options: { maxZoom: 20, subdomains: ['a', 'b', 'c', 'd'], attribution: '&copy; CartoDB &copy; OpenStreetMap contributors' },
-    isDarkFilter: false
+    url: "https://{s}.google.com/vt/lyrs=m&hl=en&gl=IN&x={x}&y={y}&z={z}",
+    options: { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '&copy; Cartography Services' },
+    isDarkFilter: true
   },
   topo: {
     name: "Terrain Topo",
