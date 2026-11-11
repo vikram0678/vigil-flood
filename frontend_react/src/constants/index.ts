@@ -84,14 +84,11 @@ export const BASEMAP_3D_SOURCES = {
   dark_3d: {
     name: "3D Dark Tactical",
     tiles: [
-      "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-      "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-      "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-      "https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
+      "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
     ],
     tileSize: 256,
-    maxzoom: 19,
-    attribution: "&copy; CartoDB &copy; OpenStreetMap"
+    maxzoom: 16,
+    attribution: "&copy; Esri Dark Gray Base"
   }
 };
 

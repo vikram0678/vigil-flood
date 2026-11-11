@@ -330,7 +330,7 @@ export const WhatIfSandbox: React.FC = () => {
                     gap: '4px'
                   }}
                 >
-                  <span>↺</span> {t('resetToLive')}
+                  <span></span> {t('resetToLive')}
                 </button>
               </div>
 

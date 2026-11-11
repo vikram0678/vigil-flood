@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import { useFlood } from '../../context/FloodContext';
+import { SystemTopology3D } from '../../architecture/SystemTopology3D';
+
 
 export const MethodologyModal: React.FC = () => {
   const { isMethodologyOpen, setMethodologyOpen } = useFlood();
-  const [activeTab, setActiveTab] = useState<'sources' | 'physics' | 'fallback' | 'xai'>('sources');
+  // const [activeTab, setActiveTab] = useState<'sources' | 'physics' | 'fallback' | 'xai'>('sources');
+  const [activeTab, setActiveTab] = useState<'sources' | 'physics' | 'fallback' | 'xai' | 'topology'>('topology');
+
 
   if (!isMethodologyOpen) return null;
 
@@ -19,25 +23,33 @@ export const MethodologyModal: React.FC = () => {
         </div>
 
         <div className="modal-tabs-nav">
-          <button 
+          <button
+            className={`modal-tab-btn ${activeTab === 'topology' ? 'active' : ''}`}
+            onClick={() => setActiveTab('topology')}
+            style={{ color: '#38bdf8', fontWeight: 800 }}
+          >
+            🌐 3D Process Flow Architecture
+          </button>
+
+          <button
             className={`modal-tab-btn ${activeTab === 'sources' ? 'active' : ''}`}
             onClick={() => setActiveTab('sources')}
           >
             🛰️ Multi-Source Ingestion
           </button>
-          <button 
+          <button
             className={`modal-tab-btn ${activeTab === 'physics' ? 'active' : ''}`}
             onClick={() => setActiveTab('physics')}
           >
             ⚡ Physics + AI Fusion
           </button>
-          <button 
+          <button
             className={`modal-tab-btn ${activeTab === 'fallback' ? 'active' : ''}`}
             onClick={() => setActiveTab('fallback')}
           >
             📡 Sensor Outage Fallback
           </button>
-          <button 
+          <button
             className={`modal-tab-btn ${activeTab === 'xai' ? 'active' : ''}`}
             onClick={() => setActiveTab('xai')}
           >
@@ -46,6 +58,13 @@ export const MethodologyModal: React.FC = () => {
         </div>
 
         <div className="modal-body-content">
+
+          {activeTab === 'topology' && (
+            <div style={{ height: '620px', width: '100%', marginTop: '4px' }}>
+              <SystemTopology3D />
+            </div>
+          )}
+
           {activeTab === 'sources' && (
             <div className="modal-tab-pane active">
               <div className="tab-section-title">Multi-Source Hydrometeorological Data Ingestion Matrix</div>
