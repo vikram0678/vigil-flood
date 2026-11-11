@@ -146,8 +146,12 @@ export const MapLayersControl: React.FC = () => {
                 {/* Safe Shelters & Evac Routes */}
                 <button 
                   className={`detail-tile-card ${layers.shelters ? 'active' : ''}`}
-                  onClick={() => toggleLayer('shelters')}
-                  title="Toggle High-Ridge Safe Evacuation Shelters"
+                  onClick={() => {
+                    const nextVal = !layers.shelters;
+                    toggleLayer('shelters', nextVal);
+                    toggleLayer('routes', nextVal);
+                  }}
+                  title="Toggle High-Ridge Safe Shelters & Road Evacuation Corridors"
                 >
                   <div className="tile-icon-bubble shelter-bubble">🛡️</div>
                   <span className="tile-name">Safe Refuge</span>

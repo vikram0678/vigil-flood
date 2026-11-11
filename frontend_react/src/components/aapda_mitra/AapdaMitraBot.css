@@ -13,9 +13,12 @@
 }
 
 @keyframes aapda-float {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0px);
   }
+
   50% {
     transform: translateY(-8px);
   }
@@ -109,6 +112,7 @@
     transform: scale(0.95);
     opacity: 0.9;
   }
+
   100% {
     transform: scale(1.55);
     opacity: 0;
@@ -130,9 +134,20 @@
 }
 
 @keyframes pulse-dot {
-  0% { transform: scale(0.9); opacity: 0.8; }
-  50% { transform: scale(1.2); opacity: 1; }
-  100% { transform: scale(0.9); opacity: 0.8; }
+  0% {
+    transform: scale(0.9);
+    opacity: 0.8;
+  }
+
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(0.9);
+    opacity: 0.8;
+  }
 }
 
 /* Language Filter Segmented Bar */
@@ -209,8 +224,15 @@
 }
 
 @keyframes slide-up {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Header */
@@ -314,8 +336,15 @@
 }
 
 @keyframes aapda-fade-in {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .aapda-suggestion-pill {
@@ -497,12 +526,25 @@
   animation: typing-bounce 1.4s infinite ease-in-out;
 }
 
-.aapda-typing-dot:nth-child(2) { animation-delay: 0.2s; }
-.aapda-typing-dot:nth-child(3) { animation-delay: 0.4s; }
+.aapda-typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.aapda-typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
 
 @keyframes typing-bounce {
-  0%, 80%, 100% { transform: translateY(0); }
-  40% { transform: translateY(-5px); }
+
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+
+  40% {
+    transform: translateY(-5px);
+  }
 }
 
 @media (max-width: 768px) {
@@ -512,10 +554,161 @@
     padding: 8px 14px;
     font-size: 12.5px;
   }
+
   .aapda-mitra-window {
     bottom: 74px;
     right: 12px;
     width: calc(100vw - 24px);
     height: 480px;
   }
+}
+
+/* ============================================================
+   AAPDA MITRA AI - WHITE (LIGHT) THEME SUPPORT
+   ============================================================ */
+
+/* 1. Main Chat Window Container */
+body.light-theme .aapda-mitra-window {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.14), 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* 2. Chat Header */
+body.light-theme .aapda-chat-header {
+  background: #f8fafc !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+body.light-theme .aapda-header-title {
+  color: #0f172a !important;
+}
+
+body.light-theme .aapda-header-sub {
+  color: #64748b !important;
+}
+
+body.light-theme .aapda-avatar-icon {
+  background: #e0f2fe !important;
+  border-color: #38bdf8 !important;
+}
+
+body.light-theme .aapda-btn-icon {
+  color: #64748b !important;
+}
+
+body.light-theme .aapda-btn-icon:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+/* 3. Output Language Selector Bar */
+body.light-theme .aapda-language-filter-bar {
+  background: #ffffff !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+body.light-theme .aapda-lang-label {
+  color: #64748b !important;
+}
+
+body.light-theme .aapda-lang-pill {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #475569 !important;
+}
+
+body.light-theme .aapda-lang-pill:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+body.light-theme .aapda-lang-pill.active {
+  background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%) !important;
+  color: #ffffff !important;
+  border-color: #0284c7 !important;
+}
+
+/* 4. Active Village Telemetry Sync Banner */
+body.light-theme .aapda-synced-banner {
+  background: #f0f9ff !important;
+  border-bottom: 1px solid #bae6fd !important;
+}
+
+body.light-theme .aapda-synced-left {
+  color: #0284c7 !important;
+}
+
+body.light-theme .aapda-synced-right {
+  color: #475569 !important;
+}
+
+/* 5. Messages Area & Chat Bubbles */
+body.light-theme .aapda-messages-area {
+  background: #f8fafc !important;
+}
+
+body.light-theme .aapda-msg.assistant .aapda-msg-bubble {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
+}
+
+body.light-theme .aapda-msg.assistant .aapda-msg-bubble strong {
+  color: #0284c7 !important;
+}
+
+body.light-theme .aapda-msg-time {
+  color: #94a3b8 !important;
+}
+
+/* 6. Quick Emergency Action Suggestions */
+body.light-theme .aapda-suggestion-pill {
+  background: #0284c7 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25) !important;
+}
+
+body.light-theme .aapda-suggestion-pill:hover {
+  background: #0369a1 !important;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4) !important;
+}
+
+/* 7. Bottom Input Box */
+body.light-theme .aapda-input-form {
+  background: #ffffff !important;
+  border-top: 1px solid #e2e8f0 !important;
+}
+
+body.light-theme .aapda-input-field {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+body.light-theme .aapda-input-field:focus {
+  background: #ffffff !important;
+  border-color: #0284c7 !important;
+}
+
+body.light-theme .aapda-input-field::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* 8. Typing Bubble */
+body.light-theme .aapda-typing {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+/* 9. Floating Launcher Tooltip */
+body.light-theme .aapda-launcher-tooltip {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+}
+
+body.light-theme .aapda-tooltip-title {
+  color: #0f172a !important;
 }

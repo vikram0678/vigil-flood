@@ -2,9 +2,9 @@ import React, { useMemo } from 'react';
 import { useFlood } from '../../context/FloodContext';
 
 export const PilotCatchmentPanel: React.FC = () => {
-  const { 
-    villages, 
-    selectedVillageId, 
+  const {
+    villages,
+    selectedVillageId,
     selectVillage,
     basins,
     activeBasinId,
@@ -20,8 +20,8 @@ export const PilotCatchmentPanel: React.FC = () => {
   }, [villages]);
 
   // Compute District or National Hazard Index average
-  const avgRisk = sortedVillages.length > 0 
-    ? Math.round(sortedVillages.reduce((acc, v) => acc + (v.risk_percentage || 0), 0) / sortedVillages.length) 
+  const avgRisk = sortedVillages.length > 0
+    ? Math.round(sortedVillages.reduce((acc, v) => acc + (v.risk_percentage || 0), 0) / sortedVillages.length)
     : 0;
 
   return (
@@ -119,10 +119,10 @@ export const PilotCatchmentPanel: React.FC = () => {
         </div>
 
         {/* All-India National View Switcher */}
-        <div 
+        <div
           className={`village-card national-overview-card ${selectedVillageId === null ? 'selected' : ''}`}
           onClick={() => selectVillage(null)}
-          style={{ 
+          style={{
             marginBottom: '4px',
             border: selectedVillageId === null ? '1.5px solid var(--accent-cyan)' : '1px dashed var(--border-color)',
             background: selectedVillageId === null ? 'rgba(56, 189, 248, 0.14)' : 'rgba(255, 255, 255, 0.04)'
@@ -137,7 +137,7 @@ export const PilotCatchmentPanel: React.FC = () => {
                   {t('nationalViewTitle')}
                 </div>
                 <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)', marginTop: '2px' }}>
-                  {selectedVillageId === null 
+                  {selectedVillageId === null
                     ? t('nationalOverviewSubtitle')
                     : t('clickToZoomOut')}
                 </div>
@@ -154,8 +154,8 @@ export const PilotCatchmentPanel: React.FC = () => {
         {/* Village List Header & Descending Risk Badge */}
         <div className="village-list-header-row">
           <div className="village-list-header">
-            {activeBasinId === 'ALL' 
-              ? t('allVillagesHeader') 
+            {activeBasinId === 'ALL'
+              ? t('allVillagesHeader')
               : `${(activeBasin?.name || 'BASIN').toUpperCase()} ${t('wardsCount').toUpperCase()}`}
           </div>
           <span className="triage-sort-pill" title="Sorted in strict descending order by live threat percentage">
@@ -197,83 +197,105 @@ export const PilotCatchmentPanel: React.FC = () => {
         ) : (
           /* Descending Triage Ranked Village Cards */
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {sortedVillages.map((v, idx) => {
-            const isSelected = v.id === selectedVillageId;
-            const isCritical = v.risk_level === 'CRITICAL' || v.risk_level === 'EXTREME';
-            const riskPct = v.risk_percentage || 0;
-            const radius = 15;
-            const circumference = 2 * Math.PI * radius;
-            const strokeDashoffset = circumference - (riskPct / 100) * circumference;
-            const ringColor = riskPct >= 70 ? '#ef4444' : riskPct >= 40 ? '#f59e0b' : '#10b981';
+            {sortedVillages.map((v, idx) => {
+              const isSelected = v.id === selectedVillageId;
+              const isCritical = v.risk_level === 'CRITICAL' || v.risk_level === 'EXTREME';
+              const riskPct = v.risk_percentage || 0;
+              const radius = 18;
+              const circumference = 2 * Math.PI * radius;
+              const strokeDashoffset = circumference - (riskPct / 100) * circumference;
+              const ringColor = riskPct >= 70 ? '#ef4444' : riskPct >= 40 ? '#f59e0b' : '#10b981';
 
-            // State abbreviation badge for multi-state view
-            const stateTag = v.state?.includes('Himachal') ? 'HP' : 
-                             v.state?.includes('Uttarakhand') ? 'UK' : 
-                             v.state?.includes('Sikkim') ? 'SK' : 
-                             v.state?.includes('Kerala') ? 'KL' : '';
+              // State abbreviation badge for multi-state view
+              const stateTag = v.state?.includes('Himachal') ? 'HP' :
+                v.state?.includes('Uttarakhand') ? 'UK' :
+                  v.state?.includes('Sikkim') ? 'SK' :
+                    v.state?.includes('Kerala') ? 'KL' : '';
 
-            return (
-              <div
-                key={v.id}
-                className={`village-card ${isSelected ? 'selected' : ''} ${isCritical ? 'severity-critical' : ''}`}
-                onClick={() => selectVillage(v.id)}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
-                  <div className="village-rank-badge" title={`Triage Threat Rank #${idx + 1} (${riskPct}%)`}>
-                    #{idx + 1}
-                  </div>
-                  <div className="village-info" style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                      <h4>{v.name}</h4>
-                      {stateTag && activeBasinId === 'ALL' && (
-                        <span className="village-state-tag" title={v.state}>
-                          {stateTag}
-                        </span>
-                      )}
-                      {isSelected && (
-                        <span className="active-village-pill">
-                          {t('badgeActive')}
-                        </span>
-                      )}
+              return (
+                <div
+                  key={v.id}
+                  className={`village-card ${isSelected ? 'selected' : ''} ${isCritical ? 'severity-critical' : ''}`}
+                  onClick={() => selectVillage(v.id)}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
+                    <div className="village-rank-badge" title={`Triage Threat Rank #${idx + 1} (${riskPct}%)`}>
+                      #{idx + 1}
                     </div>
-                    <div className="village-meta">{t('elevPrefix')} {v.elevation_m}m | {t('slopePrefix')} {v.slope_deg}°</div>
-                    <div className="village-shelter-preview">
-                      <span style={{ color: isCritical ? '#dc2626' : 'var(--text-secondary)', fontWeight: 700 }}>
-                        ⏳ {v.lead_time_display || '10-30 min'}
-                      </span>
-                      <span>•</span>
-                      <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>⛺ {typeof v.primary_shelter === 'object' && v.primary_shelter !== null ? (v.primary_shelter as any).name : (v.primary_shelter || t('safeRidge'))}</span>
+                    <div className="village-info" style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                        <h4>{v.name}</h4>
+                        {stateTag && activeBasinId === 'ALL' && (
+                          <span className="village-state-tag" title={v.state}>
+                            {stateTag}
+                          </span>
+                        )}
+                        {isSelected && (
+                          <span className="active-village-pill">
+                            {t('badgeActive')}
+                          </span>
+                        )}
+                      </div>
+                      <div className="village-meta">{t('elevPrefix')} {v.elevation_m}m | {t('slopePrefix')} {v.slope_deg}°</div>
+                      <div className="village-shelter-preview">
+                        <span style={{ color: isCritical ? '#dc2626' : 'var(--text-secondary)', fontWeight: 700 }}>
+                          ⏳ {v.lead_time_display || '10-30 min'}
+                        </span>
+                        <span>•</span>
+                        <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>⛺ {typeof v.primary_shelter === 'object' && v.primary_shelter !== null ? (v.primary_shelter as any).name : (v.primary_shelter || t('safeRidge'))}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Circular SVG Micro Threat Ring */}
-                <div className="village-risk-ring-container" title={`${v.risk_level} • ${riskPct}% Hazard`}>
-                  <svg width="40" height="40" viewBox="0 0 40 40" className="risk-ring-svg">
-                    <circle cx="20" cy="20" r="15" fill="rgba(15, 23, 42, 0.6)" stroke="rgba(255,255,255,0.08)" strokeWidth="3" />
-                    <circle 
-                      cx="20" 
-                      cy="20" 
-                      r="15" 
-                      fill="transparent" 
-                      stroke={ringColor} 
-                      strokeWidth="3" 
-                      strokeDasharray={circumference}
-                      strokeDashoffset={strokeDashoffset}
-                      strokeLinecap="round"
-                      transform="rotate(-90 20 20)"
-                      style={{ transition: 'stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1)' }}
-                    />
-                  </svg>
-                  <div className="risk-ring-text" style={{ color: ringColor }}>
-                    {riskPct}%
+                  {/* Circular SVG Micro Threat Ring */}
+                  {/* <div className="village-risk-ring-container" title={`${v.risk_level} • ${riskPct}% Hazard`}>
+                    <svg width="40" height="40" viewBox="0 0 40 40" className="risk-ring-svg">
+                      <circle cx="20" cy="20" r="15" fill="rgba(15, 23, 42, 0.6)" stroke="rgba(255,255,255,0.08)" strokeWidth="3" />
+                      <circle
+                        cx="20"
+                        cy="20"
+                        r="15"
+                        fill="transparent"
+                        stroke={ringColor}
+                        strokeWidth="3"
+                        strokeDasharray={circumference}
+                        strokeDashoffset={strokeDashoffset}
+                        strokeLinecap="round"
+                        transform="rotate(-90 20 20)"
+                        style={{ transition: 'stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1)' }}
+                      />
+                    </svg>
+                    <div className="risk-ring-text" style={{ color: ringColor }}>
+                      {riskPct}%
+                    </div>
+                  </div> */}
+                  <div className="village-risk-ring-container" title={`${v.risk_level} • ${riskPct}% Hazard`}>
+                    <svg width="46" height="46" viewBox="0 0 46 46" className="risk-ring-svg">
+                      <circle cx="23" cy="23" r="18" fill="rgba(15, 23, 42, 0.6)" stroke="rgba(255,255,255,0.08)" strokeWidth="3" />
+                      <circle
+                        cx="23"
+                        cy="23"
+                        r="18"
+                        fill="transparent"
+                        stroke={ringColor}
+                        strokeWidth="3"
+                        strokeDasharray={circumference}
+                        strokeDashoffset={strokeDashoffset}
+                        strokeLinecap="round"
+                        transform="rotate(-90 23 23)"
+                        style={{ transition: 'stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1)' }}
+                      />
+                    </svg>
+                    <div className="risk-ring-text" style={{ color: ringColor }}>
+                      {riskPct}%
+                    </div>
                   </div>
+
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
       </div>
     </aside>
   );
