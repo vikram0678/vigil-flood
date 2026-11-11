@@ -2809,20 +2809,48 @@ input[type="range"] {
   }
 }
 
-/* Moving River Flow Pulses on Blue Stream Line */
+/* Moving River Flow Pulses on Blue Stream Line (Primary flow layer) */
 .animated-stream-flow-pulse {
-  stroke-dasharray: 8, 16 !important;
-  animation: streamFlowDownhill 1s linear infinite !important;
+  stroke-dasharray: 10, 18 !important;
+  animation: streamFlowDownhill 0.8s linear infinite !important;
+  stroke-linecap: round !important;
+}
+
+/* Secondary fast surface turbulence overlay */
+.animated-stream-turbulence {
+  stroke-dasharray: 4, 22 !important;
+  animation: streamFlowFast 0.5s linear infinite !important;
+  stroke-linecap: round !important;
 }
 
 @keyframes streamFlowDownhill {
   from {
-    stroke-dashoffset: 48;
+    stroke-dashoffset: 56;
   }
-
   to {
     stroke-dashoffset: 0;
   }
+}
+
+@keyframes streamFlowFast {
+  from {
+    stroke-dashoffset: 52;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Flow direction chevron arrows floating along stream */
+.flow-stream-chevron {
+  transition: transform 0.3s ease;
+  animation: chevronBob 1.8s ease-in-out infinite;
+  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.7));
+}
+
+@keyframes chevronBob {
+  0%, 100% { opacity: 0.85; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-2px); }
 }
 
 /* ======================================================== */

@@ -120,7 +120,7 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [selectedVillageData, setSelectedVillageData] = useState<VillageDetailResponse | null>(null);
   const [role, setRoleState] = useState<RoleMode>("authority");
   const [viewMode, setViewMode] = useState<ViewMode>("2d");
-  const [basemap2D, setBasemap2D] = useState<Basemap2D>("google_floodhub");
+  const [basemap2D, setBasemap2D] = useState<Basemap2D>("google_dark");
   const [basemap3D, setBasemap3D] = useState<Basemap3D>("google_hybrid");
   const [isMethodologyOpen, setMethodologyOpen] = useState<boolean>(false);
   const [isGeomorphicOpen, setGeomorphicOpen] = useState<boolean>(false);

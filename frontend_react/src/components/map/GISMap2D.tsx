@@ -51,6 +51,7 @@ export const GISMap2D: React.FC = () => {
     viewMode,
     basemap2D,
     layers,
+    simulation,
     activeBasin,
     activeBasinId
   } = useFlood();
@@ -68,6 +69,8 @@ export const GISMap2D: React.FC = () => {
   const sensorLayerRef = useRef<L.LayerGroup>(L.layerGroup());
   const contoursLayerRef = useRef<L.LayerGroup>(L.layerGroup());
   const dopplerLayerRef = useRef<L.TileLayer | null>(null);
+  const dopplerRadarGroupRef = useRef<L.LayerGroup>(L.layerGroup());
+  const renderedWaterStageRef = useRef<number | null>(null);
   const markersRef = useRef<Record<string, L.CircleMarker>>({});
   const hexPolygonsRef = useRef<Record<string, L.Polygon>>({});
 
@@ -116,6 +119,7 @@ export const GISMap2D: React.FC = () => {
     routeLayerRef.current = L.layerGroup().addTo(map);
     sensorLayerRef.current = L.layerGroup().addTo(map);
     contoursLayerRef.current = L.layerGroup().addTo(map);
+    dopplerRadarGroupRef.current = L.layerGroup().addTo(map);
     markersRef.current = {};
     hexPolygonsRef.current = {};
     renderedVillageIdRef.current = null;
@@ -223,6 +227,7 @@ export const GISMap2D: React.FC = () => {
     }
 
     baseLayerRef.current = L.tileLayer(cfg.url, cfg.options).addTo(map);
+    baseLayerRef.current.bringToBack();
 
     if (mapContainerRef.current) {
       if (cfg.isDarkFilter) {
@@ -526,13 +531,19 @@ export const GISMap2D: React.FC = () => {
     }
 
     // Case 2: A specific village IS selected
-    // If already rendered with full detail for this exact village, do not clear or re-render (prevents layer disappearance)
-    if (renderedVillageIdRef.current === v.id && renderedHasDetailRef.current === true) {
+    // If already rendered with full detail and water stage hasn't changed, skip re-render
+    const currentWaterStage = simulation?.water ?? 1.8;
+    if (
+      renderedVillageIdRef.current === v.id && 
+      renderedHasDetailRef.current === hasDetail && 
+      renderedWaterStageRef.current === currentWaterStage
+    ) {
       return;
     }
 
     renderedVillageIdRef.current = v.id;
     renderedHasDetailRef.current = hasDetail;
+    renderedWaterStageRef.current = currentWaterStage;
 
     hazardLayerRef.current.clearLayers();
     streamLayerRef.current.clearLayers();
@@ -545,26 +556,36 @@ export const GISMap2D: React.FC = () => {
     // A. Concentric 3-Tier Catchment Hazard Buffer Zones (🔴 Core, 🟠 Buffer, 🟡 Watch/🟢 Refuge)
     const zones = v.hazard_zones;
     if (zones) {
-      // 🔴 RED ZONE: Core Inundation & Direct Debris Impact Zone
+      // 🔴 RED ZONE: Core Inundation & Dynamic Flood Water Footprint (Expands outward with What-If Stage)
       if (zones.red_inundation_polygon && zones.red_inundation_polygon.length > 0) {
-        const redPoly = L.polygon(zones.red_inundation_polygon, {
-          color: "#ef4444",
-          fillColor: "#ef4444",
-          fillOpacity: isCritical ? 0.60 : 0.40,
-          weight: isCritical ? 3.5 : 2.5,
-          dashArray: isCritical ? "4, 6" : undefined,
+        const pts = zones.red_inundation_polygon;
+        const expansionFactor = 1.0 + Math.max(0, (currentWaterStage - 1.2) * 0.18);
+        const cLat = pts.reduce((acc, p) => acc + p[0], 0) / pts.length;
+        const cLng = pts.reduce((acc, p) => acc + p[1], 0) / pts.length;
+        const scaledInundation = pts.map(p => [
+          cLat + (p[0] - cLat) * expansionFactor,
+          cLng + (p[1] - cLng) * expansionFactor
+        ] as [number, number]);
+
+        const waterColor = currentWaterStage >= 3.0 ? '#ef4444' : currentWaterStage >= 2.0 ? '#0284c7' : '#38bdf8';
+
+        const redPoly = L.polygon(scaledInundation, {
+          color: waterColor,
+          fillColor: waterColor,
+          fillOpacity: isCritical || currentWaterStage >= 3.0 ? 0.65 : 0.45,
+          weight: isCritical || currentWaterStage >= 3.0 ? 3.5 : 2.5,
           className: "hazard-polygon-red"
         });
         redPoly.bindTooltip(`
           <div style="font-family:'Outfit',sans-serif; min-width:210px; padding:2px;">
-            <div style="display:flex; align-items:center; gap:6px; font-weight:800; font-size:0.85rem; color:#ef4444; border-bottom:1px solid rgba(239,68,68,0.3); padding-bottom:3px; margin-bottom:4px;">
-              <span>🔴</span> <span>CORE INUNDATION ZONE</span>
+            <div style="display:flex; align-items:center; gap:6px; font-weight:800; font-size:0.85rem; color:${waterColor}; border-bottom:1px solid rgba(255,255,255,0.2); padding-bottom:3px; margin-bottom:4px;">
+              <span>🌊</span> <span>CORE INUNDATION FOOTPRINT</span>
             </div>
             <div style="font-size:0.75rem; color:#cbd5e1; margin-bottom:4px;">
-              <b>Direct Riverine Submergence & Active Landslide Footprint</b>
+              Stage: <b>${currentWaterStage.toFixed(2)}m</b> • Expansion: <b>+${Math.round((expansionFactor - 1) * 100)}% Area</b>
             </div>
             <div style="font-size:0.72rem; color:#fca5a5; background:rgba(239,68,68,0.15); padding:4px 6px; border-radius:4px; border-left:3px solid #ef4444;">
-              🚨 <b>DIRECTIVE:</b> Compulsory immediate evacuation to designated high-ground refuge.
+              🚨 <b>DIRECTIVE:</b> Evacuate uphill to designated shelter.
             </div>
           </div>
         `, { sticky: true });
@@ -651,14 +672,23 @@ export const GISMap2D: React.FC = () => {
       });
       streamLayerRef.current.addLayer(coreStreamLine);
 
-      // 3. Continuous Animated Downhill Pulse Line
+      // 3. Continuous Animated Downhill Pulse Line (mid-depth flow)
       const pulseLine = L.polyline(stream, {
-        color: "#ffffff",
+        color: "#bae6fd",
         weight: 3.5,
-        opacity: 0.95,
+        opacity: 0.90,
         className: "animated-stream-flow-pulse"
       });
       streamLayerRef.current.addLayer(pulseLine);
+
+      // 3b. Fast Surface Turbulence Overlay (thinner, faster dashes)
+      const turbulenceLine = L.polyline(stream, {
+        color: "#ffffff",
+        weight: 1.8,
+        opacity: 0.75,
+        className: "animated-stream-turbulence"
+      });
+      streamLayerRef.current.addLayer(turbulenceLine);
 
       // 4. Multiple Evenly-Spaced Downhill Flow Direction Arrows
       const flowArrows = getDownhillFlowArrowPoints(stream);
@@ -781,7 +811,65 @@ export const GISMap2D: React.FC = () => {
       }
       sensorLayerRef.current.addLayer(sensorMarker);
     });
-  }, [selectedVillageData, villages, allVillages, activeBasinId, selectedVillageId]);
+  }, [selectedVillageData, villages, allVillages, activeBasinId, selectedVillageId, simulation?.water]);
+
+  // Synchronize 2D Doppler Radar Storm Polygons from Radar Player events
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    const handleRadarFrame = (e: any) => {
+      if (!layers.dopplerRadar || !dopplerRadarGroupRef.current) return;
+      const frame = e.detail?.frame;
+      const frameIdx = e.detail?.frameIndex ?? 3;
+      if (!frame) return;
+
+      dopplerRadarGroupRef.current.clearLayers();
+
+      const offsetLat = (frameIdx - 3) * 0.04;
+      const offsetLng = (frameIdx - 3) * 0.05;
+      const dbz = frame.peakDbz || 50;
+      const radarColor = dbz >= 65 ? '#c026d3' : dbz >= 55 ? '#ef4444' : dbz >= 45 ? '#f97316' : dbz >= 35 ? '#eab308' : '#10b981';
+
+      const stormCenters = [
+        { lat: 31.70 + offsetLat, lng: 77.05 + offsetLng, radius: 0.16 + (dbz / 400), name: 'Beas-Kullu Cloudburst Cell' },
+        { lat: 30.55 + offsetLat * 0.8, lng: 79.50 + offsetLng * 0.8, radius: 0.14 + (dbz / 450), name: 'Alaknanda Convective Band' },
+        { lat: 27.60 + offsetLat * 1.2, lng: 88.55 + offsetLng * 1.2, radius: 0.15 + (dbz / 420), name: 'Teesta Basin Storm Core' },
+        { lat: 11.60 + offsetLat * 0.5, lng: 76.15 + offsetLng * 0.5, radius: 0.13 + (dbz / 500), name: 'Wayanad Monsoon Influx' }
+      ];
+
+      stormCenters.forEach(sc => {
+        const ring: [number, number][] = [];
+        const numPoints = 18;
+        for (let a = 0; a <= numPoints; a++) {
+          const angle = (a / numPoints) * 2 * Math.PI;
+          const wobble = 1.0 + 0.15 * Math.sin(angle * 3 + frameIdx);
+          const r = sc.radius * wobble;
+          ring.push([sc.lat + r * Math.sin(angle), sc.lng + r * Math.cos(angle) * 1.2]);
+        }
+
+        const radarPoly = L.polygon(ring, {
+          color: radarColor,
+          fillColor: radarColor,
+          fillOpacity: 0.38,
+          weight: 2,
+          dashArray: '4, 4',
+          className: 'doppler-radar-storm-poly'
+        });
+        radarPoly.bindTooltip(`
+          <div style="font-family:'Outfit',sans-serif; padding:2px;">
+            <div style="font-weight:800; color:${radarColor};">🌧️ ${sc.name}</div>
+            <div style="font-size:11px; color:#cbd5e1;">Reflectivity: <b>${dbz} dBZ</b> • Frame: <b>${frame.timeLabel}</b></div>
+            <div style="font-size:10px; color:#38bdf8; margin-top:2px;">Status: ${frame.status}</div>
+          </div>
+        `, { sticky: true });
+        dopplerRadarGroupRef.current.addLayer(radarPoly);
+      });
+    };
+
+    window.addEventListener('imd-radar-frame-change', handleRadarFrame);
+    return () => window.removeEventListener('imd-radar-frame-change', handleRadarFrame);
+  }, [layers.dopplerRadar]);
 
   // Camera fly-to for village selection and basin switching
   const lastFlownVillageIdRef = useRef<string | null>(null);
@@ -790,7 +878,6 @@ export const GISMap2D: React.FC = () => {
     const map = mapInstanceRef.current;
     if (!map || viewMode !== '2d') return;
 
-    // Check if map container has valid rendered pixel dimensions
     try {
       const size = map.getSize();
       if (!size || size.x <= 0 || size.y <= 0 || isNaN(size.x) || isNaN(size.y)) {
@@ -800,7 +887,6 @@ export const GISMap2D: React.FC = () => {
       return;
     }
 
-    // 1. Village Selection FlyTo (zoom in smoothly and instantly when village is clicked!)
     if (selectedVillageId) {
       if (lastFlownVillageIdRef.current !== selectedVillageId) {
         const sourceVillages = allVillages && allVillages.length > 0 ? allVillages : villages;
@@ -810,7 +896,7 @@ export const GISMap2D: React.FC = () => {
         if (targetVillage && typeof targetVillage.lat === 'number' && typeof targetVillage.lng === 'number' && !isNaN(targetVillage.lat) && !isNaN(targetVillage.lng)) {
           lastFlownVillageIdRef.current = selectedVillageId;
           try {
-            map.stop(); // Stop any pending camera animation immediately so it shifts cleanly
+            map.stop();
             map.flyTo([targetVillage.lat, targetVillage.lng], 13.5, {
               duration: 1.0,
               easeLinearity: 0.25
@@ -823,9 +909,6 @@ export const GISMap2D: React.FC = () => {
       return;
     }
 
-    // 2. Unselection FlyTo (when selectedVillageId is null)
-    // Crucial: DO NOT zoom in after selecting state in the left sidebar!
-    // Only fly back to overview if a village was previously selected and is now deselected.
     if (!selectedVillageId) {
       if (lastFlownVillageIdRef.current !== null) {
         lastFlownVillageIdRef.current = null;
@@ -865,9 +948,9 @@ export const GISMap2D: React.FC = () => {
     if (layers.contoursDEM) map.addLayer(contoursLayerRef.current);
     else map.removeLayer(contoursLayerRef.current);
 
-    if (dopplerLayerRef.current) {
-      if (layers.dopplerRadar) map.addLayer(dopplerLayerRef.current);
-      else map.removeLayer(dopplerLayerRef.current);
+    if (dopplerRadarGroupRef.current) {
+      if (layers.dopplerRadar) map.addLayer(dopplerRadarGroupRef.current);
+      else map.removeLayer(dopplerRadarGroupRef.current);
     }
 
     // Village markers visibility
