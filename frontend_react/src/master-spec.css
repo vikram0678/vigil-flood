@@ -435,7 +435,9 @@ body {
   }
 }
 
+/* Clean Geospatial Markers: Hide dense permanent elevation badges by default to prevent Himalayan card overlapping */
 .senior-elevation-tag {
+  display: none !important;
   background: var(--surface-primary);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
@@ -443,10 +445,22 @@ body {
   font-size: 0.78rem;
   font-weight: 700;
   font-family: var(--font-mono);
-  display: flex;
   gap: 4px;
   margin-top: 4px;
   box-shadow: var(--shadow-subtle);
+}
+
+/* Reveal elevation & threat tag on the SELECTED village or when HOVERED / TAPPED */
+.senior-hazard-pin-wrapper.village-selected-beacon .senior-elevation-tag,
+.senior-hazard-pin-wrapper:hover .senior-elevation-tag,
+.senior-hazard-pin-wrapper:active .senior-elevation-tag {
+  display: flex !important;
+  position: absolute !important;
+  top: 100% !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 9999 !important;
+  white-space: nowrap !important;
 }
 
 /* --- 11. MAP RIVERS: HYDRODYNAMIC FLOW --- */
@@ -1362,18 +1376,21 @@ body.light-theme .basin-select-dropdown option {
     z-index: 1100 !important;
   }
 
+  /* National Alerts Pill: Positioned on open left margin below search to avoid crowding zoom controls */
   .drawer-toggle-tab-closed {
     top: 60px !important;
-    right: 56px !important;
+    left: 10px !important;
+    right: auto !important;
     width: auto !important;
-    max-width: 140px !important;
-    font-size: 0.7rem !important;
-    padding: 6px 10px !important;
+    max-width: 150px !important;
+    font-size: 0.72rem !important;
+    padding: 6px 12px !important;
     z-index: 1100 !important;
   }
 
+  /* Hazard Filter Bar: Floats cleanly right above the collapsed Sandbox Dock */
   .hazard-filter-bar-container {
-    bottom: 50px !important;
+    bottom: 96px !important;
     left: 8px !important;
     right: 8px !important;
     transform: none !important;
@@ -1413,12 +1430,13 @@ body.light-theme .basin-select-dropdown option {
     flex-wrap: nowrap !important;
     overflow-x: auto !important;
     gap: 6px !important;
+    padding-right: 12px !important;
   }
 
-  /* 6. Aapda Mitra Mobile Placement (floating above bottom tab bar) */
+  /* 6. Aapda Mitra Mobile Placement (floats safely above What-If Sandbox with zero overlap) */
   .aapda-launcher-wrapper {
     position: fixed !important;
-    bottom: 68px !important;
+    bottom: 148px !important;
     right: 14px !important;
     z-index: 9995 !important;
   }
