@@ -214,44 +214,76 @@ export const WhatIfSandbox: React.FC = () => {
 
   return (
     <div className={`sandbox-card simulation-dock ${isCollapsed ? 'collapsed' : ''} full-width-dock`} id="tour-sandbox-card">
-      <div className="sandbox-header" style={{ justifyContent: 'flex-start', gap: '14px' }}>
+      <div className="sandbox-pull-handle" />
+      <div 
+        className="sandbox-header" 
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        style={{ justifyContent: 'flex-start', gap: '8px', cursor: 'pointer' }}
+      >
         <button
+          type="button"
           className="sandbox-toggle-btn icon-only"
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          title={isCollapsed ? "Expand Sandbox" : "Collapse Sandbox"}
-          style={{ width: '28px', height: '28px', padding: 0, display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+          onClick={(e) => { e.stopPropagation(); setIsCollapsed(!isCollapsed); }}
+          title={isCollapsed ? "Expand Sandbox Controls" : "Collapse Sandbox Controls"}
+          aria-label={isCollapsed ? "Expand Sandbox Controls" : "Collapse Sandbox Controls"}
+          style={{ width: '26px', height: '26px', padding: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', borderRadius: '6px', flexShrink: 0 }}
         >
-          <span className="toggle-chevron">{isCollapsed ? '▾' : '▴'}</span>
+          <span className="toggle-chevron">{isCollapsed ? '▴' : '▾'}</span>
         </button>
 
-        <div className="sandbox-title-group" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexDirection: 'row' }}>
-          <div className="sandbox-title" style={{ margin: 0, fontSize: '0.84rem' }}>{t('interactiveSimulation')}</div>
+        <div className="sandbox-title-group" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexDirection: 'row', flex: 1, overflow: 'hidden' }}>
+          <div className="sandbox-title" style={{ margin: 0, fontSize: '0.82rem', whiteSpace: 'nowrap' }}>{t('interactiveSimulation')}</div>
           {isCollapsed && (
-            <div className="sandbox-compact-preview" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span className="compact-preset-badge">{currentPresetName}</span>
-              <span className="compact-metric-pill">🌧️ {Number(simulation.rain).toFixed(2)} mm/h</span>
-              <span className="compact-metric-pill">🌱 {Number(simulation.soil).toFixed(2)}%</span>
-              <span className="compact-metric-pill">🌊 {Number(simulation.water).toFixed(2)} m</span>
-              <span className="compact-metric-pill" style={{ color: isExtremeBreached ? '#ef4444' : '#38bdf8' }}>
+            <div className="sandbox-compact-preview" style={{ display: 'flex', alignItems: 'center', gap: '6px', overflowX: 'auto' }}>
+              <span className="compact-preset-badge" style={{ padding: '2px 6px', fontSize: '0.65rem' }}>{currentPresetName}</span>
+              <span className="compact-metric-pill" style={{ padding: '2px 6px', fontSize: '0.65rem' }}>🌧️ {Number(simulation.rain).toFixed(2)} mm/h</span>
+              <span className="compact-metric-pill" style={{ padding: '2px 6px', fontSize: '0.65rem' }}>🌱 {Number(simulation.soil).toFixed(2)}%</span>
+              <span className="compact-metric-pill" style={{ padding: '2px 6px', fontSize: '0.65rem' }}>🌊 {Number(simulation.water).toFixed(2)} m</span>
+              <span className="compact-metric-pill" style={{ padding: '2px 6px', fontSize: '0.65rem', color: isExtremeBreached ? '#ef4444' : '#38bdf8' }}>
                 ⚡ Qp: {peakDischargeM3s} m³/s
               </span>
             </div>
           )}
         </div>
 
-        <div className="sandbox-header-actions" style={{ marginLeft: 'auto' }}>
-          {!isCollapsed && (
-            <div className="preset-buttons">
+        <div className="sandbox-header-actions" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+          {isCollapsed ? (
+            <span 
+              className="expand-hint-badge"
+              style={{
+                fontSize: '0.68rem',
+                fontWeight: 700,
+                color: '#38bdf8',
+                background: 'rgba(56, 189, 248, 0.12)',
+                border: '1px solid rgba(56, 189, 248, 0.3)',
+                borderRadius: '4px',
+                padding: '2px 7px',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              ▴ Expand
+            </span>
+          ) : (
+            <div className="preset-buttons" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               {presets.map((p) => (
                 <button
                   key={p.id}
                   className={`preset-btn ${simulation.activePreset === p.id ? 'active' : ''}`}
-                  onClick={() => applyScenario(p.id)}
+                  onClick={(e) => { e.stopPropagation(); applyScenario(p.id); }}
                   style={{ padding: '3px 8px', fontSize: '0.72rem' }}
                 >
                   {p.name}
                 </button>
               ))}
+              <button
+                type="button"
+                className="preset-btn"
+                onClick={(e) => { e.stopPropagation(); setIsCollapsed(true); }}
+                title="Collapse Sandbox"
+                style={{ padding: '3px 8px', fontSize: '0.72rem', background: 'rgba(239, 68, 68, 0.12)', borderColor: 'rgba(239, 68, 68, 0.4)', color: '#f87171' }}
+              >
+                ▾ Hide
+              </button>
             </div>
           )}
         </div>
