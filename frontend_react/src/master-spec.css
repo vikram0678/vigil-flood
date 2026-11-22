@@ -535,16 +535,18 @@ body {
 /* ==========================================================================
    LAYOUT GRID OVERRIDES: Complete Control of Left & Right Sidebars
    ========================================================================== */
-.dashboard-container {
-  grid-template-columns: 320px 1fr 340px !important;
+@media (min-width: 1025px) {
+  .dashboard-container {
+    grid-template-columns: 320px 1fr 340px !important;
+  }
+
+  /* Right Panel Collapsed Only */
+  .dashboard-container.telemetry-collapsed {
+    grid-template-columns: 320px 1fr !important;
+  }
 }
 
-/* Right Panel Collapsed Only */
-.dashboard-container.telemetry-collapsed {
-  grid-template-columns: 320px 1fr !important;
-}
-
-@media (max-width: 1400px) {
+@media (min-width: 1025px) and (max-width: 1400px) {
   .dashboard-container {
     grid-template-columns: 280px 1fr 300px !important;
   }
@@ -1171,4 +1173,425 @@ body.light-theme .basin-select-dropdown {
 body.light-theme .basin-select-dropdown option {
   background: #ffffff !important;
   color: #0f172a !important;
+}
+
+/* ==========================================================================
+   MOBILE & TABLET RESPONSIVE SYSTEM (<= 1024px)
+   Principal UI/UX Human Factors Architecture:
+   - Resets rigid desktop grid to clean single-column flex
+   - Ergonomic thumb-zone bottom tab bar (Map | Villages | Telemetry)
+   - Full-bleed interactive GIS map canvas without horizontal overflow
+   - Non-overlapping floating HUD elements & adaptive mobile drawer
+   ========================================================================== */
+@media (max-width: 1024px) {
+  /* 1. Mobile Container */
+  .dashboard-container,
+  .dashboard-container.telemetry-collapsed {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: 100% !important;
+    height: calc(100dvh - 56px) !important;
+    height: calc(100vh - 56px) !important;
+    max-height: calc(100dvh - 56px) !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    gap: 0 !important;
+    position: relative !important;
+  }
+
+  /* 2. Column Visibility & Tab Switching */
+  .col-wrapper {
+    display: none !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .col-wrapper.mobile-visible {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    height: calc(100% - 60px) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Center Map Viewport */
+  .center-panel.col-wrapper.col-map.mobile-visible {
+    overflow: hidden !important;
+    position: relative !important;
+    height: calc(100% - 60px) !important;
+  }
+
+  .center-panel.col-wrapper.col-map .map-wrapper {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    border: none !important;
+  }
+
+  /* Left Villages List Panel */
+  .col-wrapper.col-villages.mobile-visible {
+    padding: 12px 12px 75px 12px !important;
+    background: var(--bg-primary, #0b0f19) !important;
+  }
+
+  /* Right AI Telemetry Panel */
+  .col-wrapper.col-telemetry.mobile-visible {
+    padding: 12px 12px 75px 12px !important;
+    background: var(--bg-primary, #0b0f19) !important;
+  }
+
+  body.light-theme .col-wrapper.col-villages.mobile-visible,
+  body.light-theme .col-wrapper.col-telemetry.mobile-visible {
+    background: #f8fafc !important;
+  }
+
+  /* 3. Bottom Fixed Ergonomic Tab Bar */
+  .mobile-tab-bar {
+    display: flex !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: 60px !important;
+    z-index: 9999 !important;
+    background: rgba(15, 23, 42, 0.98) !important;
+    border-top: 1px solid rgba(56, 189, 248, 0.25) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    padding: 4px 8px env(safe-area-inset-bottom, 6px) 8px !important;
+    box-sizing: border-box !important;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6) !important;
+    justify-content: space-around !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  body.light-theme .mobile-tab-bar {
+    background: rgba(255, 255, 255, 0.98) !important;
+    border-top: 1px solid #cbd5e1 !important;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  .mobile-tab-btn {
+    flex: 1 !important;
+    height: 48px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    padding: 4px 6px !important;
+    border-radius: 8px !important;
+    border: none !important;
+    background: transparent !important;
+    color: #94a3b8 !important;
+    font-size: 0.72rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    box-shadow: none !important;
+  }
+
+  .mobile-tab-btn .mobile-tab-icon {
+    font-size: 1.15rem !important;
+    line-height: 1 !important;
+  }
+
+  .mobile-tab-btn .mobile-tab-label {
+    font-size: 0.68rem !important;
+    line-height: 1 !important;
+    letter-spacing: 0.01em !important;
+  }
+
+  .mobile-tab-btn.active {
+    background: rgba(56, 189, 248, 0.16) !important;
+    color: #38bdf8 !important;
+    font-weight: 700 !important;
+  }
+
+  body.light-theme .mobile-tab-btn {
+    color: #64748b !important;
+  }
+
+  body.light-theme .mobile-tab-btn.active {
+    background: #e0f2fe !important;
+    color: #0284c7 !important;
+  }
+
+  /* 4. Hide redundant desktop-only floating button on mobile */
+  .telemetry-expand-floating-btn {
+    display: none !important;
+  }
+
+  /* 5. Clean Mobile Map HUD Placement */
+  .universal-search-container {
+    top: 10px !important;
+    left: 10px !important;
+    right: 10px !important;
+    width: auto !important;
+    max-width: calc(100% - 20px) !important;
+    z-index: 800 !important;
+  }
+
+  .universal-search-container:focus-within {
+    width: auto !important;
+  }
+
+  .map-nav-controls {
+    top: 66px !important;
+    right: 10px !important;
+    left: auto !important;
+    z-index: 750 !important;
+  }
+
+  .google-layers-widget-container {
+    top: 250px !important;
+    right: 10px !important;
+    left: auto !important;
+    z-index: 2500 !important;
+  }
+
+  .drawer-toggle-tab-closed {
+    top: 66px !important;
+    right: 60px !important;
+    width: auto !important;
+    max-width: 140px !important;
+    font-size: 0.7rem !important;
+    padding: 6px 10px !important;
+  }
+
+  .hazard-filter-bar-container {
+    bottom: 54px !important;
+    left: 10px !important;
+    right: 10px !important;
+    transform: none !important;
+    width: auto !important;
+    max-width: calc(100% - 20px) !important;
+    overflow-x: auto !important;
+  }
+
+  .hazard-filter-pills {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    padding: 3px !important;
+    gap: 4px !important;
+  }
+
+  .hazard-filter-pill {
+    padding: 5px 10px !important;
+    font-size: 0.7rem !important;
+    white-space: nowrap !important;
+  }
+
+  /* 6. Aapda Mitra Mobile Placement */
+  .aapda-launcher-wrapper {
+    bottom: 74px !important;
+    right: 14px !important;
+  }
+
+  .aapda-mitra-window {
+    bottom: 74px !important;
+    right: 10px !important;
+    left: 10px !important;
+    width: calc(100vw - 20px) !important;
+    max-width: 460px !important;
+    height: min(520px, calc(100dvh - 150px)) !important;
+  }
+
+  /* 7. Navbar Mobile Refinements */
+  .navbar {
+    padding: 8px 12px !important;
+    gap: 8px !important;
+    min-height: 54px !important;
+  }
+
+  .navbar-hud-section {
+    display: none !important;
+  }
+
+  .navbar-actions-section .language-selector-container,
+  .navbar-actions-section .role-switcher {
+    display: none !important;
+  }
+
+  .navbar-actions-section {
+    gap: 8px !important;
+  }
+
+  .nav-emergency-cta-btn {
+    padding: 5px 10px !important;
+    font-size: 0.72rem !important;
+  }
+
+  .nav-emergency-cta-btn .cta-text {
+    display: inline-block !important;
+  }
+
+  .theme-toggle-btn .theme-toggle-label {
+    display: none !important;
+  }
+
+  .theme-toggle-btn {
+    padding: 6px 9px !important;
+    min-width: 36px !important;
+    justify-content: center !important;
+  }
+
+  /* Mobile Hamburger Menu Button */
+  .mobile-hamburger-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 8px !important;
+    background: rgba(30, 41, 59, 0.8) !important;
+    border: 1px solid rgba(56, 189, 248, 0.3) !important;
+    color: #f8fafc !important;
+    font-size: 1.15rem !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+  }
+
+  body.light-theme .mobile-hamburger-btn {
+    background: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+  }
+
+  /* Mobile Slide-Down Drawer */
+  .navbar-mobile-drawer {
+    position: fixed !important;
+    top: 54px !important;
+    left: 0 !important;
+    right: 0 !important;
+    background: rgba(15, 23, 42, 0.98) !important;
+    border-bottom: 2px solid rgba(56, 189, 248, 0.4) !important;
+    backdrop-filter: blur(24px) !important;
+    -webkit-backdrop-filter: blur(24px) !important;
+    padding: 16px 20px 24px 20px !important;
+    z-index: 9999 !important;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6) !important;
+    animation: slideDownDrawer 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+
+  body.light-theme .navbar-mobile-drawer {
+    background: rgba(255, 255, 255, 0.98) !important;
+    border-bottom: 2px solid #0284c7 !important;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12) !important;
+  }
+
+  @keyframes slideDownDrawer {
+    from {
+      opacity: 0;
+      transform: translateY(-12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .mobile-drawer-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding-bottom: 8px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+
+  body.light-theme .mobile-drawer-header {
+    border-bottom: 1px solid #e2e8f0 !important;
+  }
+
+  .drawer-title {
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    color: #38bdf8 !important;
+  }
+
+  body.light-theme .drawer-title {
+    color: #0284c7 !important;
+  }
+
+  .drawer-close-btn {
+    background: transparent !important;
+    border: none !important;
+    color: #94a3b8 !important;
+    font-size: 1.2rem !important;
+    cursor: pointer !important;
+    padding: 4px 8px !important;
+  }
+
+  .drawer-section {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .drawer-label {
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: #94a3b8 !important;
+  }
+
+  body.light-theme .drawer-label {
+    color: #64748b !important;
+  }
+
+  .drawer-action-list {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  .drawer-action-btn {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 10px 12px !important;
+    border-radius: 8px !important;
+    background: rgba(30, 41, 59, 0.7) !important;
+    border: 1px solid rgba(56, 189, 248, 0.25) !important;
+    color: #f1f5f9 !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    text-align: left !important;
+    transition: all 0.2s ease !important;
+  }
+
+  body.light-theme .drawer-action-btn {
+    background: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+  }
+
+  .drawer-action-btn:hover {
+    background: rgba(56, 189, 248, 0.2) !important;
+    border-color: #38bdf8 !important;
+  }
+}
+
+/* On desktop, hide mobile hamburger and drawer */
+@media (min-width: 1025px) {
+  .mobile-hamburger-btn,
+  .navbar-mobile-drawer {
+    display: none !important;
+  }
 }

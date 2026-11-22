@@ -78,6 +78,15 @@ const DashboardContent: React.FC = () => {
     }
   }, [selectedVillageId]);
 
+  const handleMobileTabChange = (tab: 'map' | 'villages' | 'telemetry') => {
+    setMobileTab(tab);
+    if (tab === 'map') {
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+      }, 100);
+    }
+  };
+
   return (
     <>
       {/* Global Persistent Navbar with identical UI/UX throughout the site */}
@@ -95,21 +104,24 @@ const DashboardContent: React.FC = () => {
               <div className="mobile-tab-bar">
                 <button 
                   className={`mobile-tab-btn ${mobileTab === 'map' ? 'active' : ''}`}
-                  onClick={() => setMobileTab('map')}
+                  onClick={() => handleMobileTabChange('map')}
                 >
-                  🗺️ <span>Live Map &amp; Sim</span>
+                  <span className="mobile-tab-icon">🗺️</span>
+                  <span className="mobile-tab-label">Live Map &amp; Sim</span>
                 </button>
                 <button 
                   className={`mobile-tab-btn ${mobileTab === 'villages' ? 'active' : ''}`}
-                  onClick={() => setMobileTab('villages')}
+                  onClick={() => handleMobileTabChange('villages')}
                 >
-                  📍 <span>Villages ({villages.length})</span>
+                  <span className="mobile-tab-icon">📍</span>
+                  <span className="mobile-tab-label">Villages ({villages.length})</span>
                 </button>
                 <button 
                   className={`mobile-tab-btn ${mobileTab === 'telemetry' ? 'active' : ''}`}
-                  onClick={() => setMobileTab('telemetry')}
+                  onClick={() => handleMobileTabChange('telemetry')}
                 >
-                  🛡️ <span>AI Telemetry</span>
+                  <span className="mobile-tab-icon">🛡️</span>
+                  <span className="mobile-tab-label">AI Telemetry</span>
                 </button>
               </div>
 

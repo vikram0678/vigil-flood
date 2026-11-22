@@ -28,7 +28,7 @@ export const MapLayersControl: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleBaseMapSelect = (type: 'dark' | 'satellite' | 'terrain') => {
+  const handleBaseMapSelect = (type: 'dark' | 'satellite' | 'terrain' | 'light') => {
     if (type === 'terrain') {
       setBasemap2D('google_terrain');
       setBasemap3D('topo_3d');
@@ -38,21 +38,26 @@ export const MapLayersControl: React.FC = () => {
     } else if (type === 'satellite') {
       setBasemap2D('google_satellite');
       setBasemap3D('google_hybrid');
+    } else if (type === 'light') {
+      setBasemap2D('google_floodhub');
+      setBasemap3D('topo_3d');
     } else {
       setBasemap2D('google_dark');
       setBasemap3D('dark_3d');
     }
   };
 
-  const isCurrentBasemap = (type: 'dark' | 'satellite' | 'terrain') => {
+  const isCurrentBasemap = (type: 'dark' | 'satellite' | 'terrain' | 'light') => {
     if (viewMode === '3d') {
       if (type === 'terrain') return basemap3D === 'topo_3d';
       if (type === 'satellite') return basemap3D === 'google_hybrid' || basemap3D === 'esri_satellite';
       if (type === 'dark') return basemap3D === 'dark_3d';
+      if (type === 'light') return basemap3D === 'topo_3d' && basemap2D === 'google_floodhub';
     } else {
       if (type === 'terrain') return basemap2D === 'google_terrain' || basemap2D === 'topo';
       if (type === 'satellite') return basemap2D === 'google_satellite';
       if (type === 'dark') return basemap2D === 'google_dark';
+      if (type === 'light') return basemap2D === 'google_floodhub';
     }
     return false;
   };
@@ -184,15 +189,26 @@ export const MapLayersControl: React.FC = () => {
 
             {/* 2. Base Map Type */}
             <div className="sheet-section">
-              <div className="section-label">MAP TYPE</div>
+              <div className="section-label">MAP BASEMAP THEME</div>
               <div className="map-type-card-grid">
+                <button 
+                  className={`map-type-card ${isCurrentBasemap('light') ? 'active' : ''}`}
+                  onClick={() => handleBaseMapSelect('light')}
+                  title="Clean White Light Map (Google Flood Hub Daylight)"
+                >
+                  <div className="type-thumb" style={{ background: '#f8fafc', border: '1px solid #cbd5e1' }}>
+                    <span className="thumb-preview-icon">☀️</span>
+                  </div>
+                  <span className="type-name">Daylight</span>
+                </button>
+
                 <button 
                   className={`map-type-card ${isCurrentBasemap('dark') ? 'active' : ''}`}
                   onClick={() => handleBaseMapSelect('dark')}
                   title="Dark High-Contrast Tactical Topography"
                 >
                   <div className="type-thumb dark-thumb">
-                    <span className="thumb-preview-icon">🗺️</span>
+                    <span className="thumb-preview-icon">🌙</span>
                   </div>
                   <span className="type-name">Dark Topo</span>
                 </button>

@@ -120,8 +120,6 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [selectedVillageData, setSelectedVillageData] = useState<VillageDetailResponse | null>(null);
   const [role, setRoleState] = useState<RoleMode>("authority");
   const [viewMode, setViewMode] = useState<ViewMode>("2d");
-  const [basemap2D, setBasemap2D] = useState<Basemap2D>("google_dark");
-  const [basemap3D, setBasemap3D] = useState<Basemap3D>("google_hybrid");
   const [isMethodologyOpen, setMethodologyOpen] = useState<boolean>(false);
   const [isGeomorphicOpen, setGeomorphicOpen] = useState<boolean>(false);
   const [isHydrographOpen, setHydrographOpenState] = useState<boolean>(false);
@@ -214,19 +212,32 @@ export const FloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const prevTourStep = useCallback(() => {
     setTourStep(prev => Math.max(0, prev - 1));
   }, []);
+  // UI Theme: Defaults to 'light' (clean white command center)
   const [theme, setTheme] = useState<ThemeMode>(() => {
     const saved = localStorage.getItem('vigil_theme') as ThemeMode;
-    return saved === 'light' ? 'light' : 'dark';
+    return saved === 'dark' ? 'dark' : 'light';
+  });
+
+  // Map Basemaps: Default 2D map to daylight 'google_floodhub' (white map) unless dark is specifically saved
+  const [basemap2D, setBasemap2D] = useState<Basemap2D>(() => {
+    const saved = localStorage.getItem('vigil_basemap2d') as Basemap2D;
+    return saved || 'google_floodhub';
+  });
+  const [basemap3D, setBasemap3D] = useState<Basemap3D>(() => {
+    const saved = localStorage.getItem('vigil_basemap3d') as Basemap3D;
+    return saved || 'topo_3d';
   });
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     document.body.className = theme === 'light' ? 'light-theme' : '';
     localStorage.setItem('vigil_theme', theme);
-  }, [theme]);
+    console.log(`[VIGIL-FLOOD] Active UI Theme: ${theme.toUpperCase()} | 2D Basemap: ${basemap2D}`);
+  }, [theme, basemap2D]);
 
+  // Decoupled UI Theme Toggle: changes UI shell without overriding map basemap
   const toggleTheme = useCallback(() => {
-    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+    setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
   }, []);
 
   const setLanguage = useCallback((lang: Language) => {

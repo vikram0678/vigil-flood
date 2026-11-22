@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useFlood } from '../../context/FloodContext';
 
 export const Navbar: React.FC = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const {
     role,
     setRole,
@@ -163,7 +164,117 @@ export const Navbar: React.FC = () => {
             {t('roleCitizen')}
           </button>
         </div>
+
+        {/* Mobile Hamburger Menu Toggle Button (Visible <= 1024px) */}
+        <button
+          className="mobile-hamburger-btn"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          title="Open Menu"
+          aria-label="Open Navigation Menu"
+        >
+          {mobileMenuOpen ? '✕' : '☰'}
+        </button>
       </div>
+
+      {/* Mobile Drawer (Visible when hamburger is toggled on <= 1024px) */}
+      {mobileMenuOpen && (
+        <div className="navbar-mobile-drawer">
+          <div className="mobile-drawer-header">
+            <span className="drawer-title">⚡ Navigation & Operations</span>
+            <button 
+              className="drawer-close-btn"
+              onClick={() => setMobileMenuOpen(false)}
+              aria-label="Close Menu"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="mobile-drawer-body">
+            {/* Role Switcher */}
+            <div className="drawer-section">
+              <label className="drawer-label">Portal Mode</label>
+              <div className="role-switcher" style={{ width: '100%', display: 'flex' }}>
+                <button
+                  className={`role-btn ${role === 'authority' ? 'active' : ''}`}
+                  onClick={() => { setRole('authority'); setMobileMenuOpen(false); }}
+                  style={{ flex: 1 }}
+                >
+                  {t('roleAuthority')}
+                </button>
+                <button
+                  className={`role-btn ${role === 'citizen' ? 'active' : ''}`}
+                  onClick={() => { setRole('citizen'); setMobileMenuOpen(false); }}
+                  style={{ flex: 1 }}
+                >
+                  {t('roleCitizen')}
+                </button>
+              </div>
+            </div>
+
+            {/* Language Selector */}
+            <div className="drawer-section" style={{ marginTop: '10px' }}>
+              <label className="drawer-label">Language</label>
+              <select
+                id="mobile-lang-select"
+                className="basin-select-dropdown"
+                value={language}
+                onChange={(e) => {
+                  setLanguage(e.target.value as 'en' | 'hi');
+                  setMobileMenuOpen(false);
+                }}
+                style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', fontWeight: 600 }}
+              >
+                <option value="en">🇬🇧 English</option>
+                <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
+              </select>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="drawer-section" style={{ marginTop: '10px' }}>
+              <label className="drawer-label">Quick Actions</label>
+              <div className="drawer-action-list">
+                <button
+                  className="drawer-action-btn"
+                  onClick={() => {
+                    window.dispatchEvent(new CustomEvent('open-state-alerts-table-modal'));
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  <span>⚡</span> {t('stateAlerts')}
+                </button>
+                <button
+                  className="drawer-action-btn"
+                  onClick={() => {
+                    if (activePage === 'tactical_dossier') closeTacticalDossier();
+                    else openTacticalDossier();
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  <span>🛡️</span> {t('evacuationOps')}
+                </button>
+                <button
+                  className="drawer-action-btn"
+                  onClick={() => {
+                    setMethodologyOpen(true);
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  <span>ℹ️</span> {t('methodology')}
+                </button>
+                <button
+                  className="drawer-action-btn"
+                  onClick={() => {
+                    startTour();
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  <span>✨</span> {t('quickTour')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   );
 };
