@@ -99,10 +99,43 @@ const DashboardContent: React.FC = () => {
         <>
           {/* Authority Command Center View */}
           {role === 'authority' && (
-            <main className={`dashboard-container ${isTelemetryCollapsed ? 'telemetry-collapsed' : ''}`}>
-              {/* Mobile Navigation Tabs (Shown on screens <= 1024px) */}
-              <div className="mobile-tab-bar">
+            <>
+              <main className={`dashboard-container ${isTelemetryCollapsed ? 'telemetry-collapsed' : ''}`}>
+                {/* Left Column: Monitored Catchments */}
+                <div className={`col-wrapper col-villages ${mobileTab === 'villages' ? 'mobile-visible' : ''}`}>
+                  <PilotCatchmentPanel />
+                </div>
+
+                {/* Center Column: GIS Map & What-If Simulation Sandbox (Extends fully when right panel is collapsed) */}
+                <section className={`center-panel col-wrapper col-map ${mobileTab === 'map' ? 'mobile-visible' : ''}`}>
+                  <MapContainer />
+                  <WhatIfSandbox />
+
+                  {/* Floating Expand Tab on Right Edge of Map when Collapsed */}
+                  {isTelemetryCollapsed && (
+                    <button 
+                      type="button" 
+                      className="telemetry-expand-floating-btn"
+                      onClick={toggleTelemetryPanel}
+                      title="Open Decision Support & XAI panel"
+                      aria-label="Open Decision Support & XAI panel"
+                    >
+                      <span className="expand-pill-icon">◀</span>
+                      <span>🛡️ Decision Support & XAI</span>
+                    </button>
+                  )}
+                </section>
+
+                {/* Right Column: Deep-Dive AI Telemetry, XAI, & Action Directives (Slides horizontally) */}
+                <div className={`col-wrapper col-telemetry ${isTelemetryCollapsed ? 'collapsed-right' : ''} ${mobileTab === 'telemetry' ? 'mobile-visible' : ''}`}>
+                  <DeepDiveAnalysis />
+                </div>
+              </main>
+
+              {/* Native Mobile Bottom Navigation Bar (Fixed at bottom on screens <= 1024px) */}
+              <nav className="mobile-tab-bar" aria-label="Mobile Navigation">
                 <button 
+                  type="button"
                   className={`mobile-tab-btn ${mobileTab === 'map' ? 'active' : ''}`}
                   onClick={() => handleMobileTabChange('map')}
                 >
@@ -110,6 +143,7 @@ const DashboardContent: React.FC = () => {
                   <span className="mobile-tab-label">Live Map &amp; Sim</span>
                 </button>
                 <button 
+                  type="button"
                   className={`mobile-tab-btn ${mobileTab === 'villages' ? 'active' : ''}`}
                   onClick={() => handleMobileTabChange('villages')}
                 >
@@ -117,44 +151,15 @@ const DashboardContent: React.FC = () => {
                   <span className="mobile-tab-label">Villages ({villages.length})</span>
                 </button>
                 <button 
+                  type="button"
                   className={`mobile-tab-btn ${mobileTab === 'telemetry' ? 'active' : ''}`}
                   onClick={() => handleMobileTabChange('telemetry')}
                 >
                   <span className="mobile-tab-icon">🛡️</span>
                   <span className="mobile-tab-label">AI Telemetry</span>
                 </button>
-              </div>
-
-              {/* Left Column: Monitored Catchments */}
-              <div className={`col-wrapper col-villages ${mobileTab === 'villages' ? 'mobile-visible' : ''}`}>
-                <PilotCatchmentPanel />
-              </div>
-
-              {/* Center Column: GIS Map & What-If Simulation Sandbox (Extends fully when right panel is collapsed) */}
-              <section className={`center-panel col-wrapper col-map ${mobileTab === 'map' ? 'mobile-visible' : ''}`}>
-                <MapContainer />
-                <WhatIfSandbox />
-
-                {/* Floating Expand Tab on Right Edge of Map when Collapsed */}
-                {isTelemetryCollapsed && (
-                  <button 
-                    type="button" 
-                    className="telemetry-expand-floating-btn"
-                    onClick={toggleTelemetryPanel}
-                    title="Open Decision Support & XAI panel"
-                    aria-label="Open Decision Support & XAI panel"
-                  >
-                    <span className="expand-pill-icon">◀</span>
-                    <span>🛡️ Decision Support & XAI</span>
-                  </button>
-                )}
-              </section>
-
-              {/* Right Column: Deep-Dive AI Telemetry, XAI, & Action Directives (Slides horizontally) */}
-              <div className={`col-wrapper col-telemetry ${isTelemetryCollapsed ? 'collapsed-right' : ''} ${mobileTab === 'telemetry' ? 'mobile-visible' : ''}`}>
-                <DeepDiveAnalysis />
-              </div>
-            </main>
+              </nav>
+            </>
           )}
 
           {/* Citizen Alert & Evacuation View */}
