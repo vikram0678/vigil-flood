@@ -1350,91 +1350,185 @@ body.light-theme .basin-select-dropdown option {
     display: none !important;
   }
 
-  /* 5. Clean Mobile Map HUD Placement */
+  /* 5. Clean Mobile Map HUD Placement (Google Maps 1:1 Spatial Architecture) */
   .universal-search-container {
+    position: absolute !important;
     top: 10px !important;
     left: 10px !important;
     right: 10px !important;
     width: auto !important;
     max-width: calc(100% - 20px) !important;
-    z-index: 1200 !important;
+    height: 42px !important;
+    z-index: 1300 !important;
   }
 
   .universal-search-container:focus-within {
     width: auto !important;
   }
 
-  .map-nav-controls {
-    top: 60px !important;
-    right: 10px !important;
-    left: auto !important;
-    z-index: 1100 !important;
+  .search-bar-inner {
+    border-radius: 24px !important;
+    height: 42px !important;
+    box-sizing: border-box !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0, 0, 0, 0.08) !important;
   }
 
-  .google-layers-widget-container {
-    top: 240px !important;
-    right: 10px !important;
-    left: auto !important;
-    z-index: 1100 !important;
-  }
-
-  /* National Alerts Pill: Positioned on open left margin below search to avoid crowding zoom controls */
-  .drawer-toggle-tab-closed {
-    top: 60px !important;
-    left: 10px !important;
-    right: auto !important;
-    width: auto !important;
-    max-width: 150px !important;
-    font-size: 0.72rem !important;
-    padding: 6px 12px !important;
-    z-index: 1100 !important;
-  }
-
-  /* Hazard Filter Bar: Floats cleanly right above the collapsed Sandbox Dock */
+  /* Hazard Filter Bar: Floating Category Chips directly beneath the search bar (Google Maps pattern) */
   .hazard-filter-bar-container {
-    bottom: 96px !important;
-    left: 8px !important;
-    right: 8px !important;
+    position: absolute !important;
+    top: 64px !important;
+    bottom: auto !important;
+    left: 10px !important;
+    right: 10px !important;
     transform: none !important;
     width: auto !important;
-    max-width: calc(100% - 16px) !important;
-    z-index: 1400 !important;
+    max-width: calc(100% - 20px) !important;
+    z-index: 1250 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
     overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+  }
+
+  .hazard-filter-bar-container::-webkit-scrollbar {
+    display: none !important;
   }
 
   .hazard-filter-pills {
+    display: flex !important;
     flex-wrap: nowrap !important;
     overflow-x: auto !important;
-    padding: 3px !important;
-    gap: 4px !important;
+    gap: 8px !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 2px 2px !important;
   }
 
   .hazard-filter-pill {
-    padding: 5px 10px !important;
-    font-size: 0.7rem !important;
+    flex-shrink: 0 !important;
+    padding: 6px 12px !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
     white-space: nowrap !important;
+    border-radius: 9999px !important;
+    background: rgba(15, 23, 42, 0.9) !important;
+    border: 1px solid rgba(56, 189, 248, 0.3) !important;
+    color: #f1f5f9 !important;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.35) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
   }
 
-  /* Compact What-If Sandbox Dock on mobile */
+  body.light-theme .hazard-filter-pill {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
+  }
+
+  /* National Alerts: On mobile, Alerts is integrated cleanly as the first Chip in the category bar.
+     Hide the duplicate separate floating tab to eliminate Row 3 completely and unblock map pins. */
+  .drawer-toggle-tab-closed {
+    display: none !important;
+  }
+
+  .national-alerts-drawer.open {
+    position: fixed !important;
+    top: 52px !important;
+    bottom: 56px !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100vw !important;
+    height: auto !important;
+    z-index: 9999 !important;
+  }
+
+  .national-alerts-drawer.open .drawer-content {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100vw !important;
+    border-radius: 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+  }
+
+  /* Right Tool Rail: Layers & Nav Controls stacked neatly on the right edge below chips */
+  .google-layers-widget-container {
+    position: absolute !important;
+    top: 116px !important;
+    right: 10px !important;
+    left: auto !important;
+    bottom: auto !important;
+    z-index: 1200 !important;
+  }
+
+  .map-nav-controls {
+    position: absolute !important;
+    top: 162px !important;
+    right: 10px !important;
+    left: auto !important;
+    bottom: auto !important;
+    z-index: 1200 !important;
+  }
+
+  /* Floating Bottom Actions: Balanced Left & Right above Sandbox */
+  #btn-toggle-bathymetry-hud,
+  .bathymetry-hud-toggle-btn {
+    position: absolute !important;
+    bottom: 54px !important;
+    left: 10px !important;
+    right: auto !important;
+    z-index: 1350 !important;
+    height: 34px !important;
+    padding: 0 10px !important;
+    font-size: 0.72rem !important;
+    border-radius: 17px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  .bathymetry-hud-modal-panel {
+    position: fixed !important;
+    bottom: 56px !important;
+    left: 8px !important;
+    right: 8px !important;
+    width: auto !important;
+    max-width: calc(100% - 16px) !important;
+    max-height: 70vh !important;
+    overflow-y: auto !important;
+    z-index: 9998 !important;
+    border-radius: 14px 14px 0 0 !important;
+  }
+
+  /* Compact What-If Sandbox Dock on mobile (Google Maps Bottom Sheet) */
   #tour-sandbox-card.full-width-dock {
     position: absolute !important;
     bottom: 0 !important;
     left: 0 !important;
     right: 0 !important;
     width: 100% !important;
-    max-height: 68vh !important;
+    max-height: 65vh !important;
     overflow-y: auto !important;
-    z-index: 1500 !important;
-    border-radius: 14px 14px 0 0 !important;
-    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.4) !important;
+    z-index: 1400 !important;
+    border-radius: 16px 16px 0 0 !important;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.45) !important;
     border-bottom: none !important;
     margin: 0 !important;
   }
 
   #tour-sandbox-card.full-width-dock.collapsed {
-    max-height: 46px !important;
+    max-height: 44px !important;
     overflow: hidden !important;
-    padding: 6px 10px !important;
+    padding: 4px 10px !important;
   }
 
   .sandbox-pull-handle {
@@ -1442,7 +1536,7 @@ body.light-theme .basin-select-dropdown option {
     height: 4px;
     background: rgba(255, 255, 255, 0.3);
     border-radius: 2px;
-    margin: 0 auto 6px auto;
+    margin: 0 auto 5px auto;
   }
 
   body.light-theme .sandbox-pull-handle {
@@ -1457,21 +1551,24 @@ body.light-theme .basin-select-dropdown option {
     padding-right: 12px !important;
   }
 
-  /* 6. Aapda Mitra Mobile Placement (floats safely above What-If Sandbox with zero overlap) */
+  /* 6. Aapda Mitra Mobile Placement (Google Maps Direction FAB placement) */
   .aapda-launcher-wrapper {
     position: fixed !important;
-    bottom: 148px !important;
-    right: 14px !important;
-    z-index: 9995 !important;
+    bottom: 112px !important;
+    right: 12px !important;
+    left: auto !important;
+    z-index: 1350 !important;
   }
 
   .aapda-mitra-window {
-    bottom: 68px !important;
+    position: fixed !important;
+    bottom: 56px !important;
     right: 10px !important;
     left: 10px !important;
     width: calc(100vw - 20px) !important;
     max-width: 460px !important;
-    height: min(520px, calc(100dvh - 140px)) !important;
+    height: min(520px, calc(100dvh - 120px)) !important;
+    z-index: 9999 !important;
   }
 
   /* 7. Navbar Mobile Refinements */
@@ -1712,10 +1809,11 @@ body.light-theme .basin-select-dropdown option {
   }
 }
 
-/* On desktop, hide mobile hamburger and drawer */
+/* On desktop, hide mobile hamburger, drawer, and mobile alert chip */
 @media (min-width: 1025px) {
   .mobile-hamburger-btn,
-  .navbar-mobile-drawer {
+  .navbar-mobile-drawer,
+  .alerts-chip {
     display: none !important;
   }
 }

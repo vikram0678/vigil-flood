@@ -101,6 +101,7 @@ export const RiverCrossSectionHUD: React.FC = () => {
       {/* ─── Trigger Button ─── */}
       <button
         id="btn-toggle-bathymetry-hud"
+        className="bathymetry-hud-toggle-btn"
         onClick={() => setIsOpen(!isOpen)}
         style={{
           position: 'absolute',
@@ -148,11 +149,13 @@ export const RiverCrossSectionHUD: React.FC = () => {
 
       {/* ─── Main Cross-Section Panel ─── */}
       {isOpen && (
-        <div style={{
-          position: 'absolute',
-          bottom: '120px',
-          left: '16px',
-          zIndex: 860,
+        <div
+          className="bathymetry-hud-modal-panel"
+          style={{
+            position: 'absolute',
+            bottom: '120px',
+            left: '16px',
+            zIndex: 860,
           width: '440px',
           maxWidth: 'calc(100vw - 32px)',
           background: 'linear-gradient(170deg, rgba(13,20,38,0.97) 0%, rgba(8,14,28,0.98) 100%)',

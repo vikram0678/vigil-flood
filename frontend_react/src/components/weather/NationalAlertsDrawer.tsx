@@ -34,6 +34,12 @@ export const NationalAlertsDrawer: React.FC = () => {
     return () => clearInterval(interval);
   }, [hazardFilter]);
 
+  useEffect(() => {
+    const handleOpen = () => setIsOpen(true);
+    window.addEventListener('open-national-alerts-drawer', handleOpen);
+    return () => window.removeEventListener('open-national-alerts-drawer', handleOpen);
+  }, []);
+
   const handleAlertClick = (item: any) => {
     if (item.village_id) {
       selectVillage(item.village_id);
