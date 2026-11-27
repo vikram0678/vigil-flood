@@ -910,6 +910,63 @@ body.light-theme .sandbox-card {
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06) !important;
 }
 
+/* Light Theme Center HUD Navigation Bar */
+body.light-theme .hud-pill-group {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05) !important;
+}
+
+body.light-theme .hud-pill-btn {
+  color: #334155 !important;
+  border: 1px solid transparent !important;
+}
+
+body.light-theme .hud-pill-btn:hover {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06) !important;
+}
+
+body.light-theme .hud-pill-btn.alerts-btn {
+  background: #fef3c7 !important;
+  border-color: #fcd34d !important;
+  color: #b45309 !important;
+}
+
+body.light-theme .hud-pill-btn.alerts-btn:hover {
+  background: #fde68a !important;
+  color: #92400e !important;
+}
+
+body.light-theme .hud-pill-btn.tour-btn {
+  color: #d97706 !important;
+}
+
+/* Light Theme Emergency Broadcast CTA Button */
+body.light-theme .nav-emergency-cta-btn {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%) !important;
+  border: 1px solid #f87171 !important;
+  color: #dc2626 !important;
+  box-shadow: 0 1px 6px rgba(239, 68, 68, 0.2) !important;
+}
+
+body.light-theme .nav-emergency-cta-btn:hover {
+  background: #ef4444 !important;
+  border-color: #dc2626 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 10px rgba(239, 68, 68, 0.4) !important;
+}
+
+/* Light Theme Mode Toggle Button */
+body.light-theme .theme-toggle-btn {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
 body.light-theme .senior-elevation-tag {
   background: #ffffff !important;
   border: 1px solid #cbd5e1 !important;
