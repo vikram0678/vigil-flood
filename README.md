@@ -4,9 +4,9 @@
     <strong>Village-Level Integrated Geospatial & IoT Lead-Time Early Warning System for Hilly Regions</strong>
   </p>
   <p align="center">
-    Smart India Hackathon (SIH) 2026 — Problem Statement ID: <strong>SIH 26192</strong><br/>
-    Organization: <strong>Ministry of Home Affairs (MHA)</strong> | Department: <strong>National Disaster Response Force (NDRF), DM Division</strong><br/>
-    Theme: <strong>Disaster Management</strong> | Category: <strong>Software Track</strong>
+    National Disaster Response & River Valley Hydrological Intelligence Platform<br/>
+    Designed for <strong>District Disaster Management Authorities (DDMA) & Incident Commanders</strong><br/>
+    Focus: <strong>Flash Flood Early Warning, CWC Rational Hydrology & Explainable AI (XAI)</strong>
   </p>
   <p align="center">
     <img src="https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white" alt="Python"/>
@@ -275,12 +275,12 @@ python run.py
 
 ---
 
-## 👥 Hackathon Team
+## 👥 Project Information & Architecture
 
-**Smart India Hackathon (SIH) 2026**
-- **Problem Statement:** SIH 26192 — *Flash Flood Prediction System for Hilly Regions using Multi-Source Data*
-- **Target Organization:** Ministry of Home Affairs (MHA) / National Disaster Response Force (NDRF), DM Division
-- **Theme:** Disaster Management
+**VIGIL-FLOOD Project Initiative**
+- **Domain:** River Valley Hydrological Early Warning & Disaster Resilience
+- **Target Deployments:** District Disaster Management Authorities (DDMA), State Relief Commissioners & NDRF
+- **Focus Areas:** Himachal Pradesh (Beas), Uttarakhand (Alaknanda), Sikkim (Teesta), Kerala (Wayanad)
 
 ---
 
