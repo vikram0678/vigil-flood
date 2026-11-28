@@ -72,39 +72,85 @@ During violent Himalayan flash floods, rolling boulders routinely smash physical
 
 ## 🏗️ System Architecture
 
-VIGIL-FLOOD operates across three synchronized, resilient tiers:
+```mermaid
+flowchart TD
+    %% TIER 1: MULTI-SOURCE INGESTION (INPUT PILLS)
+    subgraph T1 [" 🛰️ TIER 1: MULTI-SOURCE INGESTION "]
+        A1(["🛰️ Satellite & IMD Radar<br/>Rainfall & Storm Reflectivity"])
+        A2(["🗺️ Copernicus 30m DEM<br/>Valley Slopes & Gauge Baseline"])
+        A3(["📡 Micro-Catchment IoT<br/>Water Stage, Rain & Soil Sensors"])
+    end
 
+    %% TIER 2: PIPELINE & CACHE (RECTANGLES)
+    subgraph T2 [" ⚡ TIER 2: INGESTION & PIPELINE GATEWAY "]
+        B1["FastAPI & Uvicorn Async Engine"]
+        B2["Redis In-Memory Cache & Deduplication"]
+        B3["50-Meter Micro-Basin Mesh (26 Valleys)"]
+    end
+
+    A1 --> B1
+    A2 --> B1
+    A3 --> B1
+    B1 <--> B2
+    B2 --> B3
+
+    %% TIER 3: DUAL-CORE HYDROLOGY & AI (PHYSICS + ML + DIAMOND)
+    subgraph T3 [" 🧠 TIER 3: DUAL-CORE HYDROLOGY & EXPLAINABLE AI "]
+        C1["CWC Rational Hydrology Core<br/>Qp = 0.278 · C · I · A"]
+        C2["XGBoost Multi-Hazard ML<br/>Predictive Severity Classifier"]
+        C3{"⚡ Threat Threshold or<br/>Bridge Breach Detected?"}
+        C4["TreeSHAP Explainable AI (XAI)<br/>Game-Theoretic Risk Attribution"]
+    end
+
+    B3 --> C1
+    B3 --> C2
+    C1 --> C3
+    C2 --> C3
+    C3 -- "High / Critical Risk" --> C4
+
+    %% TIER 4: COMMAND HUD (ROUNDED CARDS)
+    subgraph T4 [" 🖥️ TIER 4: ERGONOMIC COMMAND DASHBOARD (REACT 18 + WEBGL) "]
+        D1(["🗺️ 2D/3D Tactical Digital Twin<br/>Leaflet & MapLibre 3D Terrain"])
+        D2(["⚡ What-If Simulation Sandbox<br/>Peak Qp & Time-to-Crest Forecast"])
+        D3(["📐 River Cross-Section Bathymetry<br/>Bridge Clearance & Submersion HUD"])
+        D4(["🛡️ Aapda Mitra AI Copilot<br/>Bilingual Incident SOP Assistant"])
+    end
+
+    C4 --> D1
+    C4 --> D2
+    C4 --> D3
+    C4 --> D4
+
+    %% TIER 5: STAKEHOLDER DISPATCH (OUTPUT PILLS)
+    subgraph T5 [" 📢 TIER 5: NDMA CAP-SACHET EMERGENCY DISPATCH "]
+        E1(["🏛️ District Magistrates (DDMA)<br/>Evacuation Orders & SITREP Reports"])
+        E2(["🚒 NDRF / SDRF First Responders<br/>Bridge Cutoffs & Tactical Routes"])
+        E3(["📢 Panchayats & Citizens<br/>Cell Broadcast Sirens & Shelter Maps"])
+    end
+
+    D1 --> E1
+    D2 --> E2
+    D3 --> E2
+    D4 --> E3
+
+    %% Clean Visual Styles
+    classDef pillNode fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#ecfdf5,font-weight:bold;
+    classDef rectNode fill:#1e1b4b,stroke:#6366f1,stroke-width:2px,color:#e0e7ff;
+    classDef diamondNode fill:#881337,stroke:#f43f5e,stroke-width:3px,color:#ffe4e6,font-weight:bold;
+    classDef cardNode fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#f8fafc;
+
+    class A1,A2,A3,E1,E2,E3 pillNode;
+    class B1,B2,B3,C1,C2,C4 rectNode;
+    class C3 diamondNode;
+    class D1,D2,D3,D4 cardNode;
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                   TIER 1: MULTI-SOURCE INGESTION (<500ms)                   │
-│  [IMD Doppler Radar]  [NASA GPM IMERG]  [Copernicus 30m DEM]  [ISRO Bhuvan]  │
-│  [CWC Hydrology Telemetry]  [IoT River Gauges]  [Piezometer Soil Moisture]  │
-└──────────────────────────────────────┬──────────────────────────────────────┘
-                                       ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│            TIER 2: DUAL-HAZARD AI & HYDROLOGIC PHYSICS CORE                 │
-│  ┌────────────────────────┐  ┌────────────────────────┐  ┌────────────────┐ │
-│  │ 1D Kinematic Wavefront │  │ Infinite Slope Factor   │  │ PyTorch Bi-LSTM│ │
-│  │ Channel Hydrodynamics  │  │ of Safety (Soil Shear)  │  │ Deep Learning  │ │
-│  └────────────────────────┘  └────────────────────────┘  └────────────────┘ │
-│  ┌────────────────────────┐  ┌────────────────────────┐  ┌────────────────┐ │
-│  │ XGBoost & LightGBM     │  │ River Cascade Engine   │  │ TreeSHAP       │ │
-│  │ Ensemble (280k records)│  │ Multi-Basin Hydrograph │  │ Explainable AI │ │
-│  └────────────────────────┘  └────────────────────────┘  └────────────────┘ │
-└──────────────────────────────────────┬──────────────────────────────────────┘
-                                       ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│         TIER 3: TACTICAL DECISION SUPPORT & LAST-MILE BROADCAST             │
-│  ┌────────────────────────┐  ┌────────────────────────┐  ┌────────────────┐ │
-│  │ 3D Mountain Twin       │  │ Tactical Dossier       │  │ Uphill Safe    │ │
-│  │ (MapLibre + Three.js)  │  │ Command Center         │  │ Shelter Router │ │
-│  └────────────────────────┘  └────────────────────────┘  └────────────────┘ │
-│  ┌────────────────────────┐  ┌────────────────────────┐  ┌────────────────┐ │
-│  │ What-If Cloudburst     │  │ NDMA CAP-SACHET        │  │ LoRaWAN Offline│ │
-│  │ Simulation Sandbox     │  │ Standard XML Alerts    │  │ Solar Edge Sirens│ │
-│  └────────────────────────┘  └────────────────────────┘  └────────────────┘ │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
+
+### Architecture Overview
+1. **Tier 1 (Ingestion):** Ingests live IMD Doppler radar, 30m DEM terrain, and river IoT streams.
+2. **Tier 2 (Gateway):** FastAPI and Redis normalize telemetry into a 50-meter micro-basin grid.
+3. **Tier 3 (Analytics):** Pairs CWC physics ($Q = CIA$) with XGBoost and TreeSHAP explainability.
+4. **Tier 4 (Command HUD):** Delivers a 2D/3D digital twin, What-If sandbox, and bridge bathymetry.
+5. **Tier 5 (Dispatch):** Broadcasts NDMA CAP-SACHET alerts to District Magistrates, NDRF, and citizens.
 
 ---
 
